@@ -1,0 +1,30 @@
+name = "game-stream-calendar"
+main = "_worker.js"
+compatibility_date = "2026-05-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Keep the workers.dev URL alive alongside the custom domain.
+workers_dev = true
+# Custom subdomain on the nabunan.com Cloudflare zone (provisioned on deploy).
+routes = [
+  { pattern = "slate.nabunan.com", custom_domain = true }
+]
+
+[assets]
+directory = "public"
+binding = "ASSETS"
+
+# Single-document persistence (games + settings) and the cached stream pace.
+# Create with:  npx wrangler kv namespace create CALENDAR_KV
+# then paste the returned id below.
+[[kv_namespaces]]
+binding = "CALENDAR_KV"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
+
+# Twitch channel whose last-90-days stats drive the pace math.
+[vars]
+TWITCH_CHANNEL = "nabunan"
+
+# Weekly auto-refresh of the rolling 90-day stream pace (Mondays 12:00 UTC).
+[triggers]
+crons = ["0 12 * * 1"]
