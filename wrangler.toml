@@ -15,11 +15,9 @@ directory = "public"
 binding = "ASSETS"
 
 # Single-document persistence (games + settings) and the cached stream pace.
-# Create with:  npx wrangler kv namespace create CALENDAR_KV
-# then paste the returned id below.
 [[kv_namespaces]]
 binding = "CALENDAR_KV"
-id = "REPLACE_WITH_KV_NAMESPACE_ID"
+id = "d6b88d74dc484129ae32424747f6a007"
 
 # Twitch channel whose last-90-days stats drive the pace math.
 [vars]
