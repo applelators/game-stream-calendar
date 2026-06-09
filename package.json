@@ -1,0 +1,14 @@
+{
+  "name": "game-stream-calendar",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Stream Slate — game release & stream-pace calendar (Cloudflare Worker + KV).",
+  "scripts": {
+    "dev": "wrangler dev --local --test-scheduled",
+    "deploy": "wrangler deploy"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^4.99.0"
+  }
+}

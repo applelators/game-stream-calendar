@@ -116,11 +116,14 @@ Opening `public/index.html` as a `file://` URL fails (it fetches `.jsx`); always
 
 ## Deploy
 
+**Auto-deploys via Cloudflare Workers Builds**: pushing to `main` triggers Cloudflare to run
+`npx wrangler deploy` (Git integration configured in the dashboard — no CI file in-repo, same
+pattern as pokemon-pack-tracker). So normal workflow is just commit + push to main.
+
+Manual deploy (first-time, or to ship without a push):
 ```bash
-npx wrangler deploy      # provisions slate.nabunan.com + registers the cron
+npm run deploy           # = wrangler deploy; provisions slate.nabunan.com + registers the cron
 ```
-**Deploy is manual** — pushing to GitHub does NOT auto-deploy this repo (unlike
-pokemon-pack-tracker). Git is version control; `wrangler deploy` is what ships.
 
 ---
 
