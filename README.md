@@ -1,5 +1,7 @@
 # Stream Slate — Game Release & Stream-Schedule Calendar
 
+**Live:** https://slate.nabunan.com · auto-deploys from `main` via Cloudflare Workers Builds.
+
 A calendar of upcoming games to stream, with an estimate of how long each will take
 to **finish on stream** — both as a number of streams and a real-world window — based
 on @nabunan's actual rolling 90-day Twitch pace.
