@@ -153,3 +153,33 @@ input, select, textarea { font-family: inherit; }
 .toggle-line { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; }
 .toggle-line input { width: 16px; height: 16px; accent-color: var(--accent); }
 .src-pill { font-size: 0.66rem; font-family: var(--mono); padding: 2px 7px; border-radius: 99px; background: var(--panel-3); color: var(--muted); }
+
+/* ---- mobile: month grid full-width, edge-to-edge, vertical month scroll ---- */
+@media (max-width: 640px) {
+  /* claw back horizontal space so the 7 day columns get the full screen width */
+  .app { padding: 8px 4px 40px; }
+  .hdr { gap: 7px; margin-bottom: 6px; }
+  .hdr-title { font-size: 1.2rem; width: 100%; }
+  .hdr-sub { font-size: 0.74rem; margin: 1px 0 10px; }
+  .seg button { padding: 6px 11px; font-size: 0.78rem; }
+  .btn { padding: 7px 11px; }
+
+  /* one month per row; the page scrolls vertically through them continuously */
+  .mg-wrap { grid-template-columns: 1fr; gap: 8px; }
+  .mg-card { border-radius: 10px; border-left: 0; border-right: 0; }
+  /* keep the month label visible while you scroll that month */
+  .mg-head { position: sticky; top: 0; z-index: 2; font-size: 1rem; padding: 9px 12px; }
+  .mg-dow { padding: 7px 4px 0; }
+  .mg-dow span { font-size: 0.74rem; }
+  .mg-grid { gap: 2px; padding: 4px; }
+  .mg-cell { border-radius: 5px; padding: 3px 2px; min-height: 44px; }
+  .mg-cell .dnum { font-size: 0.78rem; }
+  .mg-rel { left: 1px; right: 1px; bottom: 1px; gap: 1px; }
+  .mg-pill { font-size: 0.6rem; padding: 1px 3px; }
+
+  /* timeline is horizontally scrolly; trim its label column on small screens */
+  .tl-scroll { --label-w: 128px !important; }
+
+  /* modals use the full width on phones */
+  .scrim { padding: 14px 8px; }
+}
