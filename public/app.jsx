@@ -501,82 +501,152 @@ function daysInMonth(d) {
 // Month grid
 // ============================================================================
 const DOW = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+const DOW_FULL = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+
+// Re-render when crossing the mobile breakpoint so we can swap layouts.
+function useIsMobile() {
+  const q = '(max-width: 640px)';
+  const has = typeof window !== 'undefined' && window.matchMedia;
+  const [m, setM] = useState(() => (has ? window.matchMedia(q).matches : false));
+  useEffect(() => {
+    if (!has) return;
+    const mq = window.matchMedia(q);
+    const on = (e) => setM(e.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
+  return m;
+}
+
+const dayKey = (d) => `${d.getUTCFullYear()}-${d.getUTCMonth()}-${d.getUTCDate()}`;
+const firstOfMonth = (d) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1));
 
 function MonthGridView({ games, pace, onPick }) {
-  const placeable = games.filter((g) => isPlaceable(g.release));
-  const rail = games.filter((g) => !isPlaceable(g.release));
-  // Use true-date positions for the calendar (release reality).
-  const positions = schedule(placeable, pace, 'parallel');
+  const isMobile = useIsMobile();
+  const [cursor, setCursor] = useState(() => firstOfMonth(new Date()));
 
-  let min = null, max = null;
-  for (const g of placeable) {
-    const p = positions[g.id]; if (!p) continue;
-    if (!min || p.start < min) min = p.start;
-    if (!max || p.end > max) max = p.end;
-  }
+  const placeable = useMemo(() => games.filter((g) => isPlaceable(g.release)), [games]);
+  const rail = useMemo(() => games.filter((g) => !isPlaceable(g.release)), [games]);
+  const positions = useMemo(() => schedule(placeable, pace, 'parallel'), [placeable, pace]);
+
+  // releasesByDay + the set of days inside any play-window + the overall span.
+  const { releasesByDay, winDays, min, max } = useMemo(() => {
+    const rbd = {}, wd = new Set();
+    let mn = null, mx = null;
+    for (const g of placeable) {
+      const a = anchorDate(g.release);
+      if (a) { const k = dayKey(a); (rbd[k] = rbd[k] || []).push(g); }
+      const p = positions[g.id];
+      if (p) {
+        if (!mn || p.start < mn) mn = p.start;
+        if (!mx || p.end > mx) mx = p.end;
+        for (let d = new Date(p.start); d < p.end; d = addDays(d, 1)) wd.add(dayKey(d));
+      }
+    }
+    return { releasesByDay: rbd, winDays: wd, min: mn, max: mx };
+  }, [placeable, positions]);
+
+  const now = new Date();
+  const tY = now.getFullYear(), tM = now.getMonth(), tD = now.getDate();
+
   if (!min) {
-    return <div>
-      <div className="tl-wrap"><div className="mg-empty">No dated games to show on the grid.</div></div>
-      {rail.length > 0 && <RailBlock rail={rail} onPick={onPick} />}
-    </div>;
+    return (
+      <div>
+        <div className="tl-wrap"><div className="mg-empty">No dated games to show on the grid.</div></div>
+        {rail.length > 0 && <RailBlock rail={rail} onPick={onPick} />}
+      </div>
+    );
   }
 
-  const months = [];
-  let m = new Date(Date.UTC(min.getUTCFullYear(), min.getUTCMonth(), 1));
-  const end = new Date(Date.UTC(max.getUTCFullYear(), max.getUTCMonth(), 1));
-  while (m <= end) { months.push(new Date(m)); m = new Date(Date.UTC(m.getUTCFullYear(), m.getUTCMonth() + 1, 1)); }
-  const today = new Date();
-
-  // Map: 'YYYY-M-D' -> [games releasing that day]
-  const releasesByDay = {};
-  for (const g of placeable) {
-    const a = anchorDate(g.release); if (!a) continue;
-    const key = `${a.getUTCFullYear()}-${a.getUTCMonth()}-${a.getUTCDate()}`;
-    (releasesByDay[key] = releasesByDay[key] || []).push(g);
+  // ---- mobile: full-width months stacked, continuous vertical scroll ----
+  if (isMobile) {
+    const months = [];
+    let m = firstOfMonth(min);
+    const end = firstOfMonth(max);
+    while (m <= end) { months.push(m); m = new Date(Date.UTC(m.getUTCFullYear(), m.getUTCMonth() + 1, 1)); }
+    return (
+      <div>
+        <div className="mg-wrap">
+          {months.map((mo, i) => {
+            const y = mo.getUTCFullYear(), mon = mo.getUTCMonth();
+            const first = new Date(Date.UTC(y, mon, 1)).getUTCDay();
+            const dim = daysInMonth(mo);
+            const cells = [];
+            for (let p = 0; p < first; p++) cells.push(<div className="mg-cell pad" key={'p' + p} />);
+            let monthCount = 0;
+            for (let d = 1; d <= dim; d++) {
+              const day = new Date(Date.UTC(y, mon, d));
+              const rel = releasesByDay[`${y}-${mon}-${d}`] || [];
+              monthCount += rel.length;
+              const isToday = y === tY && mon === tM && d === tD;
+              cells.push(
+                <div key={d} className={'mg-cell' + (winDays.has(dayKey(day)) ? ' win' : '') + (isToday ? ' today' : '')}>
+                  <span className="dnum">{d}</span>
+                  {rel.length > 0 && (
+                    <div className="mg-rel">
+                      {rel.slice(0, 2).map((g) => (
+                        <span key={g.id} className="mg-pill" style={{ background: KIND_COLOR[g.kind] }}
+                          onClick={() => onPick(g.id)} title={g.title}>{g.title}</span>
+                      ))}
+                      {rel.length > 2 && <span className="mg-pill" style={{ background: 'var(--panel-3)', color: 'var(--muted)' }}>+{rel.length - 2}</span>}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+            return (
+              <div className="mg-card" key={i}>
+                <div className="mg-head">{MONTHS_LONG[mon]} {y}<span className="cnt">{monthCount} release{monthCount === 1 ? '' : 's'}</span></div>
+                <div className="mg-dow">{DOW.map((d) => <span key={d}>{d}</span>)}</div>
+                <div className="mg-grid">{cells}</div>
+              </div>
+            );
+          })}
+        </div>
+        {rail.length > 0 && <RailBlock rail={rail} onPick={onPick} />}
+      </div>
+    );
   }
-  const inWindow = (day) => placeable.some((g) => {
-    const p = positions[g.id]; return p && day >= p.start && day < p.end;
-  });
+
+  // ---- desktop: one big Google-Calendar-style month with prev/next nav ----
+  const cy = cursor.getUTCFullYear(), cm = cursor.getUTCMonth();
+  const gridStart = addDays(firstOfMonth(cursor), -new Date(Date.UTC(cy, cm, 1)).getUTCDay());
+  const cells = [];
+  let monthCount = 0;
+  for (let i = 0; i < 42; i++) {       // always six weeks, like Google Calendar
+    const day = addDays(gridStart, i);
+    const y = day.getUTCFullYear(), mon = day.getUTCMonth(), d = day.getUTCDate();
+    const inMonth = mon === cm;
+    const rel = releasesByDay[`${y}-${mon}-${d}`] || [];
+    if (inMonth) monthCount += rel.length;
+    const isToday = y === tY && mon === tM && d === tD;
+    cells.push(
+      <div key={i} className={'gc-cell' + (inMonth ? '' : ' oth') + (winDays.has(dayKey(day)) ? ' win' : '') + (isToday ? ' today' : '')}>
+        <span className="gc-dnum">{d === 1 ? `${MONTHS[mon]} 1` : d}</span>
+        {rel.slice(0, 4).map((g) => (
+          <div key={g.id} className={`gc-ev k-${g.kind}`} onClick={() => onPick(g.id)}
+            title={`${g.title} — ${releaseLabel(g.release)}`}>{g.title}</div>
+        ))}
+        {rel.length > 4 && <div className="gc-more">+{rel.length - 4} more</div>}
+      </div>
+    );
+  }
+  const go = (delta) => setCursor(new Date(Date.UTC(cy, cm + delta, 1)));
 
   return (
     <div>
-      <div className="mg-wrap">
-        {months.map((mo, i) => {
-          const y = mo.getUTCFullYear(), mon = mo.getUTCMonth();
-          const first = new Date(Date.UTC(y, mon, 1)).getUTCDay();
-          const dim = daysInMonth(mo);
-          const cells = [];
-          for (let p = 0; p < first; p++) cells.push(<div className="mg-cell pad" key={'p' + p} />);
-          let monthCount = 0;
-          for (let d = 1; d <= dim; d++) {
-            const day = new Date(Date.UTC(y, mon, d));
-            const key = `${y}-${mon}-${d}`;
-            const rel = releasesByDay[key] || [];
-            monthCount += rel.length;
-            const isToday = day.getUTCFullYear() === today.getUTCFullYear() && mon === today.getUTCMonth() && d === today.getUTCDate();
-            cells.push(
-              <div key={d} className={'mg-cell' + (inWindow(day) ? ' win' : '') + (isToday ? ' today' : '')}>
-                <span className="dnum">{d}</span>
-                {rel.length > 0 && (
-                  <div className="mg-rel">
-                    {rel.slice(0, 2).map((g) => (
-                      <span key={g.id} className="mg-pill" style={{ background: KIND_COLOR[g.kind] }}
-                        onClick={() => onPick(g.id)} title={g.title}>{g.title}</span>
-                    ))}
-                    {rel.length > 2 && <span className="mg-pill" style={{ background: 'var(--panel-3)', color: 'var(--muted)' }}>+{rel.length - 2}</span>}
-                  </div>
-                )}
-              </div>
-            );
-          }
-          return (
-            <div className="mg-card" key={i}>
-              <div className="mg-head">{MONTHS_LONG[mon]} {y}<span className="cnt">{monthCount} release{monthCount === 1 ? '' : 's'}</span></div>
-              <div className="mg-dow">{DOW.map((d) => <span key={d}>{d}</span>)}</div>
-              <div className="mg-grid">{cells}</div>
-            </div>
-          );
-        })}
+      <div className="gc-bar">
+        <button className="gc-today" onClick={() => setCursor(firstOfMonth(new Date()))}>Today</button>
+        <div className="gc-nav">
+          <button onClick={() => go(-1)} aria-label="Previous month">‹</button>
+          <button onClick={() => go(1)} aria-label="Next month">›</button>
+        </div>
+        <div className="gc-title">{MONTHS_LONG[cm]} {cy}</div>
+        <div className="gc-cnt">{monthCount} release{monthCount === 1 ? '' : 's'} this month</div>
+      </div>
+      <div className="gc-cal">
+        <div className="gc-dow">{DOW_FULL.map((d) => <span key={d}>{d}</span>)}</div>
+        <div className="gc-grid">{cells}</div>
       </div>
       {rail.length > 0 && <RailBlock rail={rail} onPick={onPick} />}
     </div>
