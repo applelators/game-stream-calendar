@@ -550,32 +550,66 @@ function useIsMobile() {
 const dayKey = (d) => `${d.getUTCFullYear()}-${d.getUTCMonth()}-${d.getUTCDate()}`;
 const firstOfMonth = (d) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1));
 
+function vacLabelFor(day, vacs) {
+  const v = (vacs || []).find((x) => day >= x.start && day < x.end);
+  return v && v.label ? v.label : 'Away';
+}
+
+// What's happening on a given calendar day: vacation, the game being streamed,
+// and whether this cell is the start of a stretch (so we label it once).
+function dayInfo(day, ctx) {
+  const k = dayKey(day);
+  const prev = addDays(day, -1);
+  const releases = ctx.releasesByDay[k] || [];
+  if (inVacation(day, ctx.vacations)) {
+    return { vac: true, vacRunStart: !inVacation(prev, ctx.vacations), vacLabel: vacLabelFor(day, ctx.vacations), releases };
+  }
+  const playId = ctx.playByDay[k];
+  if (!playId) return { releases, play: null };
+  const play = ctx.gameById[playId];
+  const prevPlay = inVacation(prev, ctx.vacations) ? null : ctx.playByDay[dayKey(prev)];
+  const changed = playId !== prevPlay;
+  const weekStart = day.getUTCDay() === 0;
+  const released = releases.some((r) => r.id === playId);
+  return {
+    releases, play,
+    runStart: changed || weekStart,
+    releaseStart: changed && released,
+    resume: changed && !released,
+    wrap: !changed && weekStart,
+  };
+}
+
 function MonthGridView({ games, pace, vacations, onPick }) {
   const isMobile = useIsMobile();
 
   const placeable = useMemo(() => games.filter((g) => isPlaceable(g.release)), [games]);
   const rail = useMemo(() => games.filter((g) => !isPlaceable(g.release)), [games]);
-  const positions = useMemo(() => schedule(placeable, pace, 'parallel', vacations), [placeable, pace, vacations]);
 
-  // releasesByDay + the set of days inside any play-window + the overall span.
-  const { releasesByDay, winDays, min, max } = useMemo(() => {
-    const rbd = {}, wd = new Set();
+  // The realistic one-game-per-day plan (release-priority queue) drives the
+  // calendar: each stream day maps to the game you'll actually be playing.
+  const { releasesByDay, playByDay, gameById, min, max } = useMemo(() => {
+    const pos = schedule(placeable, pace, 'sequential', vacations);
+    const rbd = {}, pbd = {}, gbi = {};
     let mn = null, mx = null;
     for (const g of placeable) {
+      gbi[g.id] = g;
       const a = anchorDate(g.release);
       if (a) { const k = dayKey(a); (rbd[k] = rbd[k] || []).push(g); }
-      const p = positions[g.id];
-      if (p) {
-        if (!mn || p.start < mn) mn = p.start;
-        if (!mx || p.end > mx) mx = p.end;
-        for (let d = new Date(p.start); d < p.end; d = addDays(d, 1)) wd.add(dayKey(d));
-      }
+      const p = pos[g.id];
+      if (!p) continue;
+      if (!mn || p.start < mn) mn = p.start;
+      if (!mx || p.end > mx) mx = p.end;
+      if (g.kind === 'event') continue; // events are background, not the daily game
+      for (const seg of p.segments)
+        for (let d = new Date(seg.start); d < seg.end; d = addDays(d, 1)) pbd[dayKey(d)] = g.id;
     }
-    return { releasesByDay: rbd, winDays: wd, min: mn, max: mx };
-  }, [placeable, positions]);
+    return { releasesByDay: rbd, playByDay: pbd, gameById: gbi, min: mn, max: mx };
+  }, [placeable, pace, vacations]);
 
   const now = new Date();
   const tY = now.getFullYear(), tM = now.getMonth(), tD = now.getDate();
+  const ctx = { vacations, playByDay, gameById, releasesByDay };
 
   if (!min) {
     return (
@@ -594,6 +628,7 @@ function MonthGridView({ games, pace, vacations, onPick }) {
     while (m <= end) { months.push(m); m = new Date(Date.UTC(m.getUTCFullYear(), m.getUTCMonth() + 1, 1)); }
     return (
       <div>
+        <div className="cal-legend">Colored band = the game you’ll stream that day · hatched = vacation · ★ = release</div>
         <div className="mg-wrap">
           {months.map((mo, i) => {
             const y = mo.getUTCFullYear(), mon = mo.getUTCMonth();
@@ -604,21 +639,18 @@ function MonthGridView({ games, pace, vacations, onPick }) {
             let monthCount = 0;
             for (let d = 1; d <= dim; d++) {
               const day = new Date(Date.UTC(y, mon, d));
-              const rel = releasesByDay[`${y}-${mon}-${d}`] || [];
-              monthCount += rel.length;
+              const info = dayInfo(day, ctx);
+              monthCount += info.releases.length;
               const isToday = y === tY && mon === tM && d === tD;
-              const vac = inVacation(day, vacations);
+              const cls = 'mg-cell' + (info.vac ? ' vac' : info.play ? ` play-${info.play.kind}` : '') + (isToday ? ' today' : '');
               cells.push(
-                <div key={d} className={'mg-cell' + (vac ? ' vac' : winDays.has(dayKey(day)) ? ' win' : '') + (isToday ? ' today' : '')}>
-                  <span className="dnum">{d}</span>
-                  {rel.length > 0 && (
-                    <div className="mg-rel">
-                      {rel.slice(0, 2).map((g) => (
-                        <span key={g.id} className="mg-pill" style={{ background: KIND_COLOR[g.kind] }}
-                          onClick={() => onPick(g.id)} title={g.title}>{g.title}</span>
-                      ))}
-                      {rel.length > 2 && <span className="mg-pill" style={{ background: 'var(--panel-3)', color: 'var(--muted)' }}>+{rel.length - 2}</span>}
-                    </div>
+                <div key={d} className={cls}>
+                  <span className="dnum">{d}{info.releases.length ? <span className="relstar">★</span> : null}</span>
+                  {info.vac && info.vacRunStart && <span className="mg-pill nowvac" title={info.vacLabel}>✈ {info.vacLabel}</span>}
+                  {!info.vac && info.runStart && info.play && (
+                    <span className="mg-pill" style={{ background: KIND_COLOR[info.play.kind] }}
+                      onClick={() => onPick(info.play.id)} title={info.play.title}>
+                      {(info.releaseStart ? '★ ' : info.resume ? '↩ ' : '… ') + info.play.title}</span>
                   )}
                 </div>
               );
@@ -657,6 +689,7 @@ function MonthGridView({ games, pace, vacations, onPick }) {
         <button className="gc-today" onClick={scrollToToday}>Jump to today</button>
         <div className="gc-cnt">{totalCount} release{totalCount === 1 ? '' : 's'} · scroll for more months ↓</div>
       </div>
+      <div className="cal-legend">Each day is tinted with the game you’ll be streaming (band length = how long it takes) · <span className="lg-vac">hatched</span> = vacation · ★ = release day</div>
       {/* weekday header stays pinned while you scroll through every month */}
       <div className="gc-weekbar">{DOW_FULL.map((d) => <span key={d}>{d}</span>)}</div>
       <div className="gc-stack">
@@ -669,18 +702,20 @@ function MonthGridView({ games, pace, vacations, onPick }) {
           for (let p = 0; p < first; p++) cells.push(<div className="gc-cell pad" key={'p' + p} />);
           for (let d = 1; d <= dim; d++) {
             const day = new Date(Date.UTC(y, mon, d));
-            const rel = releasesByDay[`${y}-${mon}-${d}`] || [];
-            monthCount += rel.length;
+            const info = dayInfo(day, ctx);
+            monthCount += info.releases.length;
             const isToday = y === tY && mon === tM && d === tD;
-            const vac = inVacation(day, vacations);
+            const cls = 'gc-cell' + (info.vac ? ' vac' : info.play ? ` play-${info.play.kind}` : '') + (isToday ? ' today' : '');
+            const relTitles = info.releases.map((r) => r.title).join(', ');
             cells.push(
-              <div key={d} className={'gc-cell' + (vac ? ' vac' : winDays.has(dayKey(day)) ? ' win' : '') + (isToday ? ' today' : '')}>
-                <span className="gc-dnum">{d}</span>
-                {rel.slice(0, 4).map((g) => (
-                  <div key={g.id} className={`gc-ev k-${g.kind}`} onClick={() => onPick(g.id)}
-                    title={`${g.title} — ${releaseLabel(g.release)}`}>{g.title}</div>
-                ))}
-                {rel.length > 4 && <div className="gc-more">+{rel.length - 4} more</div>}
+              <div key={d} className={cls}>
+                <span className="gc-dnum" title={relTitles || undefined}>{d}{info.releases.length ? <span className="gc-relstar">★</span> : null}</span>
+                {info.vac && info.vacRunStart && <div className="gc-away">✈ {info.vacLabel}</div>}
+                {!info.vac && info.runStart && info.play && (
+                  <div className={`gc-ev k-${info.play.kind}`} onClick={() => onPick(info.play.id)}
+                    title={`Streaming ${info.play.title}`}>
+                    {(info.releaseStart ? '★ ' : info.resume ? '↩ ' : info.wrap ? '… ' : '') + info.play.title}</div>
+                )}
               </div>
             );
           }

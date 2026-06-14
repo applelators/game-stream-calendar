@@ -236,6 +236,19 @@ input, select, textarea { font-family: inherit; }
   background-color: #11151f;
   background-image: repeating-linear-gradient(45deg, #8b97ab1f, #8b97ab1f 6px, #8b97ab00 6px, #8b97ab00 12px); }
 
+/* "now playing" tint per kind — a run of same-tinted days = how long it takes */
+.gc-cell.play-game,   .mg-cell.play-game   { background-color: rgba(169, 112, 255, 0.17); }
+.gc-cell.play-replay, .mg-cell.play-replay { background-color: rgba(59, 111, 224, 0.18); }
+.gc-cell.play-dlc,    .mg-cell.play-dlc    { background-color: rgba(52, 211, 153, 0.15); }
+.gc-cell.play-event,  .mg-cell.play-event  { background-color: rgba(245, 177, 76, 0.15); }
+.gc-relstar { color: var(--accent); font-size: 0.72rem; margin-left: 4px; }
+.mg-cell .relstar { color: var(--accent); font-size: 0.6rem; margin-left: 2px; }
+.gc-away { font-size: 0.72rem; color: var(--muted); font-weight: 700; }
+.mg-pill.nowvac { background: var(--panel-3); color: var(--muted); }
+.cal-legend { font-size: 0.72rem; color: var(--faint); margin: 0 2px 12px; }
+.cal-legend .lg-vac { padding: 0 5px; border-radius: 3px; color: var(--muted);
+  background: repeating-linear-gradient(45deg, #8b97ab40, #8b97ab40 3px, transparent 3px, transparent 6px); }
+
 .set-divider { height: 1px; background: var(--border-solid); margin: 4px 0 2px; }
 .set-h { font-family: var(--display); font-weight: 700; font-size: 0.95rem; }
 .vac-list { display: flex; flex-direction: column; gap: 8px; }
