@@ -315,8 +315,13 @@ function App() {
     return () => clearTimeout(t);
   }, [games, settings, loaded]);
 
-  const ep = effectivePace(settings, pace);
+  const ep = useMemo(() => effectivePace(settings, pace), [settings, pace]);
   const normVacs = useMemo(() => normalizeVacations(settings.vacations), [settings.vacations]);
+  // Realistic release-priority finish per game (for the detail card).
+  const seqPositions = useMemo(
+    () => schedule(games.filter((g) => isPlaceable(g.release)), ep, 'sequential', normVacs),
+    [games, ep, normVacs]
+  );
 
   const upsertGame = useCallback((g) => {
     setGames((gs) => {
@@ -373,7 +378,7 @@ function App() {
           onDelete={(id) => { removeGame(id); setEditing(null); }} />
       )}
       {detailGame && (
-        <DetailCard game={detailGame} pace={ep} vacations={normVacs}
+        <DetailCard game={detailGame} pace={ep} vacations={normVacs} queuedPos={seqPositions[detailGame.id]}
           onClose={() => setDetail(null)}
           onEdit={() => { setEditing(detailGame); setDetail(null); }} />
       )}
@@ -712,11 +717,13 @@ function RailBlock({ rail, onPick }) {
 // ============================================================================
 // Detail card
 // ============================================================================
-function DetailCard({ game: g, pace, vacations, onClose, onEdit }) {
+function DetailCard({ game: g, pace, vacations, queuedPos, onClose, onEdit }) {
   const strk = streamsToFinish(g.hltbHours, pace);
   const wks = weeksToFinish(g.hltbHours, pace);
   const start = anchorDate(g.release);
-  const finish = start ? gameEnd(g, start, pace, vacations) : null;
+  const earliest = start ? gameEnd(g, start, pace, vacations) : null;
+  const queued = queuedPos ? queuedPos.end : null;
+  const parts = queuedPos && queuedPos.segments ? queuedPos.segments.length : 1;
   return (
     <div className="scrim" onClick={onClose}>
       <div className="modal detail" onClick={(e) => e.stopPropagation()}>
@@ -732,8 +739,21 @@ function DetailCard({ game: g, pace, vacations, onClose, onEdit }) {
             <div className="dt-stats">
               <div className="dt-stat"><div className="k">HowLongToBeat</div><div className="v">{g.hltbHours}<small> h</small></div></div>
               <div className="dt-stat"><div className="k">Streams to finish</div><div className="v">{strk}</div></div>
-              <div className="dt-stat"><div className="k">≈ Real time</div><div className="v">{wks < 1.05 ? Math.round(wks * 7) + 'd' : wks.toFixed(1) + 'w'}</div></div>
-              <div className="dt-stat"><div className="k">Est. finish</div><div className="v" style={{ fontSize: '1rem' }}>{finish ? fmtDate(finish) : '—'}</div></div>
+              {queued ? (
+                <React.Fragment>
+                  <div className="dt-stat"><div className="k">Earliest finish</div>
+                    <div className="v" style={{ fontSize: '1rem' }}>{earliest ? fmtDate(earliest) : '—'}</div>
+                    <div className="dt-sub">straight through from release</div></div>
+                  <div className="dt-stat"><div className="k">Queued finish</div>
+                    <div className="v" style={{ fontSize: '1rem' }}>{fmtDate(queued)}</div>
+                    <div className="dt-sub">release-priority{parts > 1 ? ` · ${parts} parts` : ''}</div></div>
+                </React.Fragment>
+              ) : (
+                <React.Fragment>
+                  <div className="dt-stat"><div className="k">≈ Real time</div><div className="v">{wks < 1.05 ? Math.round(wks * 7) + 'd' : wks.toFixed(1) + 'w'}</div></div>
+                  <div className="dt-stat"><div className="k">Est. finish</div><div className="v" style={{ fontSize: '1rem' }}>{earliest ? fmtDate(earliest) : '—'}</div></div>
+                </React.Fragment>
+              )}
             </div>
           )}
 

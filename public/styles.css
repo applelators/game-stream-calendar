@@ -180,6 +180,7 @@ input, select, textarea { font-family: inherit; }
 .dt-stat .k { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--faint); font-weight: 700; }
 .dt-stat .v { font-family: var(--display); font-size: 1.35rem; font-weight: 700; margin-top: 2px; }
 .dt-stat .v small { font-size: 0.7rem; color: var(--muted); font-weight: 500; }
+.dt-stat .dt-sub { font-size: 0.62rem; color: var(--faint); margin-top: 3px; line-height: 1.2; }
 .dt-list { display: flex; flex-direction: column; gap: 8px; }
 .dt-line { font-size: 0.84rem; }
 .dt-line .k { color: var(--muted); font-weight: 600; margin-right: 6px; }
