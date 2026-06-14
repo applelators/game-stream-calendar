@@ -523,7 +523,6 @@ const firstOfMonth = (d) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(
 
 function MonthGridView({ games, pace, onPick }) {
   const isMobile = useIsMobile();
-  const [cursor, setCursor] = useState(() => firstOfMonth(new Date()));
 
   const placeable = useMemo(() => games.filter((g) => isPlaceable(g.release)), [games]);
   const rail = useMemo(() => games.filter((g) => !isPlaceable(g.release)), [games]);
@@ -608,45 +607,60 @@ function MonthGridView({ games, pace, onPick }) {
     );
   }
 
-  // ---- desktop: one big Google-Calendar-style month with prev/next nav ----
-  const cy = cursor.getUTCFullYear(), cm = cursor.getUTCMonth();
-  const gridStart = addDays(firstOfMonth(cursor), -new Date(Date.UTC(cy, cm, 1)).getUTCDay());
-  const cells = [];
-  let monthCount = 0;
-  for (let i = 0; i < 42; i++) {       // always six weeks, like Google Calendar
-    const day = addDays(gridStart, i);
-    const y = day.getUTCFullYear(), mon = day.getUTCMonth(), d = day.getUTCDate();
-    const inMonth = mon === cm;
-    const rel = releasesByDay[`${y}-${mon}-${d}`] || [];
-    if (inMonth) monthCount += rel.length;
-    const isToday = y === tY && mon === tM && d === tD;
-    cells.push(
-      <div key={i} className={'gc-cell' + (inMonth ? '' : ' oth') + (winDays.has(dayKey(day)) ? ' win' : '') + (isToday ? ' today' : '')}>
-        <span className="gc-dnum">{d === 1 ? `${MONTHS[mon]} 1` : d}</span>
-        {rel.slice(0, 4).map((g) => (
-          <div key={g.id} className={`gc-ev k-${g.kind}`} onClick={() => onPick(g.id)}
-            title={`${g.title} — ${releaseLabel(g.release)}`}>{g.title}</div>
-        ))}
-        {rel.length > 4 && <div className="gc-more">+{rel.length - 4} more</div>}
-      </div>
-    );
+  // ---- desktop: continuous vertical stack of large Google-Calendar months ----
+  const months = [];
+  {
+    let m = firstOfMonth(min);
+    const end = firstOfMonth(max);
+    while (m <= end) { months.push(m); m = new Date(Date.UTC(m.getUTCFullYear(), m.getUTCMonth() + 1, 1)); }
   }
-  const go = (delta) => setCursor(new Date(Date.UTC(cy, cm + delta, 1)));
+  let totalCount = 0;
+  for (const k in releasesByDay) totalCount += releasesByDay[k].length;
+  const scrollToToday = () => {
+    const el = document.getElementById(`gcm-${tY}-${tM}`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   return (
     <div>
       <div className="gc-bar">
-        <button className="gc-today" onClick={() => setCursor(firstOfMonth(new Date()))}>Today</button>
-        <div className="gc-nav">
-          <button onClick={() => go(-1)} aria-label="Previous month">‹</button>
-          <button onClick={() => go(1)} aria-label="Next month">›</button>
-        </div>
-        <div className="gc-title">{MONTHS_LONG[cm]} {cy}</div>
-        <div className="gc-cnt">{monthCount} release{monthCount === 1 ? '' : 's'} this month</div>
+        <button className="gc-today" onClick={scrollToToday}>Jump to today</button>
+        <div className="gc-cnt">{totalCount} release{totalCount === 1 ? '' : 's'} · scroll for more months ↓</div>
       </div>
-      <div className="gc-cal">
-        <div className="gc-dow">{DOW_FULL.map((d) => <span key={d}>{d}</span>)}</div>
-        <div className="gc-grid">{cells}</div>
+      {/* weekday header stays pinned while you scroll through every month */}
+      <div className="gc-weekbar">{DOW_FULL.map((d) => <span key={d}>{d}</span>)}</div>
+      <div className="gc-stack">
+        {months.map((mo, idx) => {
+          const y = mo.getUTCFullYear(), mon = mo.getUTCMonth();
+          const first = new Date(Date.UTC(y, mon, 1)).getUTCDay();
+          const dim = daysInMonth(mo);
+          let monthCount = 0;
+          const cells = [];
+          for (let p = 0; p < first; p++) cells.push(<div className="gc-cell pad" key={'p' + p} />);
+          for (let d = 1; d <= dim; d++) {
+            const day = new Date(Date.UTC(y, mon, d));
+            const rel = releasesByDay[`${y}-${mon}-${d}`] || [];
+            monthCount += rel.length;
+            const isToday = y === tY && mon === tM && d === tD;
+            cells.push(
+              <div key={d} className={'gc-cell' + (winDays.has(dayKey(day)) ? ' win' : '') + (isToday ? ' today' : '')}>
+                <span className="gc-dnum">{d}</span>
+                {rel.slice(0, 4).map((g) => (
+                  <div key={g.id} className={`gc-ev k-${g.kind}`} onClick={() => onPick(g.id)}
+                    title={`${g.title} — ${releaseLabel(g.release)}`}>{g.title}</div>
+                ))}
+                {rel.length > 4 && <div className="gc-more">+{rel.length - 4} more</div>}
+              </div>
+            );
+          }
+          return (
+            <div className="gc-month" id={`gcm-${y}-${mon}`} key={idx}>
+              <div className="gc-mhead">{MONTHS_LONG[mon]} {y}
+                <span className="gc-headcnt">{monthCount} release{monthCount === 1 ? '' : 's'}</span></div>
+              <div className="gc-grid">{cells}</div>
+            </div>
+          );
+        })}
       </div>
       {rail.length > 0 && <RailBlock rail={rail} onPick={onPick} />}
     </div>
