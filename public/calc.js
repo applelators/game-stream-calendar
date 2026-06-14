@@ -147,32 +147,88 @@ function gameEnd(game, start, pace, normVacs) {
   return addActiveDays(start, activeDays, normVacs);
 }
 
+// Streaming days needed to finish a game at the current pace.
+function activeDaysFor(game, pace) {
+  return Math.max(1, Math.round(daysToFinish(game.hltbHours, pace)));
+}
+
+// Each position is { start, end, segments:[{start,end}] }. Parallel/event games
+// have a single segment; a preempted game in the queue has several.
+//
 // Parallel ("true dates"): every scheduled game sits on its real release date.
-// Returns { [id]: { start: Date, end: Date } } for scheduled games only.
 function scheduleParallel(games, pace, normVacs) {
   const out = {};
   for (const g of games) {
     const start = anchorDate(g.release);
     if (!start) continue;
-    out[g.id] = { start, end: gameEnd(g, start, pace, normVacs) };
+    const end = gameEnd(g, start, pace, normVacs);
+    out[g.id] = { start, end, segments: [{ start, end }] };
   }
   return out;
 }
 
-// Sequential ("my queue"): release order, but a game can't start until the
-// previous one is finished — surfaces the realistic backlog.
+// Sequential ("my queue"): NEW RELEASES TAKE PRIORITY. On a game's release day you
+// drop whatever you're playing and start the new one; the interrupted game is
+// paused and resumed (most-recent-first) once the newer game is finished — so a
+// game can be split into several segments. Vacations make no progress; events
+// keep their fixed window and don't take part in the queue.
 function scheduleSequential(games, pace, normVacs) {
-  const scheduled = games
-    .filter((g) => isScheduled(g.release))
-    .sort((a, b) => anchorDate(a.release) - anchorDate(b.release));
   const out = {};
-  let cursor = null; // end of previously queued game
-  for (const g of scheduled) {
-    const release = anchorDate(g.release);
-    const start = cursor && cursor > release ? cursor : release;
-    const end = gameEnd(g, start, pace, normVacs);
-    out[g.id] = { start, end };
-    cursor = end;
+  const playable = [];
+  for (const g of games) {
+    const start = anchorDate(g.release);
+    if (!start) continue;
+    if (g.kind === 'event') {
+      const end = gameEnd(g, start, pace, normVacs);
+      out[g.id] = { start, end, segments: [{ start, end }] };
+    } else {
+      playable.push({ id: g.id, release: start, remaining: activeDaysFor(g, pace), open: null });
+    }
+  }
+  if (playable.length === 0) return out;
+  playable.sort((a, b) => (a.release - b.release) || (a.id < b.id ? -1 : 1));
+
+  const segs = {};
+  for (const p of playable) segs[p.id] = [];
+  const closeSeg = (p, end) => { if (p.open && end > p.open) segs[p.id].push({ start: p.open, end }); p.open = null; };
+
+  let idx = 0, cur = null, guard = 0;
+  const stack = [];
+  let day = new Date(playable[0].release);
+
+  while (guard++ < 200000) {
+    // 1) releases today preempt the current game (priority on release day)
+    while (idx < playable.length && playable[idx].release <= day) {
+      const next = playable[idx++];
+      if (cur) { closeSeg(cur, day); stack.push(cur); }
+      cur = next; cur.open = new Date(day);
+    }
+    // 2) nothing active -> jump to the next release, or stop if none remain
+    if (!cur) {
+      if (idx < playable.length) { day = new Date(playable[idx].release); continue; }
+      break;
+    }
+    // 3) play the current game for the day (no progress during vacations)
+    if (!inVacation(day, normVacs)) {
+      cur.remaining -= 1;
+      if (cur.remaining <= 0) {
+        const fin = addDays(day, 1);
+        closeSeg(cur, fin);
+        cur = stack.length ? stack.pop() : null;
+        if (cur) cur.open = new Date(fin);
+        day = fin;
+        continue;
+      }
+    }
+    day = addDays(day, 1);
+  }
+  if (cur && cur.open) closeSeg(cur, day);
+  for (const p of stack) if (p.open) closeSeg(p, day);
+
+  for (const p of playable) {
+    let s = segs[p.id];
+    if (s.length === 0) { const e = addDays(p.release, 1); s = [{ start: p.release, end: e }]; }
+    out[p.id] = { start: s[0].start, end: s[s.length - 1].end, segments: s };
   }
   return out;
 }

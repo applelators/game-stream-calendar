@@ -81,6 +81,9 @@ input, select, textarea { font-family: inherit; }
 .bar.k-event { background: var(--warn); }
 .bar.fuzzy { background-image: repeating-linear-gradient(45deg, #ffffff00, #ffffff00 6px, #00000022 6px, #00000022 12px); outline: 1px dashed #ffffff66; outline-offset: -2px; }
 .bar-out { position: absolute; top: 11px; font-size: 0.7rem; color: var(--muted); white-space: nowrap; font-family: var(--mono); }
+.bar.cont { opacity: 0.9; }   /* a resumed (continued) segment of a split game */
+.bar-link { position: absolute; top: 18px; height: 2px; z-index: 1; pointer-events: none;
+  background: repeating-linear-gradient(90deg, #ffffff66, #ffffff66 3px, transparent 3px, transparent 7px); }
 
 /* ---- rail ---- */
 .rail { border: 1px solid var(--border-solid); border-top: 0; border-radius: 0 0 var(--radius) var(--radius); background: var(--panel-2); padding: 12px 16px; }

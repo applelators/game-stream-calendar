@@ -358,7 +358,7 @@ function App() {
           {games.length} titles · pace {ep.hoursPerStream}h/stream · {ep.hoursPerWeek}h/week
           {settings.override ? ' (manual)' : ` (${pace.source === 'sullygnome' ? 'live 90-day' : 'fallback'})`}
           {normVacs.length > 0 ? ` · ${normVacs.length} break${normVacs.length === 1 ? '' : 's'} blocked off` : ''}
-          {settings.schedMode === 'sequential' && settings.view === 'timeline' ? ' · queued back-to-back' : ''}
+          {settings.schedMode === 'sequential' && settings.view === 'timeline' ? ' · new releases first, older games split around them' : ''}
         </div>
       </header>
 
@@ -444,11 +444,13 @@ function TimelineView({ games, pace, mode, vacations, onPick }) {
             </div>
 
             {rows.map(({ g, pos }) => {
-              const left = xOf(pos.start);
-              const w = Math.max(8, xOf(pos.end) - left);
+              const segs = pos.segments && pos.segments.length ? pos.segments : [{ start: pos.start, end: pos.end }];
               const fuzzy = isFuzzy(g.release);
               const strk = streamsToFinish(g.hltbHours, pace);
-              const labelInside = w > 90;
+              const firstLeft = xOf(segs[0].start);
+              const firstW = xOf(segs[0].end) - firstLeft;
+              const lastRight = xOf(segs[segs.length - 1].end);
+              const labelInside = firstW > 90;
               return (
                 <div className="tl-row" key={g.id}>
                   <div className="tl-label">
@@ -469,15 +471,26 @@ function TimelineView({ games, pace, mode, vacations, onPick }) {
                     })}
                     {today >= domStart && today < domEnd &&
                       <div className="tl-today" style={{ left: xOf(today) }} />}
-                    <div className={`bar k-${g.kind}${fuzzy ? ' fuzzy' : ''}`}
-                      style={{ left, width: w }} onClick={() => onPick(g.id)}
-                      title={`${g.title} — ${releaseLabel(g.release)}`}>
-                      {labelInside && <span className="bt">{g.title}</span>}
-                      {labelInside && g.kind !== 'event' && strk > 0 &&
-                        <span className="strk">{strk} strm</span>}
-                    </div>
+                    {/* dotted connectors across the pauses between split segments */}
+                    {segs.slice(1).map((s, i) => {
+                      const a = xOf(segs[i].end), bx = xOf(s.start);
+                      return bx > a ? <div key={'lk' + i} className="bar-link" style={{ left: a, width: bx - a }} /> : null;
+                    })}
+                    {segs.map((s, si) => {
+                      const l = xOf(s.start);
+                      const w = Math.max(6, xOf(s.end) - l);
+                      return (
+                        <div key={si} className={`bar k-${g.kind}${fuzzy ? ' fuzzy' : ''}${si > 0 ? ' cont' : ''}`}
+                          style={{ left: l, width: w }} onClick={() => onPick(g.id)}
+                          title={`${g.title} — ${releaseLabel(g.release)}${segs.length > 1 ? ` (part ${si + 1} of ${segs.length})` : ''}`}>
+                          {si === 0 && labelInside && <span className="bt">{g.title}</span>}
+                          {si === 0 && labelInside && g.kind !== 'event' && strk > 0 &&
+                            <span className="strk">{strk} strm</span>}
+                        </div>
+                      );
+                    })}
                     {!labelInside && g.kind !== 'event' && strk > 0 &&
-                      <div className="bar-out" style={{ left: left + w + 6 }}>{strk} strm</div>}
+                      <div className="bar-out" style={{ left: lastRight + 6 }}>{strk} strm</div>}
                   </div>
                 </div>
               );
