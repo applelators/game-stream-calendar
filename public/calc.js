@@ -94,23 +94,74 @@ function gameDurationDays(game, pace) {
   return Math.max(1, Math.round(daysToFinish(game.hltbHours, pace)));
 }
 
+// ---- vacations / time off --------------------------------------------------
+
+// Vacations are stored as ISO date strings; normalize to [start, end) Date pairs
+// (end-exclusive). During a vacation no streaming happens, so it doesn't count
+// toward finishing a game — it just pushes the finish date later.
+function parseISO(s) {
+  if (!s || typeof s !== 'string') return null;
+  const [y, m, d] = s.split('-').map(Number);
+  if (!y || !m || !d) return null;
+  return utc(y, m, d);
+}
+
+function normalizeVacations(vacs) {
+  return (vacs || [])
+    .map((v) => {
+      const start = parseISO(v.start);
+      const end = parseISO(v.end);
+      return start && end ? { start, end: addDays(end, 1), label: v.label || '' } : null;
+    })
+    .filter((v) => v && v.end > v.start);
+}
+
+function inVacation(date, normVacs) {
+  return !!normVacs && normVacs.some((v) => date >= v.start && date < v.end);
+}
+
+// Walk forward from `start` until `activeDays` non-vacation (streaming) days have
+// elapsed, returning the calendar end date — so vacations extend the window.
+function addActiveDays(start, activeDays, normVacs) {
+  if (!normVacs || normVacs.length === 0) return addDays(start, activeDays);
+  let d = new Date(start), counted = 0, guard = 0;
+  while (counted < activeDays && guard < 100000) {
+    if (!inVacation(d, normVacs)) counted += 1;
+    d = addDays(d, 1);
+    guard += 1;
+  }
+  return d;
+}
+
 // ---- bar placement ---------------------------------------------------------
+
+// Calendar end date of a game's bar starting at `start`.
+//  - events: the explicit window end (release -> eventEnd), unaffected by pace
+//  - everything else: HLTB hours through the pace, spread around any vacations
+function gameEnd(game, start, pace, normVacs) {
+  if (game.kind === 'event' && game.eventEnd) {
+    const e = anchorDate(game.eventEnd);
+    if (e) return e;
+  }
+  const activeDays = Math.max(1, Math.round(daysToFinish(game.hltbHours, pace)));
+  return addActiveDays(start, activeDays, normVacs);
+}
 
 // Parallel ("true dates"): every scheduled game sits on its real release date.
 // Returns { [id]: { start: Date, end: Date } } for scheduled games only.
-function scheduleParallel(games, pace) {
+function scheduleParallel(games, pace, normVacs) {
   const out = {};
   for (const g of games) {
     const start = anchorDate(g.release);
     if (!start) continue;
-    out[g.id] = { start, end: addDays(start, gameDurationDays(g, pace)) };
+    out[g.id] = { start, end: gameEnd(g, start, pace, normVacs) };
   }
   return out;
 }
 
 // Sequential ("my queue"): release order, but a game can't start until the
 // previous one is finished — surfaces the realistic backlog.
-function scheduleSequential(games, pace) {
+function scheduleSequential(games, pace, normVacs) {
   const scheduled = games
     .filter((g) => isScheduled(g.release))
     .sort((a, b) => anchorDate(a.release) - anchorDate(b.release));
@@ -119,15 +170,15 @@ function scheduleSequential(games, pace) {
   for (const g of scheduled) {
     const release = anchorDate(g.release);
     const start = cursor && cursor > release ? cursor : release;
-    const end = addDays(start, gameDurationDays(g, pace));
+    const end = gameEnd(g, start, pace, normVacs);
     out[g.id] = { start, end };
     cursor = end;
   }
   return out;
 }
 
-function schedule(games, pace, mode /* 'parallel' | 'sequential' */) {
+function schedule(games, pace, mode /* 'parallel' | 'sequential' */, normVacs) {
   return mode === 'sequential'
-    ? scheduleSequential(games, pace)
-    : scheduleParallel(games, pace);
+    ? scheduleSequential(games, pace, normVacs)
+    : scheduleParallel(games, pace, normVacs);
 }

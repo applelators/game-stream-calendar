@@ -233,6 +233,7 @@ const DEFAULT_SETTINGS = {
   hoursPerWeek: 11.52,
   view: 'timeline',
   schedMode: 'parallel',
+  vacations: [],   // [{ id, label, start:'YYYY-MM-DD', end:'YYYY-MM-DD' }] — no streaming
 };
 
 const FALLBACK_PACE = { hoursPerStream: 5.11, hoursPerWeek: 11.52, source: 'fallback', fetchedAt: null, numStreams: 29, totalHours: 148.1, windowDays: 90 };
@@ -315,6 +316,7 @@ function App() {
   }, [games, settings, loaded]);
 
   const ep = effectivePace(settings, pace);
+  const normVacs = useMemo(() => normalizeVacations(settings.vacations), [settings.vacations]);
 
   const upsertGame = useCallback((g) => {
     setGames((gs) => {
@@ -349,19 +351,20 @@ function App() {
                 onClick={() => setSettings((s) => ({ ...s, schedMode: 'sequential' }))}>My queue</button>
             </div>
           )}
-          <button className="btn" onClick={() => setShowSettings(true)}>⚙ Pace</button>
+          <button className="btn" onClick={() => setShowSettings(true)}>⚙ Settings</button>
           <button className="btn btn-accent" onClick={() => setEditing({ __new: true })}>+ Add game</button>
         </div>
         <div className="hdr-sub">
           {games.length} titles · pace {ep.hoursPerStream}h/stream · {ep.hoursPerWeek}h/week
           {settings.override ? ' (manual)' : ` (${pace.source === 'sullygnome' ? 'live 90-day' : 'fallback'})`}
+          {normVacs.length > 0 ? ` · ${normVacs.length} break${normVacs.length === 1 ? '' : 's'} blocked off` : ''}
           {settings.schedMode === 'sequential' && settings.view === 'timeline' ? ' · queued back-to-back' : ''}
         </div>
       </header>
 
       {settings.view === 'timeline'
-        ? <TimelineView games={games} pace={ep} mode={settings.schedMode} onPick={setDetail} />
-        : <MonthGridView games={games} pace={ep} onPick={setDetail} />}
+        ? <TimelineView games={games} pace={ep} mode={settings.schedMode} vacations={normVacs} onPick={setDetail} />
+        : <MonthGridView games={games} pace={ep} vacations={normVacs} onPick={setDetail} />}
 
       {editing && (
         <GameModal game={editing.__new ? null : editing}
@@ -370,7 +373,7 @@ function App() {
           onDelete={(id) => { removeGame(id); setEditing(null); }} />
       )}
       {detailGame && (
-        <DetailCard game={detailGame} pace={ep}
+        <DetailCard game={detailGame} pace={ep} vacations={normVacs}
           onClose={() => setDetail(null)}
           onEdit={() => { setEditing(detailGame); setDetail(null); }} />
       )}
@@ -385,10 +388,10 @@ function App() {
 // ============================================================================
 // Timeline (Gantt)
 // ============================================================================
-function TimelineView({ games, pace, mode, onPick }) {
+function TimelineView({ games, pace, mode, vacations, onPick }) {
   const placeable = useMemo(() => games.filter((g) => isPlaceable(g.release)), [games]);
   const rail = useMemo(() => games.filter((g) => !isPlaceable(g.release)), [games]);
-  const positions = useMemo(() => schedule(placeable, pace, mode), [placeable, pace, mode]);
+  const positions = useMemo(() => schedule(placeable, pace, mode, vacations), [placeable, pace, mode, vacations]);
 
   const rows = useMemo(() => {
     return placeable
@@ -456,6 +459,14 @@ function TimelineView({ games, pace, mode, onPick }) {
                     {months.map((mo, i) => (
                       <div key={i} className="tl-gridline" style={{ left: xOf(mo) }} />
                     ))}
+                    {(vacations || []).map((v, i) => {
+                      const vl = xOf(v.start < domStart ? domStart : v.start);
+                      const vr = xOf(v.end > domEnd ? domEnd : v.end);
+                      return vr > vl
+                        ? <div key={'v' + i} className="tl-vac" style={{ left: vl, width: vr - vl }}
+                            title={v.label || 'Time off'} />
+                        : null;
+                    })}
                     {today >= domStart && today < domEnd &&
                       <div className="tl-today" style={{ left: xOf(today) }} />}
                     <div className={`bar k-${g.kind}${fuzzy ? ' fuzzy' : ''}`}
@@ -521,12 +532,12 @@ function useIsMobile() {
 const dayKey = (d) => `${d.getUTCFullYear()}-${d.getUTCMonth()}-${d.getUTCDate()}`;
 const firstOfMonth = (d) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1));
 
-function MonthGridView({ games, pace, onPick }) {
+function MonthGridView({ games, pace, vacations, onPick }) {
   const isMobile = useIsMobile();
 
   const placeable = useMemo(() => games.filter((g) => isPlaceable(g.release)), [games]);
   const rail = useMemo(() => games.filter((g) => !isPlaceable(g.release)), [games]);
-  const positions = useMemo(() => schedule(placeable, pace, 'parallel'), [placeable, pace]);
+  const positions = useMemo(() => schedule(placeable, pace, 'parallel', vacations), [placeable, pace, vacations]);
 
   // releasesByDay + the set of days inside any play-window + the overall span.
   const { releasesByDay, winDays, min, max } = useMemo(() => {
@@ -578,8 +589,9 @@ function MonthGridView({ games, pace, onPick }) {
               const rel = releasesByDay[`${y}-${mon}-${d}`] || [];
               monthCount += rel.length;
               const isToday = y === tY && mon === tM && d === tD;
+              const vac = inVacation(day, vacations);
               cells.push(
-                <div key={d} className={'mg-cell' + (winDays.has(dayKey(day)) ? ' win' : '') + (isToday ? ' today' : '')}>
+                <div key={d} className={'mg-cell' + (vac ? ' vac' : winDays.has(dayKey(day)) ? ' win' : '') + (isToday ? ' today' : '')}>
                   <span className="dnum">{d}</span>
                   {rel.length > 0 && (
                     <div className="mg-rel">
@@ -642,8 +654,9 @@ function MonthGridView({ games, pace, onPick }) {
             const rel = releasesByDay[`${y}-${mon}-${d}`] || [];
             monthCount += rel.length;
             const isToday = y === tY && mon === tM && d === tD;
+            const vac = inVacation(day, vacations);
             cells.push(
-              <div key={d} className={'gc-cell' + (winDays.has(dayKey(day)) ? ' win' : '') + (isToday ? ' today' : '')}>
+              <div key={d} className={'gc-cell' + (vac ? ' vac' : winDays.has(dayKey(day)) ? ' win' : '') + (isToday ? ' today' : '')}>
                 <span className="gc-dnum">{d}</span>
                 {rel.slice(0, 4).map((g) => (
                   <div key={g.id} className={`gc-ev k-${g.kind}`} onClick={() => onPick(g.id)}
@@ -686,11 +699,11 @@ function RailBlock({ rail, onPick }) {
 // ============================================================================
 // Detail card
 // ============================================================================
-function DetailCard({ game: g, pace, onClose, onEdit }) {
+function DetailCard({ game: g, pace, vacations, onClose, onEdit }) {
   const strk = streamsToFinish(g.hltbHours, pace);
   const wks = weeksToFinish(g.hltbHours, pace);
   const start = anchorDate(g.release);
-  const finish = start ? addDays(start, gameDurationDays(g, pace)) : null;
+  const finish = start ? gameEnd(g, start, pace, vacations) : null;
   return (
     <div className="scrim" onClick={onClose}>
       <div className="modal detail" onClick={(e) => e.stopPropagation()}>
@@ -886,10 +899,15 @@ function SettingsPanel({ settings, pace, setSettings, setPace, onClose }) {
     } catch (e) { /* ignore */ }
     setRefreshing(false);
   };
+  const setVacs = (updater) => setSettings((s) => ({ ...s, vacations: updater(s.vacations || []) }));
+  const addVac = () => setVacs((vs) => [...vs, { id: uid(), label: '', start: '', end: '' }]);
+  const updateVac = (i, patch) => setVacs((vs) => vs.map((v, j) => (j === i ? { ...v, ...patch } : v)));
+  const removeVac = (i) => setVacs((vs) => vs.filter((_, j) => j !== i));
+  const vacs = settings.vacations || [];
   return (
     <div className="scrim" onClick={onClose}>
       <div className="modal detail" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-h"><h3>Stream pace</h3><button className="x" onClick={onClose}>×</button></div>
+        <div className="modal-h"><h3>Settings</h3><button className="x" onClick={onClose}>×</button></div>
         <div className="modal-b">
           <div className="set-pace">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
@@ -923,6 +941,24 @@ function SettingsPanel({ settings, pace, setSettings, setPace, onClose }) {
             </div>
           )}
           <div className="hint">Pace comes from your last 90 days on Twitch (@nabunan). Streams-to-finish = HLTB hours ÷ hours-per-stream; the bar length = HLTB hours ÷ hours-per-week.</div>
+
+          <div className="set-divider" />
+          <div className="set-h">Time off · no streaming</div>
+          {vacs.length === 0 && <div className="hint">No breaks yet. Add vacations and the calendar will pause progress during them.</div>}
+          <div className="vac-list">
+            {vacs.map((v, i) => (
+              <div className="vac-row" key={v.id || i}>
+                <input className="vac-label" placeholder="Label (e.g. Japan trip)" value={v.label || ''}
+                  onChange={(e) => updateVac(i, { label: e.target.value })} />
+                <input type="date" value={v.start || ''} onChange={(e) => updateVac(i, { start: e.target.value })} />
+                <span className="vac-to">→</span>
+                <input type="date" value={v.end || ''} onChange={(e) => updateVac(i, { end: e.target.value })} />
+                <button className="btn btn-sm" title="Remove" onClick={() => removeVac(i)}>✕</button>
+              </div>
+            ))}
+          </div>
+          <button className="btn btn-sm" onClick={addVac}>+ Add time off</button>
+          <div className="hint">Breaks push out game finish dates and the “My queue” timeline (no streaming = no progress), and show as shaded days on the calendar. Dates are inclusive.</div>
         </div>
         <div className="modal-f"><button className="btn btn-accent" onClick={onClose}>Done</button></div>
       </div>

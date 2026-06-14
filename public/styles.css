@@ -223,3 +223,22 @@ input, select, textarea { font-family: inherit; }
   /* modals use the full width on phones */
   .scrim { padding: 14px 8px; }
 }
+
+/* ---- vacations / time off ---- */
+.tl-vac { position: absolute; top: 0; bottom: 0; z-index: 1; pointer-events: none;
+  background: repeating-linear-gradient(45deg, #8b97ab00, #8b97ab00 5px, #8b97ab2e 5px, #8b97ab2e 10px);
+  border-left: 1px solid #8b97ab40; border-right: 1px solid #8b97ab40; }
+.gc-cell.vac, .mg-cell.vac {
+  background-color: #11151f;
+  background-image: repeating-linear-gradient(45deg, #8b97ab1f, #8b97ab1f 6px, #8b97ab00 6px, #8b97ab00 12px); }
+
+.set-divider { height: 1px; background: var(--border-solid); margin: 4px 0 2px; }
+.set-h { font-family: var(--display); font-weight: 700; font-size: 0.95rem; }
+.vac-list { display: flex; flex-direction: column; gap: 8px; }
+.vac-row { display: flex; align-items: center; gap: 8px; }
+.vac-row .vac-label { flex: 1; min-width: 0; }
+.vac-row input { background: #0d1320; border: 1px solid var(--border-solid); border-radius: var(--radius-sm);
+  padding: 7px 9px; color: var(--text); font-size: 0.82rem; }
+.vac-row input:focus { outline: none; border-color: var(--accent); }
+.vac-row input[type=date] { color-scheme: dark; }
+.vac-to { color: var(--faint); }
