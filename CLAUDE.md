@@ -75,6 +75,20 @@ loop forever (its `.wrangler/` writes retrigger the file watcher) and exposes `_
 - Editing in-app persists the whole `{games, settings}` doc to KV (`/api/state`) + a
   localStorage mirror. `SEED_GAMES` in `app.jsx` is only the first-load default.
 
+### Scheduling (calc `schedule(games, pace, mode, normVacs)`)
+
+Positions are `{ start, end, segments:[{start,end}] }` — multiple segments only for a
+split game in the queue.
+- **`parallel`** ("True dates"): each game sits on its real release date; one segment.
+- **`sequential`** ("My queue"): a **preemptive** day-by-day simulation. New releases take
+  priority — on a game's release day you drop the current game and start the new one; the
+  interrupted game resumes (LIFO) once the newer one finishes, so a long game splits into
+  several segments (rendered as separate bars joined by dotted `.bar-link` connectors).
+  Played time is conserved; `event`s stay at their fixed window and don't join the queue.
+- **Vacations** (`settings.vacations`, ISO date ranges): `normalizeVacations` →
+  `addActiveDays`/`gameEnd` skip vacation days so breaks push finish dates later. Managed in
+  ⚙ Settings → "Time off"; shown hatched on the calendar (`.vac`) and timeline (`.tl-vac`).
+
 ---
 
 ## Pace pipeline
