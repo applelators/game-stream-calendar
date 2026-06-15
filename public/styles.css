@@ -216,10 +216,12 @@ input, select, textarea { font-family: inherit; }
   .mg-dow { padding: 7px 4px 0; }
   .mg-dow span { font-size: 0.74rem; }
   .mg-grid { gap: 2px; padding: 4px; }
-  .mg-cell { border-radius: 5px; padding: 3px 2px; min-height: 44px; }
+  /* content-driven height (no aspect-ratio) + min-width:0 so a long title chip
+     can't blow the column (and therefore the row height) out */
+  .mg-cell { border-radius: 5px; padding: 3px 3px; min-height: 56px; aspect-ratio: auto; min-width: 0; overflow: hidden; }
   .mg-cell .dnum { font-size: 0.78rem; }
   .mg-rel { left: 1px; right: 1px; bottom: 1px; gap: 1px; }
-  .mg-pill { font-size: 0.6rem; padding: 1px 3px; }
+  .mg-pill { font-size: 0.56rem; padding: 1px 4px; margin-top: 2px; display: block; max-width: 100%; }
 
   /* timeline is horizontally scrolly; trim its label column on small screens */
   .tl-scroll { --label-w: 128px !important; }
