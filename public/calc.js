@@ -371,7 +371,8 @@ function streamSessions(games, pace, positions, normVacs) {
     const M = days.length;
     if (!M) continue;
     for (let k = 1; k <= total; k++) {
-      const di = Math.min(M - 1, Math.floor((k - 0.5) * M / total));
+      // 1/N on the first play day, N/N on the last, evenly spaced between.
+      const di = total === 1 ? 0 : Math.min(M - 1, Math.round((k - 1) * (M - 1) / (total - 1)));
       byDay[dkey(days[di])] = { id: g.id, idx: k, total };
     }
   }
