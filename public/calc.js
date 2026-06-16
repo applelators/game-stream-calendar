@@ -117,6 +117,7 @@ function gameFromFile(e, i) {
     title: e.title || 'Untitled',
     release,
     kind: e.kind || 'game',
+    backlog: !!e.backlog,   // catalog game scheduled at a planned start (not a new release)
     hltbHours: Number(e.hltbHours) || 0,
     hltbBasis: e.basis || e.hltbBasis || 'estimate',
     hltbNote: e.hltbNote || '',
@@ -239,12 +240,16 @@ function dkey(d) { return d.getUTCFullYear() + '-' + d.getUTCMonth() + '-' + d.g
 // launching game) and the set of release days (which are exempt from blocking).
 function launchEves(games) {
   const eveByDay = {}, releaseDays = {};
+  const cutoff = utc(2026, 6, 1); // midnight launches only for releases June 2026+
   for (const g of (games || [])) {
     if (g.kind === 'event') continue;
-    if (g.release && g.release.precision === 'day') {
-      const a = anchorDate(g.release);
-      if (!a) continue;
-      releaseDays[dkey(a)] = true;
+    if (!(g.release && g.release.precision === 'day')) continue;
+    const a = anchorDate(g.release);
+    if (!a) continue;
+    releaseDays[dkey(a)] = true; // any day a game starts is exempt from being an eve
+    // Only genuine new releases (not backlog catalog games) dated June 2026+ get
+    // a reserved midnight-launch eve.
+    if (!g.backlog && a >= cutoff) {
       eveByDay[dkey(addDays(a, -1))] = { title: g.title, kind: g.kind, id: g.id };
     }
   }

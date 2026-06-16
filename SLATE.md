@@ -51,7 +51,8 @@ Also accepts `"August 2026"`, `"Nov 2027"`, `"Jun 9, 2026"`. Anything unrecogniz
 | Field | Notes |
 |---|---|
 | `title` | required; its slug becomes the id |
-| `kind` | `game` · `replay` · `dlc` · `event` (events use `date`→`endDate`, no pace math) |
+| `kind` | `game` · `dlc` · `event` (events use `date`→`endDate`, no pace math) |
+| `backlog` | `true` for catalog games scheduled at a *planned start* (not a new release). Backlog games never get a midnight-launch eve. Omit/false for genuine new releases. |
 | `hltbHours` | hours to beat; drives bar length & "streams to finish" |
 | `basis` | how `hltbHours` was derived: `self` · `remake-original` · `series-avg` · `estimate` |
 | `hltbNote` | short provenance note (shown in detail card) |
@@ -59,6 +60,13 @@ Also accepts `"August 2026"`, `"Nov 2027"`, `"Jun 9, 2026"`. Anything unrecogniz
 | `editions` | array of `{ "name", "price" }` (USD); first one is the headline price |
 | `earlyAccess` | pre-order / early-access bonus text |
 | `notes` | free text shown in the detail card |
+
+## Midnight launches
+
+Any **new release with a specific day, dated June 2026 or later**, automatically reserves the
+**night before** as a midnight-launch stream — no other game is scheduled that eve, and the new
+game starts on its release day. This is skipped for `backlog` games, month/year/TBD dates, and
+anything before June 2026.
 
 ## Common edits
 
