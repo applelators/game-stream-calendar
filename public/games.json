@@ -16,27 +16,43 @@
       "notes": "Self-set challenge (Jun 9 6PM PT – Sep 1 12:59AM PT)."
     },
     {
-      "title": "Xenoblade Chronicles: Definitive Edition — Nintendo Switch 2 Edition",
+      "title": "Xenoblade Chronicles: Definitive Edition (NS2) — Pt. 1",
       "date": "2026-06-09",
       "kind": "game",
-      "hltbHours": 55,
+      "backlog": false,
+      "hltbHours": 27,
       "basis": "self",
-      "hltbNote": "Definitive Edition main story (~55h).",
+      "hltbNote": "Part 1 of 2 — split across June & July. First playthrough.",
       "platforms": [
         "Switch 2"
       ],
       "editions": [],
       "earlyAccess": "",
-      "notes": "First playthrough."
+      "notes": ""
+    },
+    {
+      "title": "Xenoblade Chronicles: Definitive Edition (NS2) — Pt. 2",
+      "date": "2026-07",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 28,
+      "basis": "self",
+      "hltbNote": "Part 2 of 2 — continued in July.",
+      "platforms": [
+        "Switch 2"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": ""
     },
     {
       "title": "Pokémon HeartGold",
       "date": "2026-06-21",
       "kind": "game",
       "backlog": true,
-      "hltbHours": 33,
+      "hltbHours": 18,
       "basis": "self",
-      "hltbNote": "Main story (~33h).",
+      "hltbNote": "Remaining (~half already beaten on stream).",
       "platforms": [
         "Nintendo DS"
       ],
@@ -234,18 +250,34 @@
       "notes": "Day one on Game Pass."
     },
     {
-      "title": "Xenoblade Chronicles 2 — Nintendo Switch 2 Edition",
-      "date": "2026-07-30",
+      "title": "Xenoblade Chronicles 2 (NS2) — Pt. 1",
+      "date": "2026-08",
       "kind": "game",
-      "hltbHours": 62,
+      "backlog": true,
+      "hltbHours": 31,
       "basis": "self",
-      "hltbNote": "Main story (~62h).",
+      "hltbNote": "Part 1 of 2 — split across August & September. First playthrough.",
       "platforms": [
         "Switch 2"
       ],
       "editions": [],
       "earlyAccess": "",
-      "notes": "First playthrough."
+      "notes": ""
+    },
+    {
+      "title": "Xenoblade Chronicles 2 (NS2) — Pt. 2",
+      "date": "2026-09",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 31,
+      "basis": "self",
+      "hltbNote": "Part 2 of 2 — continued in September.",
+      "platforms": [
+        "Switch 2"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": ""
     },
     {
       "title": "Fire Emblem Engage",
