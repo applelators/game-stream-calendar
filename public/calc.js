@@ -346,3 +346,34 @@ function schedule(games, pace, mode /* 'parallel' | 'sequential' */, normVacs) {
     ? scheduleSequential(games, pace, normVacs)
     : scheduleParallel(games, pace, normVacs);
 }
+
+// Place each game's individual streams (1..N) on specific calendar days within its
+// scheduled window. A game occupies M progress days (its band minus vacations and
+// launch eves); we spread its N = streamsToFinish markers evenly across them — which
+// matches the real cadence (band length / streams ≈ 7 / streams-per-week).
+// Returns { [dayKey]: { id, idx, total } }.
+function streamSessions(games, pace, positions, normVacs) {
+  const { eveByDay, releaseDays } = launchEves(games);
+  const blockedEve = (d) => { const k = dkey(d); return !!eveByDay[k] && !releaseDays[k]; };
+  const byDay = {};
+  for (const g of (games || [])) {
+    if (g.kind === 'event') continue;
+    const pos = positions[g.id];
+    if (!pos) continue;
+    const total = streamsToFinish(g.hltbHours, pace);
+    if (!total) continue;
+    const days = [];
+    for (const seg of pos.segments)
+      for (let d = new Date(seg.start); d < seg.end; d = addDays(d, 1)) {
+        if (inVacation(d, normVacs) || blockedEve(d)) continue;
+        days.push(new Date(d));
+      }
+    const M = days.length;
+    if (!M) continue;
+    for (let k = 1; k <= total; k++) {
+      const di = Math.min(M - 1, Math.floor((k - 0.5) * M / total));
+      byDay[dkey(days[di])] = { id: g.id, idx: k, total };
+    }
+  }
+  return byDay;
+}
