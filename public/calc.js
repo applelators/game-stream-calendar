@@ -230,6 +230,27 @@ function activeDaysFor(game, pace) {
   return Math.max(1, Math.round(daysToFinish(game.hltbHours, pace)));
 }
 
+// Private day key (app.jsx defines its own `dayKey`; avoid redeclaring it here).
+function dkey(d) { return d.getUTCFullYear() + '-' + d.getUTCMonth() + '-' + d.getUTCDate(); }
+
+// Specific-day releases get a midnight launch the night before, so the eve is
+// reserved (no progress on other games) and the release day itself plays the new
+// game. Events don't count as "new game" launches. Returns the eve days (with the
+// launching game) and the set of release days (which are exempt from blocking).
+function launchEves(games) {
+  const eveByDay = {}, releaseDays = {};
+  for (const g of (games || [])) {
+    if (g.kind === 'event') continue;
+    if (g.release && g.release.precision === 'day') {
+      const a = anchorDate(g.release);
+      if (!a) continue;
+      releaseDays[dkey(a)] = true;
+      eveByDay[dkey(addDays(a, -1))] = { title: g.title, kind: g.kind, id: g.id };
+    }
+  }
+  return { eveByDay, releaseDays };
+}
+
 // Each position is { start, end, segments:[{start,end}] }. Parallel/event games
 // have a single segment; a preempted game in the queue has several.
 //
@@ -266,6 +287,10 @@ function scheduleSequential(games, pace, normVacs) {
   if (playable.length === 0) return out;
   playable.sort((a, b) => (a.release - b.release) || (a.id < b.id ? -1 : 1));
 
+  // Eve of each specific-day release = no progress (midnight-launch night).
+  const { eveByDay, releaseDays } = launchEves(games);
+  const blockedEve = (d) => { const k = dkey(d); return !!eveByDay[k] && !releaseDays[k]; };
+
   const segs = {};
   for (const p of playable) segs[p.id] = [];
   const closeSeg = (p, end) => { if (p.open && end > p.open) segs[p.id].push({ start: p.open, end }); p.open = null; };
@@ -286,8 +311,8 @@ function scheduleSequential(games, pace, normVacs) {
       if (idx < playable.length) { day = new Date(playable[idx].release); continue; }
       break;
     }
-    // 3) play the current game for the day (no progress during vacations)
-    if (!inVacation(day, normVacs)) {
+    // 3) play the current game (no progress during vacations or launch eves)
+    if (!inVacation(day, normVacs) && !blockedEve(day)) {
       cur.remaining -= 1;
       if (cur.remaining <= 0) {
         const fin = addDays(day, 1);

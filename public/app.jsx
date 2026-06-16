@@ -335,6 +335,8 @@ function dayInfo(day, ctx) {
   if (inVacation(day, ctx.vacations)) {
     return { vac: true, vacRunStart: !inVacation(prev, ctx.vacations), vacLabel: vacLabelFor(day, ctx.vacations), releases };
   }
+  const eve = ctx.eveByDay && ctx.eveByDay[k];
+  if (eve && !(ctx.releaseDays && ctx.releaseDays[k])) return { launch: eve, releases };
   const playId = ctx.playByDay[k];
   if (!playId) return { releases, play: null };
   const play = ctx.gameById[playId];
@@ -378,9 +380,11 @@ function MonthGridView({ games, pace, vacations, onPick }) {
     return { releasesByDay: rbd, playByDay: pbd, gameById: gbi, min: mn, max: mx };
   }, [placeable, pace, vacations]);
 
+  const eves = useMemo(() => launchEves(placeable), [placeable]);
+
   const now = new Date();
   const tY = now.getFullYear(), tM = now.getMonth(), tD = now.getDate();
-  const ctx = { vacations, playByDay, gameById, releasesByDay };
+  const ctx = { vacations, playByDay, gameById, releasesByDay, eveByDay: eves.eveByDay, releaseDays: eves.releaseDays };
 
   if (!min) {
     return (
@@ -399,7 +403,7 @@ function MonthGridView({ games, pace, vacations, onPick }) {
     while (m <= end) { months.push(m); m = new Date(Date.UTC(m.getUTCFullYear(), m.getUTCMonth() + 1, 1)); }
     return (
       <div>
-        <div className="cal-legend">Colored band = the game you’ll stream that day · hatched = vacation · ★ = release</div>
+        <div className="cal-legend">Colored band = the game you’ll stream · 🌙 = midnight launch · hatched = vacation · ★ = release</div>
         <div className="mg-wrap">
           {months.map((mo, i) => {
             const y = mo.getUTCFullYear(), mon = mo.getUTCMonth();
@@ -413,12 +417,17 @@ function MonthGridView({ games, pace, vacations, onPick }) {
               const info = dayInfo(day, ctx);
               monthCount += info.releases.length;
               const isToday = y === tY && mon === tM && d === tD;
-              const cls = 'mg-cell' + (info.vac ? ' vac' : info.play ? ` play-${info.play.kind}` : '') + (isToday ? ' today' : '');
+              const cls = 'mg-cell' + (info.vac ? ' vac' : info.launch ? ` play-${info.launch.kind}` : info.play ? ` play-${info.play.kind}` : '') + (isToday ? ' today' : '');
               cells.push(
                 <div key={d} className={cls}>
                   <span className="dnum">{d}{info.releases.length ? <span className="relstar">★</span> : null}</span>
                   {info.vac && info.vacRunStart && <span className="mg-pill nowvac" title={info.vacLabel}>✈ {info.vacLabel}</span>}
-                  {!info.vac && info.runStart && info.play && (
+                  {info.launch && (
+                    <span className="mg-pill" style={{ background: KIND_COLOR[info.launch.kind] }}
+                      onClick={() => onPick(info.launch.id)} title={`Midnight launch: ${info.launch.title}`}>
+                      🌙 {info.launch.title}</span>
+                  )}
+                  {!info.vac && !info.launch && info.runStart && info.play && (
                     <span className="mg-pill" style={{ background: KIND_COLOR[info.play.kind] }}
                       onClick={() => onPick(info.play.id)} title={info.play.title}>
                       {(info.releaseStart ? '★ ' : info.resume ? '↩ ' : '… ') + info.play.title}</span>
@@ -460,7 +469,7 @@ function MonthGridView({ games, pace, vacations, onPick }) {
         <button className="gc-today" onClick={scrollToToday}>Jump to today</button>
         <div className="gc-cnt">{totalCount} release{totalCount === 1 ? '' : 's'} · scroll for more months ↓</div>
       </div>
-      <div className="cal-legend">Each day is tinted with the game you’ll be streaming (band length = how long it takes) · <span className="lg-vac">hatched</span> = vacation · ★ = release day</div>
+      <div className="cal-legend">Each day is tinted with the game you’ll be streaming (band length = how long it takes) · 🌙 = midnight launch (eve reserved) · <span className="lg-vac">hatched</span> = vacation · ★ = release day</div>
       {/* weekday header stays pinned while you scroll through every month */}
       <div className="gc-weekbar">{DOW_FULL.map((d) => <span key={d}>{d}</span>)}</div>
       <div className="gc-stack">
@@ -476,13 +485,17 @@ function MonthGridView({ games, pace, vacations, onPick }) {
             const info = dayInfo(day, ctx);
             monthCount += info.releases.length;
             const isToday = y === tY && mon === tM && d === tD;
-            const cls = 'gc-cell' + (info.vac ? ' vac' : info.play ? ` play-${info.play.kind}` : '') + (isToday ? ' today' : '');
+            const cls = 'gc-cell' + (info.vac ? ' vac' : info.launch ? ` play-${info.launch.kind}` : info.play ? ` play-${info.play.kind}` : '') + (isToday ? ' today' : '');
             const relTitles = info.releases.map((r) => r.title).join(', ');
             cells.push(
               <div key={d} className={cls}>
                 <span className="gc-dnum" title={relTitles || undefined}>{d}{info.releases.length ? <span className="gc-relstar">★</span> : null}</span>
                 {info.vac && info.vacRunStart && <div className="gc-away">✈ {info.vacLabel}</div>}
-                {!info.vac && info.runStart && info.play && (
+                {info.launch && (
+                  <div className={`gc-ev k-${info.launch.kind}`} onClick={() => onPick(info.launch.id)}
+                    title={`Midnight launch: ${info.launch.title}`}>🌙 {info.launch.title}</div>
+                )}
+                {!info.vac && !info.launch && info.runStart && info.play && (
                   <div className={`gc-ev k-${info.play.kind}`} onClick={() => onPick(info.play.id)}
                     title={`Streaming ${info.play.title}`}>
                     {(info.releaseStart ? '★ ' : info.resume ? '↩ ' : info.wrap ? '… ' : '') + info.play.title}</div>
