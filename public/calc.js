@@ -66,6 +66,84 @@ function isPlaceable(release) {
   );
 }
 
+// ---- games.json (friendly file format) -------------------------------------
+
+const SEASON_Q = { spring: 2, summer: 3, fall: 4, autumn: 4, winter: 1, holiday: 4 };
+const QUARTER_MONTH = { 1: 1, 2: 4, 3: 7, 4: 10 };
+
+function slugify(s) {
+  return (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+// Parse a friendly date string from games.json into a release object.
+//   "2026-06-25" day · "2026-08" month · "2026-Q3"/"Holiday 2026"/"Spring 2027"
+//   quarter · "2026" year (rail) · "TBD"/"TBA ..." or anything unrecognized (rail)
+//   also accepts "August 2026", "Nov 2027", "Jun 9, 2026"
+function parseDate(str) {
+  const s = (str == null ? '' : String(str)).trim();
+  if (!s || /^(tbd|tba)\b/i.test(s)) return { precision: 'tbd', raw: s || 'TBD' };
+  let m;
+  if ((m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/)))
+    return { year: +m[1], month: +m[2], day: +m[3], precision: 'day' };
+  if ((m = s.match(/^(\d{4})-(\d{2})$/)))
+    return { year: +m[1], month: +m[2], precision: 'month' };
+  if ((m = s.match(/^(\d{4})-Q([1-4])$/i)))
+    return { year: +m[1], quarter: +m[2], month: QUARTER_MONTH[+m[2]], precision: 'quarter' };
+  if ((m = s.match(/^(\d{4})$/)))
+    return { year: +m[1], precision: 'year' };
+  if ((m = s.match(/^(spring|summer|fall|autumn|winter|holiday)\s+(\d{4})$/i))) {
+    const q = SEASON_Q[m[1].toLowerCase()];
+    return { year: +m[2], quarter: q, month: QUARTER_MONTH[q], precision: 'quarter', raw: s };
+  }
+  if ((m = s.match(/^([A-Za-z]{3,9})\.?\s+(?:(\d{1,2}),?\s+)?(\d{4})$/))) {
+    const idx = MONTHS_LONG.findIndex((x) => x.toLowerCase().startsWith(m[1].toLowerCase().slice(0, 3)));
+    if (idx >= 0) {
+      const y = +m[3];
+      return m[2]
+        ? { year: y, month: idx + 1, day: +m[2], precision: 'day' }
+        : { year: y, month: idx + 1, precision: 'month' };
+    }
+  }
+  if ((m = s.match(/^(\d{4})\b/))) return { year: +m[1], precision: 'year', raw: s };
+  return { precision: 'tbd', raw: s };
+}
+
+// Build an internal game object from a games.json entry.
+function gameFromFile(e, i) {
+  const release = parseDate(e.date);
+  if (e.dateLabel) release.raw = e.dateLabel;
+  const g = {
+    id: e.id || slugify(e.title) || ('g' + i),
+    title: e.title || 'Untitled',
+    release,
+    kind: e.kind || 'game',
+    hltbHours: Number(e.hltbHours) || 0,
+    hltbBasis: e.basis || e.hltbBasis || 'estimate',
+    hltbNote: e.hltbNote || '',
+    platforms: Array.isArray(e.platforms) ? e.platforms : [],
+    editions: (e.editions || []).map((x) => ({
+      name: x.name, msrpUSD: Number(x.price != null ? x.price : x.msrpUSD) || 0,
+    })),
+    earlyAccess: e.earlyAccess || '',
+    notes: e.notes || '',
+  };
+  if (e.endDate) g.eventEnd = parseDate(e.endDate);
+  return g;
+}
+
+// Turn a parsed games.json (array, or { games: [...] }) into internal games
+// with unique ids.
+function gamesFromFile(data) {
+  const list = Array.isArray(data) ? data : (data && Array.isArray(data.games) ? data.games : []);
+  const seen = {};
+  return list.map((e, i) => {
+    const g = gameFromFile(e, i);
+    if (seen[g.id]) g.id = `${g.id}-${i}`;
+    seen[g.id] = true;
+    return g;
+  });
+}
+
 // ---- pace ------------------------------------------------------------------
 
 function streamsToFinish(hltbHours, pace) {

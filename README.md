@@ -10,8 +10,9 @@ on @nabunan's actual rolling 90-day Twitch pace.
   Toggle **True dates** (bars on real release dates) vs **My queue** (chained back-to-back
   so you see the realistic backlog).
 - **Month grid:** release pills on day cells + tinted play-windows.
-- **Editable + saved:** add/edit/remove games and override pace; persisted in Cloudflare KV
-  (with a localStorage mirror) so it survives across devices.
+- **Slate in a file:** the whole game list lives in [`public/games.json`](public/games.json) —
+  edit it and push (auto-deploys) to update the calendar. Settings (vacations, pace override)
+  persist per-device in Cloudflare KV.
 - **Auto pace:** a weekly cron refetches the last-90-days stream stats and recomputes
   `hours/stream` and `hours/week`. Manual "refresh now" + override available in ⚙ Pace.
 
@@ -56,9 +57,21 @@ falls back to the last snapshot (5.11 h/stream, 11.52 h/week). The source is iso
 `pace.js` so it can be swapped without touching the app. Override the channel via the
 `SULLYGNOME_CHANNEL_ID` / `TWITCH_CHANNEL` env vars in `wrangler.toml`.
 
-## Data notes
+## Editing the slate (`public/games.json`)
 
-Seed games are researched from announcements current to June 2026 and are fully editable.
-`hltbBasis` records how each hours estimate was derived: `self` (your own replay),
-`remake-original` (the original game's HLTB), `series-avg` (average of prior entries), or
-`estimate`. Many pre-launch prices are estimates — edit them as details firm up.
+Each game is one entry. The `date` field is a single friendly string:
+
+| `date` value | meaning |
+|---|---|
+| `"2026-06-25"` | exact day |
+| `"2026-08"` | month |
+| `"2026-Q3"`, `"Holiday 2026"`, `"Spring 2027"` | quarter / season |
+| `"2026"` | year only → Unscheduled rail |
+| `"TBD"` / `"TBA (late 2026?)"` | no date → rail |
+
+Also accepts `"August 2026"`, `"Nov 2027"`, `"Jun 9, 2026"`. Optional `dateLabel` overrides the
+displayed text; `endDate` (same formats) sets an `event`'s window. `basis` is how the hours
+estimate was derived: `self` (your own replay), `remake-original`, `series-avg`, or `estimate`.
+
+Edit the file, commit, and push — Workers Builds redeploys and the calendar updates everywhere.
+Games are researched to a point in time; many pre-launch dates/prices are estimates.

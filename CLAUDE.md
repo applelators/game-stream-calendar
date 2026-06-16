@@ -39,8 +39,9 @@ This concatenation is load-bearing:
 ```
 public/        # static assets — SERVED to the browser
   index.html   # CDN React/Babel loader (fetch+concat+transform calc.js & app.jsx)
-  app.jsx      # SEED_GAMES + all components (views, CRUD modal, settings)
-  calc.js      # pure date-precision + pace math (NO React)
+  games.json   # THE SLATE — source of truth for the game list (edit this!)
+  app.jsx      # all components (views, detail card, settings) — no game CRUD
+  calc.js      # pure date-precision + pace math + games.json parser (NO React)
   styles.css   # dark theme, CSS variables, Space Grotesk + DM Sans
 _worker.js     # API routes + scheduled() weekly pace refresh — NOT served
 pace.js        # 90-day SullyGnome fetch + pace compute — NOT served (imported by _worker.js)
@@ -72,8 +73,26 @@ loop forever (its `.wrangler/` writes retrigger the file watcher) and exposes `_
   `year`/`tbd` go to the **Unscheduled rail**. `month`/`quarter` render as hatched (fuzzy).
 - **kinds:** `event` uses its explicit `release→eventEnd` window (no pace math); everything
   else derives bar length from `hltbHours` via the current pace.
-- Editing in-app persists the whole `{games, settings}` doc to KV (`/api/state`) + a
-  localStorage mirror. `SEED_GAMES` in `app.jsx` is only the first-load default.
+
+### The slate lives in `public/games.json` (source of truth)
+
+The app fetches `games.json` on load and builds games via `gamesFromFile`/`parseDate`
+(calc.js). **There is no in-app game editing** — edit the file and push (auto-deploys).
+Only **settings** (vacations, pace override, view) persist to KV via `/api/state`.
+
+File entry (friendly format):
+```json
+{ "title": "Star Fox (Switch 2)", "date": "2026-06-25", "kind": "game",
+  "hltbHours": 6, "basis": "remake-original", "hltbNote": "...",
+  "platforms": ["Switch 2"], "editions": [{ "name": "Standard", "price": 69.99 }],
+  "earlyAccess": "...", "notes": "..." }
+```
+- **`date`** string → precision: `YYYY-MM-DD` day · `YYYY-MM` month · `YYYY-Qn` /
+  `Holiday 2026` / `Spring 2027` quarter · `YYYY` year (rail) · `TBD`/`TBA …` rail. Also
+  accepts `August 2026`, `Nov 2027`, `Jun 9, 2026`. **`dateLabel`** optionally overrides the
+  displayed text. **`endDate`** (same formats) sets an `event`'s window end.
+- `basis` → `hltbBasis`; edition `price` → `msrpUSD`. `id` is the title slug (auto).
+- `games.json` may be a bare array or `{ "_README": "...", "games": [...] }`.
 
 ### Scheduling (calc `schedule(games, pace, mode, normVacs)`)
 

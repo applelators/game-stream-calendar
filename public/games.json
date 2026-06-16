@@ -1,0 +1,595 @@
+{
+  "_README": "Stream Slate — game list. Edit this file and push to update the calendar. date: \"YYYY-MM-DD\" (day), \"YYYY-MM\" (month), \"YYYY-Q3\"/\"Holiday 2026\"/\"Spring 2027\" (quarter), \"YYYY\" (year -> rail), \"TBD\" (rail). dateLabel: optional display override. kind: game|replay|dlc|event. event uses endDate for its window. basis: self|remake-original|series-avg|estimate.",
+  "games": [
+    {
+      "title": "DK Challenge",
+      "date": "2026-06-09",
+      "dateLabel": "Jun 9 – Aug 30, 2026",
+      "endDate": "2026-08-30",
+      "kind": "event",
+      "hltbHours": 0,
+      "basis": "estimate",
+      "hltbNote": "Fixed personal stream-challenge window, not an HLTB playthrough.",
+      "platforms": [],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "Self-set challenge running through the summer."
+    },
+    {
+      "title": "Xenoblade Chronicles 1 — S2",
+      "date": "2026-06-09",
+      "kind": "replay",
+      "hltbHours": 55,
+      "basis": "self",
+      "hltbNote": "Xenoblade Chronicles: Definitive Edition main story.",
+      "platforms": [
+        "Switch"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "Stream \"Season 2\" replay of XC1."
+    },
+    {
+      "title": "Deltarune — Chapter 5",
+      "date": "2026-06-24",
+      "kind": "dlc",
+      "hltbHours": 4,
+      "basis": "series-avg",
+      "hltbNote": "Avg of Deltarune Chapters 1–4 (~3–4h each).",
+      "platforms": [
+        "Switch",
+        "Switch 2",
+        "PS4",
+        "PS5",
+        "PC"
+      ],
+      "editions": [
+        {
+          "name": "Free update (owners)",
+          "price": 0
+        }
+      ],
+      "earlyAccess": "",
+      "notes": "Free chapter update for existing owners."
+    },
+    {
+      "title": "Star Fox (Switch 2)",
+      "date": "2026-06-25",
+      "kind": "game",
+      "hltbHours": 6,
+      "basis": "remake-original",
+      "hltbNote": "Based on Star Fox 64 main (~5h) + new prologue.",
+      "platforms": [
+        "Switch 2"
+      ],
+      "editions": [
+        {
+          "name": "Standard (est.)",
+          "price": 69.99
+        }
+      ],
+      "earlyAccess": "Free demo available.",
+      "notes": "Velan Studios remake of Star Fox 64 with mouse aiming + online dogfights."
+    },
+    {
+      "title": "Rhythm Heaven Groove",
+      "date": "2026-07-02",
+      "kind": "game",
+      "hltbHours": 12,
+      "basis": "series-avg",
+      "hltbNote": "Based on Rhythm Heaven Megamix completion (~10–12h).",
+      "platforms": [
+        "Switch"
+      ],
+      "editions": [
+        {
+          "name": "Standard (est.)",
+          "price": 49.99
+        }
+      ],
+      "earlyAccess": "",
+      "notes": "First new Rhythm Heaven in over a decade."
+    },
+    {
+      "title": "Splatoon Raiders",
+      "date": "2026-07-23",
+      "kind": "game",
+      "hltbHours": 12,
+      "basis": "series-avg",
+      "hltbNote": "Est. from Splatoon single-player campaigns (~8h) scaled up for a full spin-off.",
+      "platforms": [
+        "Switch 2"
+      ],
+      "editions": [
+        {
+          "name": "Standard (est.)",
+          "price": 59.99
+        }
+      ],
+      "earlyAccess": "",
+      "notes": "Single-player-focused spin-off; up to 4-player co-op raids."
+    },
+    {
+      "title": "Halo: Campaign Evolved",
+      "date": "2026-07-28",
+      "kind": "game",
+      "hltbHours": 11,
+      "basis": "remake-original",
+      "hltbNote": "Based on Halo: Combat Evolved campaign (~10h) + added content.",
+      "platforms": [
+        "PS5",
+        "Xbox Series",
+        "PC",
+        "Game Pass"
+      ],
+      "editions": [
+        {
+          "name": "Standard",
+          "price": 49.99
+        },
+        {
+          "name": "Premium",
+          "price": 69.99
+        },
+        {
+          "name": "Collector's",
+          "price": 199.99
+        }
+      ],
+      "earlyAccess": "Premium & Collector’s get up to 5 days early access (from Jul 23) + Alpha Halo Armory Pack.",
+      "notes": "Day one on Game Pass. Collector’s adds a 12\" Master Chief statue, LED Cortana chip, Steelbook."
+    },
+    {
+      "title": "Xenoblade Chronicles 2 — S2",
+      "date": "2026-07-30",
+      "kind": "replay",
+      "hltbHours": 62,
+      "basis": "self",
+      "hltbNote": "Xenoblade Chronicles 2 main story.",
+      "platforms": [
+        "Switch"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "Stream \"Season 2\" replay of XC2."
+    },
+    {
+      "title": "Pokémon Pokopia — DLC",
+      "date": "2026-08",
+      "dateLabel": "August 2026",
+      "kind": "dlc",
+      "hltbHours": 15,
+      "basis": "estimate",
+      "hltbNote": "Estimate for a sizeable Pokémon DLC.",
+      "platforms": [
+        "Switch 2"
+      ],
+      "editions": [
+        {
+          "name": "DLC (est.)",
+          "price": 24.99
+        }
+      ],
+      "earlyAccess": "",
+      "notes": "Date per your note (August); some reports peg the DLC to Q1 2027 — verify."
+    },
+    {
+      "title": "Final Fantasy XIV",
+      "date": "2026-08",
+      "dateLabel": "August 2026",
+      "kind": "replay",
+      "hltbHours": 40,
+      "basis": "estimate",
+      "hltbNote": "MMO — no fixed length; estimate covers a content patch/return arc.",
+      "platforms": [
+        "PS5",
+        "PC",
+        "Xbox Series"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "Live-service MMO; \"finish\" is open-ended — adjust hours to the content you plan to stream."
+    },
+    {
+      "title": "Orbitals",
+      "date": "2026-09-03",
+      "kind": "game",
+      "hltbHours": 10,
+      "basis": "estimate",
+      "hltbNote": "New IP — rough estimate for a co-op adventure.",
+      "platforms": [
+        "Switch 2"
+      ],
+      "editions": [
+        {
+          "name": "Standard (est.)",
+          "price": 39.99
+        },
+        {
+          "name": "Deluxe",
+          "price": 0
+        }
+      ],
+      "earlyAccess": "Deluxe Edition adds extra in-game content.",
+      "notes": "Two-player co-op sci-fi adventure (anime aesthetic)."
+    },
+    {
+      "title": "Marvel's Wolverine",
+      "date": "2026-09-15",
+      "kind": "game",
+      "hltbHours": 18,
+      "basis": "series-avg",
+      "hltbNote": "Based on Insomniac's Marvel's Spider-Man games (~17h main).",
+      "platforms": [
+        "PS5"
+      ],
+      "editions": [
+        {
+          "name": "Standard",
+          "price": 69.99
+        },
+        {
+          "name": "Digital Deluxe",
+          "price": 79.99
+        }
+      ],
+      "earlyAccess": "Pre-order: Classic Brown suit + Reflective Claws (early unlock), 1 Technique Point, 4 avatars.",
+      "notes": "PS5 exclusive, Insomniac Games."
+    },
+    {
+      "title": "Fire Emblem: Fortune's Weave",
+      "date": "2026-09-17",
+      "kind": "game",
+      "hltbHours": 45,
+      "basis": "series-avg",
+      "hltbNote": "Between Engage (~35h) and Three Houses (~50h/route).",
+      "platforms": [
+        "Switch 2"
+      ],
+      "editions": [
+        {
+          "name": "Digital",
+          "price": 69.99
+        },
+        {
+          "name": "Physical",
+          "price": 79.99
+        },
+        {
+          "name": "Dagdan Collection",
+          "price": 0
+        }
+      ],
+      "earlyAccess": "",
+      "notes": "Switch 2 exclusive. Pre-orders opened Jun 9, 2026."
+    },
+    {
+      "title": "Kingdom Hearts Collection [I–III]",
+      "date": "2026-10-08",
+      "kind": "game",
+      "hltbHours": 90,
+      "basis": "series-avg",
+      "hltbNote": "Headline trilogy main stories combined (KH1 ~25h, KH2 ~33h, KH3 ~30h); full set incl. 2.8 is longer.",
+      "platforms": [
+        "Switch 2",
+        "PS5",
+        "Xbox Series"
+      ],
+      "editions": [
+        {
+          "name": "Standard",
+          "price": 79.99
+        }
+      ],
+      "earlyAccess": "",
+      "notes": "Includes HD 1.5+2.5 ReMIX, 2.8 Final Chapter Prologue, KH3 + ReMind. First native on Nintendo."
+    },
+    {
+      "title": "Grand Theft Auto VI",
+      "date": "2026-11-19",
+      "kind": "game",
+      "hltbHours": 40,
+      "basis": "series-avg",
+      "hltbNote": "Estimate from GTA V story (~31h), scaled up.",
+      "platforms": [
+        "PS5",
+        "Xbox Series"
+      ],
+      "editions": [
+        {
+          "name": "Standard (est.)",
+          "price": 79.99
+        },
+        {
+          "name": "Special/Deluxe (est.)",
+          "price": 109.99
+        }
+      ],
+      "earlyAccess": "",
+      "notes": "Editions/pricing not fully confirmed; Take-Two signalled $70–80 standard."
+    },
+    {
+      "title": "Xenoblade Chronicles 3 — S2",
+      "date": "2026-12-03",
+      "kind": "replay",
+      "hltbHours": 62,
+      "basis": "self",
+      "hltbNote": "Xenoblade Chronicles 3 main story.",
+      "platforms": [
+        "Switch"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "Stream \"Season 2\" replay of XC3."
+    },
+    {
+      "title": "Zelda: Ocarina of Time (remake)",
+      "date": "2026",
+      "dateLabel": "2026 (date TBA)",
+      "kind": "game",
+      "hltbHours": 27,
+      "basis": "remake-original",
+      "hltbNote": "Based on Ocarina of Time main (~27h).",
+      "platforms": [
+        "Switch 2"
+      ],
+      "editions": [
+        {
+          "name": "Standard (est.)",
+          "price": 69.99
+        }
+      ],
+      "earlyAccess": "",
+      "notes": "Announced for later 2026, no firm date yet."
+    },
+    {
+      "title": "The Wolf Among Us (Remastered)",
+      "date": "2026-Q4",
+      "dateLabel": "Holiday 2026",
+      "kind": "game",
+      "hltbHours": 8,
+      "basis": "remake-original",
+      "hltbNote": "Based on the original The Wolf Among Us (~8h).",
+      "platforms": [
+        "PC",
+        "PS5",
+        "Xbox Series"
+      ],
+      "editions": [
+        {
+          "name": "Standard (est.)",
+          "price": 24.99
+        }
+      ],
+      "earlyAccess": "",
+      "notes": "Remaster with 1h+ bonus content. Holiday 2026 window."
+    },
+    {
+      "title": "Among Us Story: On Guard",
+      "date": "2026",
+      "dateLabel": "2026 (date TBA)",
+      "kind": "game",
+      "hltbHours": 5,
+      "basis": "estimate",
+      "hltbNote": "Estimate for a standalone narrative experience.",
+      "platforms": [
+        "PC",
+        "Switch",
+        "Switch 2"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "Standalone narrative spin-off; no firm date."
+    },
+    {
+      "title": "The Duskbloods",
+      "date": "TBD",
+      "dateLabel": "TBA (late 2026?)",
+      "kind": "game",
+      "hltbHours": 30,
+      "basis": "estimate",
+      "hltbNote": "FromSoftware multiplayer — no campaign length; rough estimate.",
+      "platforms": [
+        "Switch 2"
+      ],
+      "editions": [],
+      "earlyAccess": "Closed Network Test this summer.",
+      "notes": "FromSoftware Switch 2 exclusive, up to 8 players PvPvE. No date."
+    },
+    {
+      "title": "Stranger Than Heaven",
+      "date": "2027-01-15",
+      "kind": "game",
+      "hltbHours": 40,
+      "basis": "series-avg",
+      "hltbNote": "Based on RGG / Like a Dragon main stories (~35–45h).",
+      "platforms": [
+        "PS5",
+        "Xbox Series",
+        "PC",
+        "Game Pass"
+      ],
+      "editions": [
+        {
+          "name": "Standard (est.)",
+          "price": 69.99
+        }
+      ],
+      "earlyAccess": "",
+      "notes": "RGG Studio (Project Century). Day one on Game Pass."
+    },
+    {
+      "title": "Tomb Raider: Legacy of Atlantis",
+      "date": "2027-02-12",
+      "kind": "game",
+      "hltbHours": 12,
+      "basis": "remake-original",
+      "hltbNote": "Based on the original Tomb Raider (1996) (~12h).",
+      "platforms": [
+        "PC",
+        "Xbox Series",
+        "PS5",
+        "Switch 2"
+      ],
+      "editions": [
+        {
+          "name": "Standard (est.)",
+          "price": 69.99
+        }
+      ],
+      "earlyAccess": "",
+      "notes": "Unreal Engine 5 full remake of Tomb Raider (1996) by Crystal Dynamics."
+    },
+    {
+      "title": "Persona 4 Revival",
+      "date": "2027-02-18",
+      "kind": "game",
+      "hltbHours": 55,
+      "basis": "remake-original",
+      "hltbNote": "Based on Persona 4 Golden main (~55h).",
+      "platforms": [
+        "PS5",
+        "Xbox Series",
+        "PC",
+        "Game Pass"
+      ],
+      "editions": [
+        {
+          "name": "Digital Standard",
+          "price": 69.99
+        },
+        {
+          "name": "Limited Box",
+          "price": 119.99
+        }
+      ],
+      "earlyAccess": "",
+      "notes": "Eight editions; physical PS5 only. Day one on Game Pass."
+    },
+    {
+      "title": "Final Fantasy VII Revelation",
+      "date": "2027-Q2",
+      "dateLabel": "Spring 2027",
+      "kind": "game",
+      "hltbHours": 55,
+      "basis": "series-avg",
+      "hltbNote": "Estimate from FF7 Remake (~33h) & Rebirth (~73h) main stories.",
+      "platforms": [
+        "Switch 2",
+        "PS5",
+        "Xbox Series",
+        "PC"
+      ],
+      "editions": [
+        {
+          "name": "Standard (est.)",
+          "price": 69.99
+        }
+      ],
+      "earlyAccess": "",
+      "notes": "Final part of the FF7 remake trilogy, simultaneous all-platform."
+    },
+    {
+      "title": "Pokémon Winds and Waves",
+      "date": "2027-11",
+      "dateLabel": "Nov 2027 (window)",
+      "kind": "game",
+      "hltbHours": 30,
+      "basis": "series-avg",
+      "hltbNote": "Estimate from recent mainline Pokémon (~30h main).",
+      "platforms": [
+        "Switch 2"
+      ],
+      "editions": [
+        {
+          "name": "Standard (est.)",
+          "price": 69.99
+        }
+      ],
+      "earlyAccess": "",
+      "notes": "Gen 10. Official window is \"2027\"; you noted November."
+    },
+    {
+      "title": "Pikuniku 2",
+      "date": "2027",
+      "dateLabel": "2027",
+      "kind": "game",
+      "hltbHours": 5,
+      "basis": "remake-original",
+      "hltbNote": "Based on Pikuniku (~3–4h), now 3D.",
+      "platforms": [
+        "PC",
+        "Switch 2"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "Devolver Digital; quirky exploration sequel in 3D."
+    },
+    {
+      "title": "Xenoblade Genesis",
+      "date": "2027",
+      "dateLabel": "2027",
+      "kind": "game",
+      "hltbHours": 60,
+      "basis": "series-avg",
+      "hltbNote": "Estimate from prior Xenoblade main stories (~55–62h).",
+      "platforms": [
+        "Switch 2"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "New Monolith Soft Xenoblade entry; school-setting vibe."
+    },
+    {
+      "title": "Kingdom Hearts IV",
+      "date": "TBD",
+      "dateLabel": "TBA",
+      "kind": "game",
+      "hltbHours": 35,
+      "basis": "series-avg",
+      "hltbNote": "Estimate from Kingdom Hearts III (~30h main).",
+      "platforms": [
+        "Switch 2",
+        "PS5",
+        "Xbox Series"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "No firm date; reported coming to Switch 2 (possibly at the Oct 8 launch)."
+    },
+    {
+      "title": "Final Fantasy VII Remake / Rebirth / Reunion",
+      "date": "TBD",
+      "dateLabel": "Backlog (no date)",
+      "kind": "replay",
+      "hltbHours": 120,
+      "basis": "self",
+      "hltbNote": "Remake (~33h) + Rebirth (~73h) + Crisis Core Reunion (~14h).",
+      "platforms": [
+        "Switch 2",
+        "PS5",
+        "PC"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "Replay/backlog of the existing FF7 titles (Rebirth now on Switch 2)."
+    },
+    {
+      "title": "Virtua Fighter Crossroads",
+      "date": "2027",
+      "dateLabel": "2027",
+      "kind": "game",
+      "hltbHours": 10,
+      "basis": "estimate",
+      "hltbNote": "Estimate for a fighting game with a single-player campaign.",
+      "platforms": [
+        "PS5",
+        "Xbox Series",
+        "PC"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "Anthology blending a narrative campaign with fighting (UE5)."
+    }
+  ]
+}
