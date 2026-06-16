@@ -1,11 +1,11 @@
 {
-  "_README": "Stream Slate — game list. Edit this file and push to update the calendar. date: \"YYYY-MM-DD\" (day), \"YYYY-MM\" (month), \"YYYY-Q3\"/\"Holiday 2026\"/\"Spring 2027\" (quarter), \"YYYY\" (year -> rail), \"TBD\" (rail). dateLabel: optional display override. kind: game|replay|dlc|event. event uses endDate for its window. basis: self|remake-original|series-avg|estimate.",
+  "_README": "Stream Slate — game list. Edit this file and push to update the calendar. date: \"YYYY-MM-DD\" (day), \"YYYY-MM\" (month), \"YYYY-Q3\"/\"Holiday 2026\"/\"Spring 2027\" (quarter), \"YYYY\" (year -> rail), \"TBD\" (rail). dateLabel: optional display override. endDate: event window end. kind: game|dlc|event. basis: self|remake-original|series-avg|estimate. See SLATE.md.",
   "games": [
     {
       "title": "DK Challenge",
       "date": "2026-06-09",
-      "dateLabel": "Jun 9 – Aug 30, 2026",
-      "endDate": "2026-08-30",
+      "dateLabel": "Jun 9 – Sep 1, 2026",
+      "endDate": "2026-09-01",
       "kind": "event",
       "hltbHours": 0,
       "basis": "estimate",
@@ -13,21 +13,53 @@
       "platforms": [],
       "editions": [],
       "earlyAccess": "",
-      "notes": "Self-set challenge running through the summer."
+      "notes": "Self-set challenge (Jun 9 6PM PT – Sep 1 12:59AM PT)."
     },
     {
-      "title": "Xenoblade Chronicles 1 — S2",
+      "title": "Xenoblade Chronicles: Definitive Edition — Nintendo Switch 2 Edition",
       "date": "2026-06-09",
-      "kind": "replay",
+      "kind": "game",
       "hltbHours": 55,
       "basis": "self",
-      "hltbNote": "Xenoblade Chronicles: Definitive Edition main story.",
+      "hltbNote": "Definitive Edition main story (~55h).",
       "platforms": [
-        "Switch"
+        "Switch 2"
       ],
       "editions": [],
       "earlyAccess": "",
-      "notes": "Stream \"Season 2\" replay of XC1."
+      "notes": "First playthrough."
+    },
+    {
+      "title": "Pokémon HeartGold",
+      "date": "2026-06-21",
+      "kind": "game",
+      "hltbHours": 33,
+      "basis": "self",
+      "hltbNote": "Main story (~33h).",
+      "platforms": [
+        "Nintendo DS"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "First playthrough; originally released Mar 2010."
+    },
+    {
+      "title": "Deltarune Chapters 3+4",
+      "date": "2026-06-22",
+      "kind": "dlc",
+      "hltbHours": 9,
+      "basis": "series-avg",
+      "hltbNote": "~Two Deltarune chapters (~4–5h each).",
+      "platforms": [
+        "Switch",
+        "Switch 2",
+        "PS4",
+        "PS5",
+        "PC"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "First playthrough; chapters released Jun 2025."
     },
     {
       "title": "Deltarune — Chapter 5",
@@ -69,7 +101,21 @@
         }
       ],
       "earlyAccess": "Free demo available.",
-      "notes": "Velan Studios remake of Star Fox 64 with mouse aiming + online dogfights."
+      "notes": "Velan Studios remake of Star Fox 64."
+    },
+    {
+      "title": "Pokémon Omega Ruby",
+      "date": "2026-07",
+      "kind": "game",
+      "hltbHours": 26,
+      "basis": "self",
+      "hltbNote": "Main story (~26h).",
+      "platforms": [
+        "Nintendo 3DS"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "First playthrough; originally released Nov 2014."
     },
     {
       "title": "Rhythm Heaven Groove",
@@ -96,7 +142,7 @@
       "kind": "game",
       "hltbHours": 12,
       "basis": "series-avg",
-      "hltbNote": "Est. from Splatoon single-player campaigns (~8h) scaled up for a full spin-off.",
+      "hltbNote": "Est. from Splatoon campaigns (~8h), scaled up.",
       "platforms": [
         "Switch 2"
       ],
@@ -107,7 +153,7 @@
         }
       ],
       "earlyAccess": "",
-      "notes": "Single-player-focused spin-off; up to 4-player co-op raids."
+      "notes": "Single-player-focused Splatoon spin-off."
     },
     {
       "title": "Halo: Campaign Evolved",
@@ -136,51 +182,63 @@
           "price": 199.99
         }
       ],
-      "earlyAccess": "Premium & Collector’s get up to 5 days early access (from Jul 23) + Alpha Halo Armory Pack.",
-      "notes": "Day one on Game Pass. Collector’s adds a 12\" Master Chief statue, LED Cortana chip, Steelbook."
+      "earlyAccess": "Premium & Collector's: up to 5 days early (from Jul 23) + Alpha Halo Armory Pack.",
+      "notes": "Day one on Game Pass."
     },
     {
-      "title": "Xenoblade Chronicles 2 — S2",
+      "title": "Xenoblade Chronicles 2 — Nintendo Switch 2 Edition",
       "date": "2026-07-30",
-      "kind": "replay",
+      "kind": "game",
       "hltbHours": 62,
       "basis": "self",
-      "hltbNote": "Xenoblade Chronicles 2 main story.",
+      "hltbNote": "Main story (~62h).",
+      "platforms": [
+        "Switch 2"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "First playthrough."
+    },
+    {
+      "title": "Fire Emblem Engage",
+      "date": "2026-08",
+      "kind": "game",
+      "hltbHours": 35,
+      "basis": "self",
+      "hltbNote": "Main story (~35h).",
       "platforms": [
         "Switch"
       ],
       "editions": [],
       "earlyAccess": "",
-      "notes": "Stream \"Season 2\" replay of XC2."
+      "notes": "First playthrough; originally released Jan 2023."
     },
     {
-      "title": "Pokémon Pokopia — DLC",
+      "title": "Pokémon Pokopia Expansion Pass: Bubbly Basin",
       "date": "2026-08",
-      "dateLabel": "August 2026",
       "kind": "dlc",
       "hltbHours": 15,
       "basis": "estimate",
-      "hltbNote": "Estimate for a sizeable Pokémon DLC.",
+      "hltbNote": "Estimate for a sizeable Pokémon expansion.",
       "platforms": [
         "Switch 2"
       ],
       "editions": [
         {
-          "name": "DLC (est.)",
+          "name": "Expansion Pass (est.)",
           "price": 24.99
         }
       ],
       "earlyAccess": "",
-      "notes": "Date per your note (August); some reports peg the DLC to Q1 2027 — verify."
+      "notes": "Date per your note (August); some reports peg the DLC to Q1 2027."
     },
     {
       "title": "Final Fantasy XIV",
       "date": "2026-08",
-      "dateLabel": "August 2026",
-      "kind": "replay",
+      "kind": "game",
       "hltbHours": 40,
       "basis": "estimate",
-      "hltbNote": "MMO — no fixed length; estimate covers a content patch/return arc.",
+      "hltbNote": "MMO — no fixed length; estimate for the content you plan to stream.",
       "platforms": [
         "PS5",
         "PC",
@@ -188,7 +246,21 @@
       ],
       "editions": [],
       "earlyAccess": "",
-      "notes": "Live-service MMO; \"finish\" is open-ended — adjust hours to the content you plan to stream."
+      "notes": "Live-service MMO; adjust hours to the content you'll stream."
+    },
+    {
+      "title": "Pokémon Mystery Dungeon: Rescue Team DX",
+      "date": "2026-09",
+      "kind": "game",
+      "hltbHours": 18,
+      "basis": "self",
+      "hltbNote": "Main story (~18h).",
+      "platforms": [
+        "Switch"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "First playthrough; originally released Mar 2020."
     },
     {
       "title": "Orbitals",
@@ -211,7 +283,7 @@
         }
       ],
       "earlyAccess": "Deluxe Edition adds extra in-game content.",
-      "notes": "Two-player co-op sci-fi adventure (anime aesthetic)."
+      "notes": "Two-player co-op sci-fi adventure."
     },
     {
       "title": "Marvel's Wolverine",
@@ -261,15 +333,29 @@
         }
       ],
       "earlyAccess": "",
-      "notes": "Switch 2 exclusive. Pre-orders opened Jun 9, 2026."
+      "notes": "Switch 2 exclusive."
     },
     {
-      "title": "Kingdom Hearts Collection [I–III]",
+      "title": "Pokémon Platinum",
+      "date": "2026-10",
+      "kind": "game",
+      "hltbHours": 32,
+      "basis": "self",
+      "hltbNote": "Main story (~32h).",
+      "platforms": [
+        "Nintendo DS"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "First playthrough; originally released Mar 2009."
+    },
+    {
+      "title": "KINGDOM HEARTS Collection [I～III]",
       "date": "2026-10-08",
       "kind": "game",
       "hltbHours": 90,
       "basis": "series-avg",
-      "hltbNote": "Headline trilogy main stories combined (KH1 ~25h, KH2 ~33h, KH3 ~30h); full set incl. 2.8 is longer.",
+      "hltbNote": "Headline trilogy main stories combined (KH1 ~25h, KH2 ~33h, KH3 ~30h).",
       "platforms": [
         "Switch 2",
         "PS5",
@@ -282,7 +368,26 @@
         }
       ],
       "earlyAccess": "",
-      "notes": "Includes HD 1.5+2.5 ReMIX, 2.8 Final Chapter Prologue, KH3 + ReMind. First native on Nintendo."
+      "notes": "Includes HD 1.5+2.5 ReMIX, 2.8 Final Chapter Prologue, KH3 + ReMind."
+    },
+    {
+      "title": "Switch Sports Resort",
+      "date": "2026-10-22",
+      "kind": "game",
+      "hltbHours": 6,
+      "basis": "estimate",
+      "hltbNote": "Party game — rough 'do all the sports' estimate.",
+      "platforms": [
+        "Switch 2"
+      ],
+      "editions": [
+        {
+          "name": "Standard (est.)",
+          "price": 49.99
+        }
+      ],
+      "earlyAccess": "",
+      "notes": "Wuhu Island; sequel to Nintendo Switch Sports."
     },
     {
       "title": "Grand Theft Auto VI",
@@ -306,24 +411,24 @@
         }
       ],
       "earlyAccess": "",
-      "notes": "Editions/pricing not fully confirmed; Take-Two signalled $70–80 standard."
+      "notes": "Editions/pricing not fully confirmed."
     },
     {
-      "title": "Xenoblade Chronicles 3 — S2",
+      "title": "Xenoblade Chronicles 3 — Nintendo Switch 2 Edition",
       "date": "2026-12-03",
-      "kind": "replay",
+      "kind": "game",
       "hltbHours": 62,
       "basis": "self",
-      "hltbNote": "Xenoblade Chronicles 3 main story.",
+      "hltbNote": "Main story (~62h).",
       "platforms": [
-        "Switch"
+        "Switch 2"
       ],
       "editions": [],
       "earlyAccess": "",
-      "notes": "Stream \"Season 2\" replay of XC3."
+      "notes": "First playthrough."
     },
     {
-      "title": "Zelda: Ocarina of Time (remake)",
+      "title": "The Legend of Zelda: Ocarina of Time — Nintendo Switch 2",
       "date": "2026",
       "dateLabel": "2026 (date TBA)",
       "kind": "game",
@@ -343,9 +448,8 @@
       "notes": "Announced for later 2026, no firm date yet."
     },
     {
-      "title": "The Wolf Among Us (Remastered)",
-      "date": "2026-Q4",
-      "dateLabel": "Holiday 2026",
+      "title": "The Wolf Among Us Remastered",
+      "date": "Holiday 2026",
       "kind": "game",
       "hltbHours": 8,
       "basis": "remake-original",
@@ -362,7 +466,7 @@
         }
       ],
       "earlyAccess": "",
-      "notes": "Remaster with 1h+ bonus content. Holiday 2026 window."
+      "notes": "Remaster with 1h+ bonus content."
     },
     {
       "title": "Among Us Story: On Guard",
@@ -394,7 +498,24 @@
       ],
       "editions": [],
       "earlyAccess": "Closed Network Test this summer.",
-      "notes": "FromSoftware Switch 2 exclusive, up to 8 players PvPvE. No date."
+      "notes": "FromSoftware Switch 2 exclusive, up to 8 players. No date."
+    },
+    {
+      "title": "Persona 3 Reload",
+      "date": "2027-01",
+      "kind": "game",
+      "hltbHours": 46,
+      "basis": "self",
+      "hltbNote": "Main story (~45–50h).",
+      "platforms": [
+        "PS5",
+        "Xbox Series",
+        "PC",
+        "Game Pass"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "First playthrough; originally released Feb 2024."
     },
     {
       "title": "Stranger Than Heaven",
@@ -438,7 +559,7 @@
         }
       ],
       "earlyAccess": "",
-      "notes": "Unreal Engine 5 full remake of Tomb Raider (1996) by Crystal Dynamics."
+      "notes": "Unreal Engine 5 full remake of Tomb Raider (1996)."
     },
     {
       "title": "Persona 4 Revival",
@@ -467,13 +588,68 @@
       "notes": "Eight editions; physical PS5 only. Day one on Game Pass."
     },
     {
+      "title": "Pokémon Black",
+      "date": "2027-03",
+      "kind": "game",
+      "hltbHours": 30,
+      "basis": "self",
+      "hltbNote": "Main story (~30h).",
+      "platforms": [
+        "Nintendo DS"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "First playthrough; originally released Mar 2011."
+    },
+    {
+      "title": "Pokémon Black 2",
+      "date": "2027-04",
+      "kind": "game",
+      "hltbHours": 30,
+      "basis": "self",
+      "hltbNote": "Main story (~30h).",
+      "platforms": [
+        "Nintendo DS"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "First playthrough; originally released Oct 2012."
+    },
+    {
+      "title": "Pokémon Mystery Dungeon: Explorers of Sky",
+      "date": "2027-05",
+      "kind": "game",
+      "hltbHours": 30,
+      "basis": "self",
+      "hltbNote": "Main story incl. epilogue (~30h).",
+      "platforms": [
+        "Nintendo DS"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "First playthrough; originally released Oct 2009."
+    },
+    {
+      "title": "Pokémon Ultra Sun",
+      "date": "2027-06",
+      "kind": "game",
+      "hltbHours": 32,
+      "basis": "self",
+      "hltbNote": "Main story (~32h).",
+      "platforms": [
+        "Nintendo 3DS"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "First playthrough; originally released Nov 2017."
+    },
+    {
       "title": "Final Fantasy VII Revelation",
-      "date": "2027-Q2",
-      "dateLabel": "Spring 2027",
+      "date": "Spring 2027",
       "kind": "game",
       "hltbHours": 55,
       "basis": "series-avg",
-      "hltbNote": "Estimate from FF7 Remake (~33h) & Rebirth (~73h) main stories.",
+      "hltbNote": "Estimate from FF7 Remake (~33h) & Rebirth (~70h) main stories.",
       "platforms": [
         "Switch 2",
         "PS5",
@@ -487,7 +663,49 @@
         }
       ],
       "earlyAccess": "",
-      "notes": "Final part of the FF7 remake trilogy, simultaneous all-platform."
+      "notes": "Final part of the FF7 remake trilogy."
+    },
+    {
+      "title": "Pokémon Sword",
+      "date": "2027-08",
+      "kind": "game",
+      "hltbHours": 26,
+      "basis": "self",
+      "hltbNote": "Main story (~26h).",
+      "platforms": [
+        "Switch"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "First playthrough; originally released Nov 2019."
+    },
+    {
+      "title": "New Pokémon Snap",
+      "date": "2027-09",
+      "kind": "game",
+      "hltbHours": 10,
+      "basis": "self",
+      "hltbNote": "Main story (~10h).",
+      "platforms": [
+        "Switch"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "First playthrough; originally released Apr 2021."
+    },
+    {
+      "title": "Pokémon Violet",
+      "date": "2027-10",
+      "kind": "game",
+      "hltbHours": 30,
+      "basis": "self",
+      "hltbNote": "Main story (~30h).",
+      "platforms": [
+        "Switch"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "First playthrough; originally released Nov 2022."
     },
     {
       "title": "Pokémon Winds and Waves",
@@ -507,12 +725,11 @@
         }
       ],
       "earlyAccess": "",
-      "notes": "Gen 10. Official window is \"2027\"; you noted November."
+      "notes": "Gen 10. Official window is 2027; you noted November."
     },
     {
       "title": "Pikuniku 2",
       "date": "2027",
-      "dateLabel": "2027",
       "kind": "game",
       "hltbHours": 5,
       "basis": "remake-original",
@@ -528,7 +745,6 @@
     {
       "title": "Xenoblade Genesis",
       "date": "2027",
-      "dateLabel": "2027",
       "kind": "game",
       "hltbHours": 60,
       "basis": "series-avg",
@@ -538,7 +754,23 @@
       ],
       "editions": [],
       "earlyAccess": "",
-      "notes": "New Monolith Soft Xenoblade entry; school-setting vibe."
+      "notes": "New Monolith Soft Xenoblade entry."
+    },
+    {
+      "title": "Virtua Fighter Crossroads",
+      "date": "2027",
+      "kind": "game",
+      "hltbHours": 10,
+      "basis": "estimate",
+      "hltbNote": "Estimate for a fighting game with a single-player campaign.",
+      "platforms": [
+        "PS5",
+        "Xbox Series",
+        "PC"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "Anthology blending a narrative campaign with fighting (UE5)."
     },
     {
       "title": "Kingdom Hearts IV",
@@ -555,41 +787,59 @@
       ],
       "editions": [],
       "earlyAccess": "",
-      "notes": "No firm date; reported coming to Switch 2 (possibly at the Oct 8 launch)."
+      "notes": "No firm date; reported coming to Switch 2."
     },
     {
-      "title": "Final Fantasy VII Remake / Rebirth / Reunion",
+      "title": "Final Fantasy VII Remake Intergrade",
       "date": "TBD",
-      "dateLabel": "Backlog (no date)",
-      "kind": "replay",
-      "hltbHours": 120,
+      "dateLabel": "Backlog (TBD)",
+      "kind": "game",
+      "hltbHours": 33,
       "basis": "self",
-      "hltbNote": "Remake (~33h) + Rebirth (~73h) + Crisis Core Reunion (~14h).",
+      "hltbNote": "FF7 Remake main (~33h) incl. Intergrade's Yuffie episode.",
       "platforms": [
-        "Switch 2",
         "PS5",
         "PC"
       ],
       "editions": [],
       "earlyAccess": "",
-      "notes": "Replay/backlog of the existing FF7 titles (Rebirth now on Switch 2)."
+      "notes": "First playthrough; originally released Jun 2021. Unscheduled."
     },
     {
-      "title": "Virtua Fighter Crossroads",
-      "date": "2027",
-      "dateLabel": "2027",
+      "title": "Crisis Core: Final Fantasy VII Reunion",
+      "date": "TBD",
+      "dateLabel": "Backlog (TBD)",
       "kind": "game",
-      "hltbHours": 10,
-      "basis": "estimate",
-      "hltbNote": "Estimate for a fighting game with a single-player campaign.",
+      "hltbHours": 14,
+      "basis": "self",
+      "hltbNote": "Main story (~14h).",
       "platforms": [
         "PS5",
+        "Switch",
+        "PC",
+        "Xbox Series"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "First playthrough; originally released Dec 2022. Unscheduled."
+    },
+    {
+      "title": "Final Fantasy VII Rebirth",
+      "date": "TBD",
+      "dateLabel": "Backlog (TBD)",
+      "kind": "game",
+      "hltbHours": 70,
+      "basis": "self",
+      "hltbNote": "Main story (~63–73h).",
+      "platforms": [
+        "PS5",
+        "Switch 2",
         "Xbox Series",
         "PC"
       ],
       "editions": [],
       "earlyAccess": "",
-      "notes": "Anthology blending a narrative campaign with fighting (UE5)."
+      "notes": "First playthrough; originally released Feb 2024. Unscheduled."
     }
   ]
 }
