@@ -159,6 +159,51 @@
       "notes": "Single-player-focused Splatoon spin-off."
     },
     {
+      "title": "Splatoon 2: Octo Expansion",
+      "date": "2026-07",
+      "kind": "dlc",
+      "backlog": true,
+      "hltbHours": 6,
+      "basis": "self",
+      "hltbNote": "Single-player Octo Expansion (~6h).",
+      "platforms": [
+        "Switch"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "First playthrough; originally released Jun 2018."
+    },
+    {
+      "title": "Splatoon 3",
+      "date": "2026-07",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 9,
+      "basis": "self",
+      "hltbNote": "Story mode: Return of the Mammalians (~9h).",
+      "platforms": [
+        "Switch"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "First playthrough; originally released Sep 2022."
+    },
+    {
+      "title": "Splatoon 3: Side Order",
+      "date": "2026-07",
+      "kind": "dlc",
+      "backlog": true,
+      "hltbHours": 7,
+      "basis": "self",
+      "hltbNote": "Side Order roguelike DLC (~7h).",
+      "platforms": [
+        "Switch"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "First playthrough; originally released Feb 2024."
+    },
+    {
       "title": "Halo: Campaign Evolved",
       "date": "2026-07-28",
       "kind": "game",
