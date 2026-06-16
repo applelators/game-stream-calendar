@@ -490,7 +490,7 @@ function MonthGridView({ games, pace, vacations, onPick }) {
                 {!info.vac && !info.launch && info.session && info.play && (
                   <div className={`gc-ev k-${info.play.kind}`} onClick={() => onPick(info.play.id)}
                     title={`${info.play.title} — stream ${info.session.idx}/${info.session.total}`}>
-                    {info.play.title} {info.session.idx}/{info.session.total}</div>
+                    <b>{info.session.idx}/{info.session.total}</b>{info.session.idx === 1 ? ' ' + info.play.title : ''}</div>
                 )}
               </div>
             );
