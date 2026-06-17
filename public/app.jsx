@@ -17,7 +17,7 @@ const DEFAULT_SETTINGS = {
   override: false,
   hoursPerStream: 5.11,
   hoursPerWeek: 11.52,
-  view: 'timeline',
+  view: 'grid',
   schedMode: 'parallel',
   vacations: [],   // [{ id, label, start:'YYYY-MM-DD', end:'YYYY-MM-DD' }] — no streaming
   autoPlace: [],   // ids of month/quarter games the user pinned to an auto-picked start day
@@ -93,10 +93,12 @@ function App() {
         const r = await fetch('/api/state');
         let state = r.ok ? await r.json() : null;
         if (!state) state = loadLocal();
-        if (!cancelled && state && state.settings) setSettings({ ...DEFAULT_SETTINGS, ...state.settings });
+        // Always open on the calendar (Month grid); the chosen view is a per-session
+        // preference, not restored from KV.
+        if (!cancelled && state && state.settings) setSettings({ ...DEFAULT_SETTINGS, ...state.settings, view: DEFAULT_SETTINGS.view });
       } catch (e) {
         const ls = loadLocal();
-        if (!cancelled && ls && ls.settings) setSettings({ ...DEFAULT_SETTINGS, ...ls.settings });
+        if (!cancelled && ls && ls.settings) setSettings({ ...DEFAULT_SETTINGS, ...ls.settings, view: DEFAULT_SETTINGS.view });
       }
       try {
         const pr = await fetch('/api/pace');
