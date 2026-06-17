@@ -439,10 +439,13 @@ function MonthGridView({ games, pace, vacations, onPick, onTogglePlan }) {
                       onClick={() => onPick(info.launch.id)} title={`Midnight launch: ${info.launch.title}`}>
                       🌙 {info.launch.title}</span>
                   )}
-                  {!info.vac && !info.launch && info.session && info.play && (
-                    <span className="mg-pill" style={{ background: KIND_COLOR[info.play.kind] }}
-                      onClick={() => onPick(info.play.id)} title={`${info.play.title} — stream ${info.session.idx}/${info.session.total}`}>
-                      {info.session.idx}/{info.session.total}</span>
+                  {!info.vac && !info.launch && info.play && (
+                    <span className="mg-pill mg-game" style={{ background: KIND_COLOR[info.play.kind] }}
+                      onClick={() => onPick(info.play.id)}
+                      title={`${info.play.title}${info.session ? ` — stream ${info.session.idx}/${info.session.total}` : ''}`}>
+                      <span className="mg-gt">{info.play.title}</span>
+                      {info.session && <span className="mg-gn">{info.session.idx}/{info.session.total}</span>}
+                    </span>
                   )}
                 </div>
               );
