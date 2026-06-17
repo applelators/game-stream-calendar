@@ -27,6 +27,23 @@ const FALLBACK_PACE = { hoursPerStream: 5.11, hoursPerWeek: 11.52, source: 'fall
 
 const KIND_LABEL = { game: 'Game', replay: 'Replay', dlc: 'DLC / Chapter', event: 'Event' };
 const KIND_COLOR = { game: 'var(--accent)', replay: 'var(--accent-2)', dlc: 'var(--good)', event: 'var(--warn)' };
+
+// Give every game its own stable colour (hashed from its id into a curated palette)
+// so a run of the same game on the calendar reads as one contiguous block and
+// different games never look alike — much easier to trace "which game is which"
+// than a single per-kind colour. The palette is chosen to be mutually distinct and
+// light enough for dark text; `tint` is the same colour at low alpha for the cell.
+const GAME_PALETTE = [
+  '#f7768e', '#ff9e64', '#e0af68', '#9ece6a', '#73daca', '#7dcfff', '#7aa2f7', '#bb9af7',
+  '#f7c8e0', '#e6db74', '#fca7ea', '#a6e22e', '#fd971f', '#66d9ef', '#c3e88d', '#ff757f',
+];
+function gameColor(id) {
+  let h = 0;
+  const s = id || '';
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  const c = GAME_PALETTE[h % GAME_PALETTE.length];
+  return { solid: c, tint: c + '2e' /* ~18% alpha */ };
+}
 const PX_PER_DAY = 4.2;
 
 // ----------------------------------------------------------------------------
@@ -415,7 +432,7 @@ function MonthGridView({ games, pace, vacations, onPick, onTogglePlan }) {
     while (m <= end) { months.push(m); m = new Date(Date.UTC(m.getUTCFullYear(), m.getUTCMonth() + 1, 1)); }
     return (
       <div>
-        <div className="cal-legend">Band = the game; numbers = each stream (3/6) · 🌙 = launch · hatched = vacation · ★ = release · dashed chip = planned (tap to auto-pick a day) · ✓ chip = placed</div>
+        <div className="cal-legend">Each game has its own colour; numbers = each stream (3/6) · 🌙 = launch · hatched = vacation · ★ = release · dashed chip = planned (tap to auto-pick a day) · ✓ chip = placed</div>
         <div className="mg-wrap">
           {months.map((mo, i) => {
             const y = mo.getUTCFullYear(), mon = mo.getUTCMonth();
@@ -429,18 +446,20 @@ function MonthGridView({ games, pace, vacations, onPick, onTogglePlan }) {
               const info = dayInfo(day, ctx);
               monthCount += info.releases.length;
               const isToday = y === tY && mon === tM && d === tD;
-              const cls = 'mg-cell' + (info.vac ? ' vac' : info.launch ? ` play-${info.launch.kind}` : info.play ? ` play-${info.play.kind}` : '') + (isToday ? ' today' : '');
+              const cls = 'mg-cell' + (info.vac ? ' vac' : '') + (isToday ? ' today' : '');
+              const tintId = info.vac ? null : (info.launch ? info.launch.id : info.play ? info.play.id : null);
+              const cellStyle = tintId ? { backgroundColor: gameColor(tintId).tint } : undefined;
               cells.push(
-                <div key={d} className={cls}>
+                <div key={d} className={cls} style={cellStyle}>
                   <span className="dnum">{d}{info.releases.length ? <span className="relstar">★</span> : null}</span>
                   {info.vac && info.vacRunStart && <span className="mg-pill nowvac" title={info.vacLabel}>✈ {info.vacLabel}</span>}
                   {info.launch && (
-                    <span className="mg-pill" style={{ background: KIND_COLOR[info.launch.kind] }}
+                    <span className="mg-pill" style={{ background: gameColor(info.launch.id).solid }}
                       onClick={() => onPick(info.launch.id)} title={`Midnight launch: ${info.launch.title}`}>
                       🌙 {info.launch.title}</span>
                   )}
                   {!info.vac && !info.launch && info.play && (
-                    <span className="mg-pill mg-game" style={{ background: KIND_COLOR[info.play.kind] }}
+                    <span className="mg-pill mg-game" style={{ background: gameColor(info.play.id).solid }}
                       onClick={() => onPick(info.play.id)}
                       title={`${info.play.title}${info.session ? ` — stream ${info.session.idx}/${info.session.total}` : ''}`}>
                       <span className="mg-gt">{info.play.title}</span>
@@ -458,7 +477,10 @@ function MonthGridView({ games, pace, vacations, onPick, onTogglePlan }) {
                   <div className="mg-planned">
                     <span className="mg-planned-h">Planned · tap to auto-pick a day</span>
                     {planned.map((g) => (
-                      <button key={g.id} className={`mg-planned-chip k-${g.kind}${g.placedDay ? ' placed' : ''}`}
+                      <button key={g.id} className={`mg-planned-chip${g.placedDay ? ' placed' : ''}`}
+                        style={g.placedDay
+                          ? { background: gameColor(g.id).solid, borderColor: gameColor(g.id).solid }
+                          : { borderColor: gameColor(g.id).solid }}
                         onClick={() => onTogglePlan(g.id)}
                         title={g.placedDay ? `${g.title} — starts ${fmtDate(g.placedDay)} · tap to unset` : `${g.title} — ${g.plannedLabel || releaseLabel(g.release)}`}>
                         {g.placedDay ? '✓ ' : ''}{g.title}{g.placedDay ? ` · ${shortDate(g.placedDay)}` : ''}</button>
@@ -496,7 +518,7 @@ function MonthGridView({ games, pace, vacations, onPick, onTogglePlan }) {
         <button className="gc-today" onClick={scrollToToday}>Jump to today</button>
         <div className="gc-cnt">{totalCount} release{totalCount === 1 ? '' : 's'} · scroll for more months ↓</div>
       </div>
-      <div className="cal-legend">Tinted band = the game you’ll be streaming; numbers mark each stream (e.g. <b>3/6</b> = 3rd of 6) · 🌙 = midnight launch (eve reserved) · <span className="lg-vac">hatched</span> = vacation · ★ = release day · <span className="lg-planned">dashed chip</span> = planned for the month — click to auto-pick a start day · ✓ chip = placed</div>
+      <div className="cal-legend">Each game has its own colour, so a run of one colour is one game; numbers mark each stream (e.g. <b>3/6</b> = 3rd of 6) · 🌙 = midnight launch (eve reserved) · <span className="lg-vac">hatched</span> = vacation · ★ = release day · <span className="lg-planned">dashed chip</span> = planned for the month — click to auto-pick a start day · ✓ chip = placed</div>
       {/* weekday header stays pinned while you scroll through every month */}
       <div className="gc-weekbar">{DOW_FULL.map((d) => <span key={d}>{d}</span>)}</div>
       <div className="gc-stack">
@@ -512,18 +534,20 @@ function MonthGridView({ games, pace, vacations, onPick, onTogglePlan }) {
             const info = dayInfo(day, ctx);
             monthCount += info.releases.length;
             const isToday = y === tY && mon === tM && d === tD;
-            const cls = 'gc-cell' + (info.vac ? ' vac' : info.launch ? ` play-${info.launch.kind}` : info.play ? ` play-${info.play.kind}` : '') + (isToday ? ' today' : '');
+            const cls = 'gc-cell' + (info.vac ? ' vac' : '') + (isToday ? ' today' : '');
             const relTitles = info.releases.map((r) => r.title).join(', ');
+            const tintId = info.vac ? null : (info.launch ? info.launch.id : info.play ? info.play.id : null);
+            const cellStyle = tintId ? { backgroundColor: gameColor(tintId).tint } : undefined;
             cells.push(
-              <div key={d} className={cls}>
+              <div key={d} className={cls} style={cellStyle}>
                 <span className="gc-dnum" title={relTitles || undefined}>{d}{info.releases.length ? <span className="gc-relstar">★</span> : null}</span>
                 {info.vac && info.vacRunStart && <div className="gc-away">✈ {info.vacLabel}</div>}
                 {info.launch && (
-                  <div className={`gc-ev k-${info.launch.kind}`} onClick={() => onPick(info.launch.id)}
+                  <div className="gc-ev" style={{ background: gameColor(info.launch.id).solid }} onClick={() => onPick(info.launch.id)}
                     title={`Midnight launch: ${info.launch.title}`}>🌙 {info.launch.title}</div>
                 )}
                 {!info.vac && !info.launch && info.session && info.play && (
-                  <div className={`gc-ev k-${info.play.kind}`} onClick={() => onPick(info.play.id)}
+                  <div className="gc-ev" style={{ background: gameColor(info.play.id).solid }} onClick={() => onPick(info.play.id)}
                     title={`${info.play.title} — stream ${info.session.idx}/${info.session.total}`}>
                     <b>{info.session.idx}/{info.session.total}</b>{info.session.idx === 1 ? ' ' + info.play.title : ''}</div>
                 )}
@@ -539,7 +563,10 @@ function MonthGridView({ games, pace, vacations, onPick, onTogglePlan }) {
                 <div className="gc-planned">
                   <span className="gc-planned-h">Planned this month · click to auto-pick a start day</span>
                   {planned.map((g) => (
-                    <button key={g.id} className={`gc-planned-chip k-${g.kind}${g.placedDay ? ' placed' : ''}`}
+                    <button key={g.id} className={`gc-planned-chip${g.placedDay ? ' placed' : ''}`}
+                      style={g.placedDay
+                        ? { background: gameColor(g.id).solid, borderColor: gameColor(g.id).solid }
+                        : { borderColor: gameColor(g.id).solid }}
                       onClick={() => onTogglePlan(g.id)}
                       title={g.placedDay
                         ? `${g.title} — auto-placed to start ${fmtDate(g.placedDay)} · click to unset`
