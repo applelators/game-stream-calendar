@@ -250,6 +250,24 @@ input, select, textarea { font-family: inherit; }
 .cal-legend { font-size: 0.72rem; color: var(--faint); margin: 0 2px 12px; }
 .cal-legend .lg-vac { padding: 0 5px; border-radius: 3px; color: var(--muted);
   background: repeating-linear-gradient(45deg, #8b97ab40, #8b97ab40 3px, transparent 3px, transparent 6px); }
+.cal-legend .lg-planned { padding: 0 6px; border-radius: 99px; color: var(--muted);
+  border: 1px dashed var(--border-solid); }
+
+/* "Planned this month" — month/quarter games with no set day, pinned to their month */
+.gc-planned, .mg-planned { display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  padding: 8px 16px; background: var(--panel); border-bottom: 1px solid var(--border); }
+.mg-planned { padding: 7px 12px; }
+.gc-planned-h, .mg-planned-h { font-size: 0.66rem; letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--faint); font-family: var(--mono); margin-right: 2px; }
+.gc-planned-chip, .mg-planned-chip { font-size: 0.74rem; font-weight: 600; color: var(--text);
+  background: transparent; border: 1px dashed var(--border-solid); border-radius: 99px;
+  padding: 2px 9px; cursor: pointer; transition: 0.1s; display: inline-flex; align-items: baseline; gap: 5px; }
+.gc-planned-chip:hover, .mg-planned-chip:hover { background: var(--panel-2); filter: brightness(1.1); }
+.gc-planned-chip small { color: var(--faint); font-weight: 500; font-family: var(--mono); font-size: 0.62rem; }
+.gc-planned-chip.k-game, .mg-planned-chip.k-game { border-color: var(--accent); }
+.gc-planned-chip.k-replay, .mg-planned-chip.k-replay { border-color: var(--accent-2); }
+.gc-planned-chip.k-dlc, .mg-planned-chip.k-dlc { border-color: var(--good); }
+.gc-planned-chip.k-event, .mg-planned-chip.k-event { border-color: var(--warn); }
 
 .set-divider { height: 1px; background: var(--border-solid); margin: 4px 0 2px; }
 .set-h { font-family: var(--display); font-weight: 700; font-size: 0.95rem; }

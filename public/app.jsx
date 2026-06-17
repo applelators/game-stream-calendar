@@ -352,14 +352,21 @@ function MonthGridView({ games, pace, vacations, onPick }) {
 
   // The realistic one-game-per-day plan (release-priority queue) drives the
   // calendar: each stream day maps to the game you'll actually be playing.
-  const { releasesByDay, playByDay, sessionByDay, gameById, min, max } = useMemo(() => {
+  const { releasesByDay, playByDay, sessionByDay, gameById, plannedByMonth, min, max } = useMemo(() => {
     const pos = schedule(placeable, pace, 'sequential', vacations);
-    const rbd = {}, pbd = {}, gbi = {};
+    const rbd = {}, pbd = {}, gbi = {}, pbm = {};
     let mn = null, mx = null;
     for (const g of placeable) {
       gbi[g.id] = g;
       const a = anchorDate(g.release);
       if (a) { const k = dayKey(a); (rbd[k] = rbd[k] || []).push(g); }
+      // Games with only a month/quarter window (no specific day) are pinned to the
+      // month they're planned for, so they show even when the release-priority queue
+      // pushes their actual play band far away.
+      if (a && isFuzzy(g.release) && g.kind !== 'event') {
+        const mk = `${a.getUTCFullYear()}-${a.getUTCMonth()}`;
+        (pbm[mk] = pbm[mk] || []).push(g);
+      }
       const p = pos[g.id];
       if (!p) continue;
       if (!mn || p.start < mn) mn = p.start;
@@ -369,7 +376,7 @@ function MonthGridView({ games, pace, vacations, onPick }) {
         for (let d = new Date(seg.start); d < seg.end; d = addDays(d, 1)) pbd[dayKey(d)] = g.id;
     }
     const sbd = streamSessions(placeable, pace, pos, vacations);
-    return { releasesByDay: rbd, playByDay: pbd, sessionByDay: sbd, gameById: gbi, min: mn, max: mx };
+    return { releasesByDay: rbd, playByDay: pbd, sessionByDay: sbd, gameById: gbi, plannedByMonth: pbm, min: mn, max: mx };
   }, [placeable, pace, vacations]);
 
   const eves = useMemo(() => launchEves(placeable), [placeable]);
@@ -395,7 +402,7 @@ function MonthGridView({ games, pace, vacations, onPick }) {
     while (m <= end) { months.push(m); m = new Date(Date.UTC(m.getUTCFullYear(), m.getUTCMonth() + 1, 1)); }
     return (
       <div>
-        <div className="cal-legend">Band = the game; numbers = each stream (3/6) · 🌙 = launch · hatched = vacation · ★ = release</div>
+        <div className="cal-legend">Band = the game; numbers = each stream (3/6) · 🌙 = launch · hatched = vacation · ★ = release · dashed chip = planned (no set day)</div>
         <div className="mg-wrap">
           {months.map((mo, i) => {
             const y = mo.getUTCFullYear(), mon = mo.getUTCMonth();
@@ -427,9 +434,19 @@ function MonthGridView({ games, pace, vacations, onPick }) {
                 </div>
               );
             }
+            const planned = plannedByMonth[`${y}-${mon}`];
             return (
               <div className="mg-card" key={i}>
                 <div className="mg-head">{MONTHS_LONG[mon]} {y}<span className="cnt">{monthCount} release{monthCount === 1 ? '' : 's'}</span></div>
+                {planned && planned.length > 0 && (
+                  <div className="mg-planned">
+                    <span className="mg-planned-h">Planned · no set day</span>
+                    {planned.map((g) => (
+                      <button key={g.id} className={`mg-planned-chip k-${g.kind}`} onClick={() => onPick(g.id)}
+                        title={`${g.title} — ${releaseLabel(g.release)}`}>{g.title}</button>
+                    ))}
+                  </div>
+                )}
                 <div className="mg-dow">{DOW.map((d) => <span key={d}>{d}</span>)}</div>
                 <div className="mg-grid">{cells}</div>
               </div>
@@ -461,7 +478,7 @@ function MonthGridView({ games, pace, vacations, onPick }) {
         <button className="gc-today" onClick={scrollToToday}>Jump to today</button>
         <div className="gc-cnt">{totalCount} release{totalCount === 1 ? '' : 's'} · scroll for more months ↓</div>
       </div>
-      <div className="cal-legend">Tinted band = the game you’ll be streaming; numbers mark each stream (e.g. <b>3/6</b> = 3rd of 6) · 🌙 = midnight launch (eve reserved) · <span className="lg-vac">hatched</span> = vacation · ★ = release day</div>
+      <div className="cal-legend">Tinted band = the game you’ll be streaming; numbers mark each stream (e.g. <b>3/6</b> = 3rd of 6) · 🌙 = midnight launch (eve reserved) · <span className="lg-vac">hatched</span> = vacation · ★ = release day · <span className="lg-planned">dashed chip</span> = planned for the month (no set day)</div>
       {/* weekday header stays pinned while you scroll through every month */}
       <div className="gc-weekbar">{DOW_FULL.map((d) => <span key={d}>{d}</span>)}</div>
       <div className="gc-stack">
@@ -495,10 +512,21 @@ function MonthGridView({ games, pace, vacations, onPick }) {
               </div>
             );
           }
+          const planned = plannedByMonth[`${y}-${mon}`];
           return (
             <div className="gc-month" id={`gcm-${y}-${mon}`} key={idx}>
               <div className="gc-mhead">{MONTHS_LONG[mon]} {y}
                 <span className="gc-headcnt">{monthCount} release{monthCount === 1 ? '' : 's'}</span></div>
+              {planned && planned.length > 0 && (
+                <div className="gc-planned">
+                  <span className="gc-planned-h">Planned this month · no set day</span>
+                  {planned.map((g) => (
+                    <button key={g.id} className={`gc-planned-chip k-${g.kind}`} onClick={() => onPick(g.id)}
+                      title={`${g.title} — ${releaseLabel(g.release)}`}>
+                      {g.title}<small>{releaseLabel(g.release)}</small></button>
+                  ))}
+                </div>
+              )}
               <div className="gc-grid">{cells}</div>
             </div>
           );
