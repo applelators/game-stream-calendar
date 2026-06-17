@@ -107,6 +107,14 @@ split game in the queue.
 - **Vacations** (`settings.vacations`, ISO date ranges): `normalizeVacations` →
   `addActiveDays`/`gameEnd` skip vacation days so breaks push finish dates later. Managed in
   ⚙ Settings → "Time off"; shown hatched on the calendar (`.vac`) and timeline (`.tl-vac`).
+- **Auto-placed month games** (`settings.autoPlace`, array of game ids): a month/quarter
+  ("no set day") game the user clicked its **"Planned this month"** chip for. `autoPlaceDays`
+  spreads all placed games in a month evenly across that month's OPEN days (excluding
+  specific-day releases, their launch eves, and vacations) and `withAutoPlacement` re-anchors
+  each to its computed day (`precision:'day'`, tagged `placedDay`/`plannedLabel`/`plannedMonthKey`)
+  so the queue plays it in its month instead of burying it. Recomputed from the set + fixed
+  dates, so days re-balance as placements change. Persists in KV settings; `games.json` stays
+  the source of truth. App passes `withAutoPlacement(games, autoMap)` (`effGames`) to all views.
 
 ---
 
