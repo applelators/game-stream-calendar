@@ -268,6 +268,14 @@ input, select, textarea { font-family: inherit; }
 .gc-planned-chip.k-replay, .mg-planned-chip.k-replay { border-color: var(--accent-2); }
 .gc-planned-chip.k-dlc, .mg-planned-chip.k-dlc { border-color: var(--good); }
 .gc-planned-chip.k-event, .mg-planned-chip.k-event { border-color: var(--warn); }
+/* placed = a start day was auto-picked: solid border + tinted fill */
+.gc-planned-chip.placed, .mg-planned-chip.placed { border-style: solid; color: #0c0c12; }
+.gc-planned-chip.placed small { color: #0c0c12cc; }
+.gc-planned-chip.placed.k-game, .mg-planned-chip.placed.k-game { background: var(--accent); }
+.gc-planned-chip.placed.k-replay, .mg-planned-chip.placed.k-replay { background: var(--accent-2); color: #eaf1ff; }
+.gc-planned-chip.placed.k-replay small { color: #eaf1ffcc; }
+.gc-planned-chip.placed.k-dlc, .mg-planned-chip.placed.k-dlc { background: var(--good); }
+.gc-planned-chip.placed.k-event, .mg-planned-chip.placed.k-event { background: var(--warn); }
 
 .set-divider { height: 1px; background: var(--border-solid); margin: 4px 0 2px; }
 .set-h { font-family: var(--display); font-weight: 700; font-size: 0.95rem; }

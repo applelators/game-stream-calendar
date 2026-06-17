@@ -378,3 +378,70 @@ function streamSessions(games, pace, positions, normVacs) {
   }
   return byDay;
 }
+
+// ---- auto-placement of month/quarter games ---------------------------------
+
+// For each "promoted" month/quarter game (the user clicked its planned chip),
+// choose a concrete start DAY inside its planned month. Promoted games in the
+// same month are spread evenly across that month's OPEN days — days not already
+// taken by a specific-day release, its launch eve, or a vacation. Because this is
+// recomputed from the promoted set + the month's fixed dates, the chosen day for
+// each game shifts to stay evenly spaced as games are added/removed.
+// Returns { [gameId]: { year, month/*1-12*/, day } }.
+function autoPlaceDays(games, promotedIds, normVacs) {
+  const promoted = {};
+  (promotedIds || []).forEach((id) => { promoted[id] = true; });
+
+  // Group promoted month/quarter games by their planned month (anchor year-month).
+  const byMonth = {};
+  for (const g of (games || [])) {
+    if (!promoted[g.id] || g.kind === 'event' || !isFuzzy(g.release)) continue;
+    const a = anchorDate(g.release);
+    if (!a) continue;
+    const mk = a.getUTCFullYear() + '-' + a.getUTCMonth();
+    (byMonth[mk] = byMonth[mk] || []).push(g);
+  }
+
+  // Days already spoken for: specific-day releases and their reserved eves.
+  const { eveByDay, releaseDays } = launchEves(games);
+  const out = {};
+  for (const mk in byMonth) {
+    const [y, mon0] = mk.split('-').map(Number); // mon0 = 0-based month
+    const dim = new Date(Date.UTC(y, mon0 + 1, 0)).getUTCDate();
+    const free = [];
+    for (let d = 1; d <= dim; d++) {
+      const day = utc(y, mon0 + 1, d);
+      const k = dkey(day);
+      if (releaseDays[k] || eveByDay[k] || inVacation(day, normVacs)) continue;
+      free.push(d);
+    }
+    const list = byMonth[mk]; // games.json order (stable)
+    const n = list.length, L = free.length;
+    list.forEach((g, i) => {
+      // Evenly spaced slot in the month's open days (mid-bucket so we avoid the
+      // very edges); fall back to the 1st if the month is fully booked.
+      const dayNum = L === 0 ? 1 : free[Math.min(L - 1, Math.floor((i + 0.5) * L / n))];
+      out[g.id] = { year: y, month: mon0 + 1, day: dayNum };
+    });
+  }
+  return out;
+}
+
+// Return a games list where each auto-placed game is anchored to its computed day
+// (so the scheduler treats it like any dated backlog game), tagged with `placedDay`
+// and its original `plannedLabel` / `plannedMonthKey` so the UI can show the chip's
+// placed state and still group it under its planned month.
+function withAutoPlacement(games, autoMap) {
+  return (games || []).map((g) => {
+    const a = autoMap && autoMap[g.id];
+    if (!a) return g;
+    const anchor = anchorDate(g.release);
+    return {
+      ...g,
+      placedDay: utc(a.year, a.month, a.day),
+      plannedLabel: releaseLabel(g.release),
+      plannedMonthKey: anchor ? anchor.getUTCFullYear() + '-' + anchor.getUTCMonth() : null,
+      release: { year: a.year, month: a.month, day: a.day, precision: 'day' },
+    };
+  });
+}

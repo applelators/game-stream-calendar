@@ -75,7 +75,17 @@ anything before June 2026.
 - **Move a date** — change `date`.
 - **An event (fixed window)** — `"kind": "event"`, `"date": "2026-06-09"`, `"endDate": "2026-08-30"`.
 
+## Auto-picking a start day for month/quarter games
+
+A game with only a month or quarter window (no set day) shows as a dashed **"Planned this
+month"** chip at the top of that month in the **Month grid**. Click it and the app picks the
+best **start day inside that month** — spreading all the placed no-set-day games evenly across
+the month's open days (skipping specific-day releases, their launch eves, and vacations) — and
+the game gets a real play band from that day. Place more games in the same month and the days
+re-balance automatically. Click a placed (✓) chip again to unset it. These placements live in
+⚙ Settings (KV), not the file — `games.json` stays the source of truth for the dates.
+
 ## What stays in the app (not the file)
 
-**Vacations** and **pace override** live in ⚙ Settings and persist per-device in Cloudflare KV.
+**Vacations**, **pace override**, and **auto-placed start days** live in ⚙ Settings and persist per-device in Cloudflare KV.
 Stream **pace** auto-refreshes weekly from Twitch (`@nabunan`, last 90 days).

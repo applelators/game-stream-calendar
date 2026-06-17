@@ -20,6 +20,7 @@ const DEFAULT_SETTINGS = {
   view: 'timeline',
   schedMode: 'parallel',
   vacations: [],   // [{ id, label, start:'YYYY-MM-DD', end:'YYYY-MM-DD' }] — no streaming
+  autoPlace: [],   // ids of month/quarter games the user pinned to an auto-picked start day
 };
 
 const FALLBACK_PACE = { hoursPerStream: 5.11, hoursPerWeek: 11.52, source: 'fallback', fetchedAt: null, numStreams: 29, totalHours: 148.1, windowDays: 90 };
@@ -45,6 +46,7 @@ function saveLocal(state) {
 // ----------------------------------------------------------------------------
 function uid() { return 'g' + Math.random().toString(36).slice(2, 9); }
 const fmtDate = (d) => `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
+const shortDate = (d) => `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`;
 function effectivePace(settings, pace) {
   if (settings.override) return { hoursPerStream: settings.hoursPerStream, hoursPerWeek: settings.hoursPerWeek };
   return { hoursPerStream: pace.hoursPerStream, hoursPerWeek: pace.hoursPerWeek };
@@ -105,13 +107,23 @@ function App() {
 
   const ep = useMemo(() => effectivePace(settings, pace), [settings, pace]);
   const normVacs = useMemo(() => normalizeVacations(settings.vacations), [settings.vacations]);
+  // Auto-pick a concrete start day for each month/quarter game the user pinned,
+  // then anchor those games to it so the rest of the app treats them as dated.
+  const autoMap = useMemo(() => autoPlaceDays(games, settings.autoPlace, normVacs), [games, settings.autoPlace, normVacs]);
+  const effGames = useMemo(() => withAutoPlacement(games, autoMap), [games, autoMap]);
+  const togglePlan = useCallback((id) => {
+    setSettings((s) => {
+      const cur = s.autoPlace || [];
+      return { ...s, autoPlace: cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id] };
+    });
+  }, []);
   // Realistic release-priority finish per game (for the detail card).
   const seqPositions = useMemo(
-    () => schedule(games.filter((g) => isPlaceable(g.release)), ep, 'sequential', normVacs),
-    [games, ep, normVacs]
+    () => schedule(effGames.filter((g) => isPlaceable(g.release)), ep, 'sequential', normVacs),
+    [effGames, ep, normVacs]
   );
 
-  const detailGame = detail ? games.find((g) => g.id === detail) : null;
+  const detailGame = detail ? effGames.find((g) => g.id === detail) : null;
 
   return (
     <div className="app">
@@ -146,8 +158,8 @@ function App() {
       </header>
 
       {settings.view === 'timeline'
-        ? <TimelineView games={games} pace={ep} mode={settings.schedMode} vacations={normVacs} onPick={setDetail} />
-        : <MonthGridView games={games} pace={ep} vacations={normVacs} onPick={setDetail} />}
+        ? <TimelineView games={effGames} pace={ep} mode={settings.schedMode} vacations={normVacs} onPick={setDetail} />
+        : <MonthGridView games={effGames} pace={ep} vacations={normVacs} onPick={setDetail} onTogglePlan={togglePlan} />}
 
       {detailGame && (
         <DetailCard game={detailGame} pace={ep} vacations={normVacs} queuedPos={seqPositions[detailGame.id]}
@@ -344,7 +356,7 @@ function dayInfo(day, ctx) {
   return { releases, play, session };
 }
 
-function MonthGridView({ games, pace, vacations, onPick }) {
+function MonthGridView({ games, pace, vacations, onPick, onTogglePlan }) {
   const isMobile = useIsMobile();
 
   const placeable = useMemo(() => games.filter((g) => isPlaceable(g.release)), [games]);
@@ -360,12 +372,13 @@ function MonthGridView({ games, pace, vacations, onPick }) {
       gbi[g.id] = g;
       const a = anchorDate(g.release);
       if (a) { const k = dayKey(a); (rbd[k] = rbd[k] || []).push(g); }
-      // Games with only a month/quarter window (no specific day) are pinned to the
+      // Games with only a month/quarter window (no specific day) are listed under the
       // month they're planned for, so they show even when the release-priority queue
-      // pushes their actual play band far away.
-      if (a && isFuzzy(g.release) && g.kind !== 'event') {
-        const mk = `${a.getUTCFullYear()}-${a.getUTCMonth()}`;
-        (pbm[mk] = pbm[mk] || []).push(g);
+      // pushes their actual play band far away. A game the user has auto-placed keeps
+      // its planned-month grouping (plannedMonthKey) even though it's now day-anchored.
+      if (g.kind !== 'event' && (g.placedDay || isFuzzy(g.release))) {
+        const mk = g.placedDay ? g.plannedMonthKey : (a ? `${a.getUTCFullYear()}-${a.getUTCMonth()}` : null);
+        if (mk) (pbm[mk] = pbm[mk] || []).push(g);
       }
       const p = pos[g.id];
       if (!p) continue;
@@ -402,7 +415,7 @@ function MonthGridView({ games, pace, vacations, onPick }) {
     while (m <= end) { months.push(m); m = new Date(Date.UTC(m.getUTCFullYear(), m.getUTCMonth() + 1, 1)); }
     return (
       <div>
-        <div className="cal-legend">Band = the game; numbers = each stream (3/6) · 🌙 = launch · hatched = vacation · ★ = release · dashed chip = planned (no set day)</div>
+        <div className="cal-legend">Band = the game; numbers = each stream (3/6) · 🌙 = launch · hatched = vacation · ★ = release · dashed chip = planned (tap to auto-pick a day) · ✓ chip = placed</div>
         <div className="mg-wrap">
           {months.map((mo, i) => {
             const y = mo.getUTCFullYear(), mon = mo.getUTCMonth();
@@ -440,10 +453,12 @@ function MonthGridView({ games, pace, vacations, onPick }) {
                 <div className="mg-head">{MONTHS_LONG[mon]} {y}<span className="cnt">{monthCount} release{monthCount === 1 ? '' : 's'}</span></div>
                 {planned && planned.length > 0 && (
                   <div className="mg-planned">
-                    <span className="mg-planned-h">Planned · no set day</span>
+                    <span className="mg-planned-h">Planned · tap to auto-pick a day</span>
                     {planned.map((g) => (
-                      <button key={g.id} className={`mg-planned-chip k-${g.kind}`} onClick={() => onPick(g.id)}
-                        title={`${g.title} — ${releaseLabel(g.release)}`}>{g.title}</button>
+                      <button key={g.id} className={`mg-planned-chip k-${g.kind}${g.placedDay ? ' placed' : ''}`}
+                        onClick={() => onTogglePlan(g.id)}
+                        title={g.placedDay ? `${g.title} — starts ${fmtDate(g.placedDay)} · tap to unset` : `${g.title} — ${g.plannedLabel || releaseLabel(g.release)}`}>
+                        {g.placedDay ? '✓ ' : ''}{g.title}{g.placedDay ? ` · ${shortDate(g.placedDay)}` : ''}</button>
                     ))}
                   </div>
                 )}
@@ -478,7 +493,7 @@ function MonthGridView({ games, pace, vacations, onPick }) {
         <button className="gc-today" onClick={scrollToToday}>Jump to today</button>
         <div className="gc-cnt">{totalCount} release{totalCount === 1 ? '' : 's'} · scroll for more months ↓</div>
       </div>
-      <div className="cal-legend">Tinted band = the game you’ll be streaming; numbers mark each stream (e.g. <b>3/6</b> = 3rd of 6) · 🌙 = midnight launch (eve reserved) · <span className="lg-vac">hatched</span> = vacation · ★ = release day · <span className="lg-planned">dashed chip</span> = planned for the month (no set day)</div>
+      <div className="cal-legend">Tinted band = the game you’ll be streaming; numbers mark each stream (e.g. <b>3/6</b> = 3rd of 6) · 🌙 = midnight launch (eve reserved) · <span className="lg-vac">hatched</span> = vacation · ★ = release day · <span className="lg-planned">dashed chip</span> = planned for the month — click to auto-pick a start day · ✓ chip = placed</div>
       {/* weekday header stays pinned while you scroll through every month */}
       <div className="gc-weekbar">{DOW_FULL.map((d) => <span key={d}>{d}</span>)}</div>
       <div className="gc-stack">
@@ -519,11 +534,15 @@ function MonthGridView({ games, pace, vacations, onPick }) {
                 <span className="gc-headcnt">{monthCount} release{monthCount === 1 ? '' : 's'}</span></div>
               {planned && planned.length > 0 && (
                 <div className="gc-planned">
-                  <span className="gc-planned-h">Planned this month · no set day</span>
+                  <span className="gc-planned-h">Planned this month · click to auto-pick a start day</span>
                   {planned.map((g) => (
-                    <button key={g.id} className={`gc-planned-chip k-${g.kind}`} onClick={() => onPick(g.id)}
-                      title={`${g.title} — ${releaseLabel(g.release)}`}>
-                      {g.title}<small>{releaseLabel(g.release)}</small></button>
+                    <button key={g.id} className={`gc-planned-chip k-${g.kind}${g.placedDay ? ' placed' : ''}`}
+                      onClick={() => onTogglePlan(g.id)}
+                      title={g.placedDay
+                        ? `${g.title} — auto-placed to start ${fmtDate(g.placedDay)} · click to unset`
+                        : `${g.title} — ${g.plannedLabel || releaseLabel(g.release)} · click to auto-pick a start day`}>
+                      {g.placedDay ? '✓ ' : ''}{g.title}
+                      <small>{g.placedDay ? '▸ ' + shortDate(g.placedDay) : (g.plannedLabel || releaseLabel(g.release))}</small></button>
                   ))}
                 </div>
               )}
