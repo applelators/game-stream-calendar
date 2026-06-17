@@ -274,6 +274,16 @@ input, select, textarea { font-family: inherit; }
 .gc-planned-chip.k-replay, .mg-planned-chip.k-replay { border-color: var(--accent-2); }
 .gc-planned-chip.k-dlc, .mg-planned-chip.k-dlc { border-color: var(--good); }
 .gc-planned-chip.k-event, .mg-planned-chip.k-event { border-color: var(--warn); }
+/* "finish before X" bracket — groups the series above a deadline */
+.gc-bracket, .mg-bracket { display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  padding: 8px 16px; background: var(--panel); border-bottom: 1px solid var(--border);
+  border-left: 3px solid var(--warn); }
+.mg-bracket { padding: 7px 12px; }
+.gc-bracket-h, .mg-bracket-h { font-size: 0.7rem; color: var(--warn); font-weight: 700;
+  font-family: var(--mono); margin-right: 2px; letter-spacing: 0.02em; }
+.gc-bracket-h b, .mg-bracket-h b { color: var(--text); }
+.gc-deadflag, .mg-deadflag { color: var(--warn); font-size: 0.78rem; margin-left: 4px; }
+
 /* placed = a start day was auto-picked: solid border + tinted fill */
 .gc-planned-chip.placed, .mg-planned-chip.placed { border-style: solid; color: #0c0c12; }
 .gc-planned-chip.placed small { color: #0c0c12cc; }

@@ -107,6 +107,12 @@ split game in the queue.
 - **Vacations** (`settings.vacations`, ISO date ranges): `normalizeVacations` →
   `addActiveDays`/`gameEnd` skip vacation days so breaks push finish dates later. Managed in
   ⚙ Settings → "Time off"; shown hatched on the calendar (`.vac`) and timeline (`.tl-vac`).
+- **Finish-before deadlines** (`finishBefore` field in games.json — a target game id/slug
+  or a date): `finishBeforeDays` packs all games sharing a target back-to-back (file order)
+  from the earliest open day in their window so the group finishes before the deadline; merged
+  into placement (wins over `autoPlace`). Shown on the Month grid as a `⤿ finish before X`
+  bracket strip with a ⚑ flag on the target's release day. `finishBeforeDeadline` resolves the
+  date (referenced game's release, else parsed date) so it auto-follows the target.
 - **Auto-placed month games** (`settings.autoPlace`, array of game ids): a month/quarter
   ("no set day") game the user clicked its **"Planned this month"** chip for. `autoPlaceDays`
   spreads all placed games in a month evenly across that month's OPEN days (excluding

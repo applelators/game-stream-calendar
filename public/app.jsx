@@ -129,7 +129,10 @@ function App() {
   // Auto-pick a concrete start day for each month/quarter game the user pinned,
   // then anchor those games to it so the rest of the app treats them as dated.
   const autoMap = useMemo(() => autoPlaceDays(games, settings.autoPlace, normVacs), [games, settings.autoPlace, normVacs]);
-  const effGames = useMemo(() => withAutoPlacement(games, autoMap), [games, autoMap]);
+  // "finish before X" groups are packed automatically (file-driven) and win over
+  // the user's loose auto-placements.
+  const beforeMap = useMemo(() => finishBeforeDays(games, ep, normVacs), [games, ep, normVacs]);
+  const effGames = useMemo(() => withAutoPlacement(games, { ...autoMap, ...beforeMap }), [games, autoMap, beforeMap]);
   const togglePlan = useCallback((id) => {
     setSettings((s) => {
       const cur = s.autoPlace || [];
@@ -375,17 +378,33 @@ function dayInfo(day, ctx) {
   return { releases, play, session };
 }
 
+// Split a month's planned games into "finish before X" brackets and loose games.
+function splitPlanned(list, byId) {
+  const loose = [], bmap = {};
+  for (const g of (list || [])) {
+    if (g.finishBefore) (bmap[g.finishBefore] = bmap[g.finishBefore] || []).push(g);
+    else loose.push(g);
+  }
+  const brackets = Object.keys(bmap).map((k) => {
+    const t = byId[k];
+    const deadline = t ? anchorDate(t.release) : anchorDate(parseDate(k));
+    return { key: k, games: bmap[k], title: t ? t.title : k, deadline };
+  });
+  return { brackets, loose };
+}
+
 function MonthGridView({ games, pace, vacations, onPick, onTogglePlan }) {
   const isMobile = useIsMobile();
+  const allById = useMemo(() => { const m = {}; for (const g of games) m[g.id] = g; return m; }, [games]);
 
   const placeable = useMemo(() => games.filter((g) => isPlaceable(g.release)), [games]);
   const rail = useMemo(() => games.filter((g) => !isPlaceable(g.release)), [games]);
 
   // The realistic one-game-per-day plan (release-priority queue) drives the
   // calendar: each stream day maps to the game you'll actually be playing.
-  const { releasesByDay, playByDay, sessionByDay, gameById, plannedByMonth, min, max } = useMemo(() => {
+  const { releasesByDay, playByDay, sessionByDay, gameById, plannedByMonth, deadlineByDay, min, max } = useMemo(() => {
     const pos = schedule(placeable, pace, 'sequential', vacations);
-    const rbd = {}, pbd = {}, gbi = {}, pbm = {};
+    const rbd = {}, pbd = {}, gbi = {}, pbm = {}, dbd = {};
     let mn = null, mx = null;
     for (const g of placeable) {
       gbi[g.id] = g;
@@ -407,15 +426,24 @@ function MonthGridView({ games, pace, vacations, onPick, onTogglePlan }) {
       for (const seg of p.segments)
         for (let d = new Date(seg.start); d < seg.end; d = addDays(d, 1)) pbd[dayKey(d)] = g.id;
     }
+    // Flag each finish-before target's release day ("have the series done by here").
+    for (const g of placeable) {
+      if (!g.finishBefore) continue;
+      const t = gbi[g.finishBefore];
+      const deadline = t ? anchorDate(t.release) : anchorDate(parseDate(g.finishBefore));
+      if (!deadline) continue;
+      const k = dayKey(deadline);
+      (dbd[k] = dbd[k] || { title: t ? t.title : g.finishBefore, games: [] }).games.push(g.title);
+    }
     const sbd = streamSessions(placeable, pace, pos, vacations);
-    return { releasesByDay: rbd, playByDay: pbd, sessionByDay: sbd, gameById: gbi, plannedByMonth: pbm, min: mn, max: mx };
+    return { releasesByDay: rbd, playByDay: pbd, sessionByDay: sbd, gameById: gbi, plannedByMonth: pbm, deadlineByDay: dbd, min: mn, max: mx };
   }, [placeable, pace, vacations]);
 
   const eves = useMemo(() => launchEves(placeable), [placeable]);
 
   const now = new Date();
   const tY = now.getFullYear(), tM = now.getMonth(), tD = now.getDate();
-  const ctx = { vacations, playByDay, sessionByDay, gameById, releasesByDay, eveByDay: eves.eveByDay, releaseDays: eves.releaseDays };
+  const ctx = { vacations, playByDay, sessionByDay, gameById, releasesByDay, deadlineByDay, eveByDay: eves.eveByDay, releaseDays: eves.releaseDays };
 
   if (!min) {
     return (
@@ -451,9 +479,10 @@ function MonthGridView({ games, pace, vacations, onPick, onTogglePlan }) {
               const cls = 'mg-cell' + (info.vac ? ' vac' : '') + (isToday ? ' today' : '');
               const tintId = info.vac ? null : (info.launch ? info.launch.id : info.play ? info.play.id : null);
               const cellStyle = tintId ? { backgroundColor: gameColor(tintId).tint } : undefined;
+              const dl = deadlineByDay[`${y}-${mon}-${d}`];
               cells.push(
                 <div key={d} className={cls} style={cellStyle}>
-                  <span className="dnum">{d}{info.releases.length ? <span className="relstar">★</span> : null}</span>
+                  <span className="dnum">{d}{info.releases.length ? <span className="relstar">★</span> : null}{dl ? <span className="mg-deadflag" title={`Finish before ${dl.title}`}>⚑</span> : null}</span>
                   {info.vac && info.vacRunStart && <span className="mg-pill nowvac" title={info.vacLabel}>✈ {info.vacLabel}</span>}
                   {info.launch && (
                     <span className="mg-pill" style={{ background: gameColor(info.launch.id).solid }}
@@ -471,14 +500,26 @@ function MonthGridView({ games, pace, vacations, onPick, onTogglePlan }) {
                 </div>
               );
             }
-            const planned = plannedByMonth[`${y}-${mon}`];
+            const { brackets, loose } = splitPlanned(plannedByMonth[`${y}-${mon}`], allById);
             return (
               <div className="mg-card" key={i}>
                 <div className="mg-head">{MONTHS_LONG[mon]} {y}<span className="cnt">{monthCount} release{monthCount === 1 ? '' : 's'}</span></div>
-                {planned && planned.length > 0 && (
+                {brackets.map((br) => (
+                  <div className="mg-bracket" key={br.key}>
+                    <span className="mg-bracket-h">⤿ before {br.title}{br.deadline ? ` · ${shortDate(br.deadline)}` : ''}</span>
+                    {br.games.map((g) => (
+                      <button key={g.id} className="mg-planned-chip placed"
+                        style={{ background: gameColor(g.id).solid, borderColor: gameColor(g.id).solid }}
+                        onClick={() => onPick(g.id)}
+                        title={`${g.title}${g.placedDay ? ` — starts ${fmtDate(g.placedDay)}` : ''} · finish before ${br.title}`}>
+                        {g.title}{g.placedDay ? ` · ${shortDate(g.placedDay)}` : ''}</button>
+                    ))}
+                  </div>
+                ))}
+                {loose.length > 0 && (
                   <div className="mg-planned">
                     <span className="mg-planned-h">Planned · tap to auto-pick a day</span>
-                    {planned.map((g) => (
+                    {loose.map((g) => (
                       <button key={g.id} className={`mg-planned-chip${g.placedDay ? ' placed' : ''}`}
                         style={g.placedDay
                           ? { background: gameColor(g.id).solid, borderColor: gameColor(g.id).solid }
@@ -540,9 +581,10 @@ function MonthGridView({ games, pace, vacations, onPick, onTogglePlan }) {
             const relTitles = info.releases.map((r) => r.title).join(', ');
             const tintId = info.vac ? null : (info.launch ? info.launch.id : info.play ? info.play.id : null);
             const cellStyle = tintId ? { backgroundColor: gameColor(tintId).tint } : undefined;
+            const dl = deadlineByDay[`${y}-${mon}-${d}`];
             cells.push(
               <div key={d} className={cls} style={cellStyle}>
-                <span className="gc-dnum" title={relTitles || undefined}>{d}{info.releases.length ? <span className="gc-relstar">★</span> : null}</span>
+                <span className="gc-dnum" title={relTitles || undefined}>{d}{info.releases.length ? <span className="gc-relstar">★</span> : null}{dl ? <span className="gc-deadflag" title={`Finish before ${dl.title}: ${dl.games.join(', ')}`}>⚑</span> : null}</span>
                 {info.vac && info.vacRunStart && <div className="gc-away">✈ {info.vacLabel}</div>}
                 {info.launch && (
                   <div className="gc-ev" style={{ background: gameColor(info.launch.id).solid }} onClick={() => onPick(info.launch.id)}
@@ -556,15 +598,27 @@ function MonthGridView({ games, pace, vacations, onPick, onTogglePlan }) {
               </div>
             );
           }
-          const planned = plannedByMonth[`${y}-${mon}`];
+          const { brackets, loose } = splitPlanned(plannedByMonth[`${y}-${mon}`], allById);
           return (
             <div className="gc-month" id={`gcm-${y}-${mon}`} key={idx}>
               <div className="gc-mhead">{MONTHS_LONG[mon]} {y}
                 <span className="gc-headcnt">{monthCount} release{monthCount === 1 ? '' : 's'}</span></div>
-              {planned && planned.length > 0 && (
+              {brackets.map((br) => (
+                <div className="gc-bracket" key={br.key}>
+                  <span className="gc-bracket-h">⤿ finish before <b>{br.title}</b>{br.deadline ? ` · by ${shortDate(br.deadline)}` : ''}</span>
+                  {br.games.map((g) => (
+                    <button key={g.id} className="gc-planned-chip placed"
+                      style={{ background: gameColor(g.id).solid, borderColor: gameColor(g.id).solid }}
+                      onClick={() => onPick(g.id)}
+                      title={`${g.title}${g.placedDay ? ` — starts ${fmtDate(g.placedDay)}` : ''} · finish before ${br.title}`}>
+                      {g.title}{g.placedDay ? <small>▸ {shortDate(g.placedDay)}</small> : null}</button>
+                  ))}
+                </div>
+              ))}
+              {loose.length > 0 && (
                 <div className="gc-planned">
                   <span className="gc-planned-h">Planned this month · click to auto-pick a start day</span>
-                  {planned.map((g) => (
+                  {loose.map((g) => (
                     <button key={g.id} className={`gc-planned-chip${g.placedDay ? ' placed' : ''}`}
                       style={g.placedDay
                         ? { background: gameColor(g.id).solid, borderColor: gameColor(g.id).solid }

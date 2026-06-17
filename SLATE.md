@@ -85,6 +85,17 @@ the game gets a real play band from that day. Place more games in the same month
 re-balance automatically. Click a placed (✓) chip again to unset it. These placements live in
 ⚙ Settings (KV), not the file — `games.json` stays the source of truth for the dates.
 
+## Finish a series before the next entry drops
+
+Add **`finishBefore`** to a game to require it be finished *before* another game's
+release: the value is that game's **id/slug** (e.g. `"finishBefore": "splatoon-raiders"`)
+or a **date** (`"2026-07-23"`). All games pointing at the same target are auto-placed and
+**packed back-to-back, in file order**, into the open days leading up to the deadline so
+they finish in time. On the **Month grid** they appear under a `⤿ finish before X · by <date>`
+bracket, and the target's release day gets a ⚑ flag. Because it references the target by id,
+the deadline auto-follows if that game's date changes. Tip: list the grouped games in the
+order you want to play them.
+
 ## What stays in the app (not the file)
 
 **Vacations**, **pace override**, and **auto-placed start days** live in ⚙ Settings and persist per-device in Cloudflare KV.

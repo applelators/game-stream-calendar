@@ -129,6 +129,9 @@ function gameFromFile(e, i) {
     notes: e.notes || '',
   };
   if (e.endDate) g.eventEnd = parseDate(e.endDate);
+  // Optional deadline: finish this game before another game's release (by id/slug)
+  // or before a date string. Grouped games are packed to finish before the target.
+  if (e.finishBefore) g.finishBefore = String(e.finishBefore);
   return g;
 }
 
@@ -444,4 +447,54 @@ function withAutoPlacement(games, autoMap) {
       release: { year: a.year, month: a.month, day: a.day, precision: 'day' },
     };
   });
+}
+
+// ---- "finish before" deadlines ---------------------------------------------
+
+// Resolve a game's finish-before deadline (a Date): the referenced game's release
+// day (by id/slug), or a parsed date string. null if absent/unresolvable.
+function finishBeforeDeadline(game, gamesById) {
+  if (!game || !game.finishBefore) return null;
+  const t = gamesById && gamesById[game.finishBefore];
+  if (t) return anchorDate(t.release);
+  return anchorDate(parseDate(game.finishBefore));
+}
+
+// Pack each finish-before group back-to-back from the earliest open day in its
+// planned window, so the whole group finishes before the deadline. Open days skip
+// specific-day releases, their launch eves, and vacations. Games keep games.json
+// order (= series order). Returns { [gameId]: { year, month, day } } like autoPlaceDays.
+function finishBeforeDays(games, pace, normVacs) {
+  const byId = {};
+  for (const g of (games || [])) byId[g.id] = g;
+  const groups = {}; // targetKey -> { deadline, games: [] }
+  for (const g of (games || [])) {
+    if (!g.finishBefore || g.kind === 'event') continue;
+    const deadline = finishBeforeDeadline(g, byId);
+    if (!deadline) continue;
+    (groups[g.finishBefore] = groups[g.finishBefore] || { deadline, games: [] }).games.push(g);
+  }
+  const { eveByDay, releaseDays } = launchEves(games);
+  const out = {};
+  for (const key in groups) {
+    const { deadline, games: grp } = groups[key];
+    let windowStart = null;
+    for (const g of grp) { const a = anchorDate(g.release); if (a && (!windowStart || a < windowStart)) windowStart = a; }
+    if (!windowStart || windowStart >= deadline) windowStart = addDays(deadline, -180);
+    const avail = [];
+    for (let d = new Date(windowStart); d < deadline; d = addDays(d, 1)) {
+      const k = dkey(d);
+      if (inVacation(d, normVacs) || releaseDays[k] || eveByDay[k]) continue;
+      avail.push(new Date(d));
+    }
+    if (avail.length === 0) continue;
+    let ptr = 0; // forward — start as early as possible
+    for (let i = 0; i < grp.length; i++) {
+      const g = grp[i];
+      const s = avail[Math.min(ptr, avail.length - 1)];
+      out[g.id] = { year: s.getUTCFullYear(), month: s.getUTCMonth() + 1, day: s.getUTCDate() };
+      ptr += Math.max(1, activeDaysFor(g, pace));
+    }
+  }
+  return out;
 }
