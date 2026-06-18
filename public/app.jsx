@@ -453,26 +453,14 @@ function DeadlineBracket({ br, onPick, mobile }) {
           title={`${g.title}${g.placedDay ? ` — starts ${fmtDate(g.placedDay)}` : ''}`}>
           {g.title}{g.placedDay ? (mobile ? ` · ${shortDate(g.placedDay)}` : <small>▸ {shortDate(g.placedDay)}</small>) : null}</button>
       ))}
-      {!br.past && br.availDays > 0 && !br.feasible && (
+      {!br.past && br.boost && (
         <div className={`${pfx}-deadnote warn`}>
-          ⚠ At ~{br.hpw}h/wk you likely won’t finish these <b>{br.neededHours}h</b> in time — you’ll need to
-          stream <b>more days</b>, <b>longer per stream</b>, or both.
+          ⚠ Your ~{br.hpw}h/wk won’t finish these <b>{br.neededHours}h</b> in time. The calendar below shows a
+          catch-up plan: ~<b>{br.boost.days} stream days</b> (vs your usual ~{br.boost.usualDays}) at ~<b>{br.boost.hps}h each</b> —
+          about <b>{br.boost.hpw}h/wk</b>.{br.boost.fits ? '' : ' Even daily streaming may not be enough — consider moving the deadline.'}
         </div>
       )}
-      {!br.past && br.plan && br.plan.length > 0 && (
-        <div className={`${pfx}-deadplan`}>
-          <div className="dp-h">Suggested schedule — stream every remaining day, ≥<b>{Math.ceil(br.perDay * 10) / 10}h</b> each
-            ({br.availDays} days vs your usual ~{br.usualStreams}):</div>
-          {br.plan.map((s, i) => (
-            <div className="dp-row" key={i} onClick={() => onPick(s.id)}>
-              <span className="dp-when">{shortDate(s.start)}{s.start.getTime() !== s.end.getTime() ? `–${shortDate(s.end)}` : ''}</span>
-              <span className="dp-dot" style={{ background: gameColor(s.id).solid }} />
-              <span className="dp-game">{s.title}</span>
-            </div>
-          ))}
-        </div>
-      )}
-      {!br.past && br.availDays > 0 && br.feasible && (
+      {!br.past && !br.boost && (
         <div className={`${pfx}-deadnote ok`}>✓ On track at your current ~{br.hpw}h/wk.</div>
       )}
     </div>
@@ -496,14 +484,13 @@ function BonusStrip({ games, note, tight, mobile, onPick }) {
   );
 }
 
-// Bonus slack note for a month, read off that month's deadline brackets.
+// Bonus slack note for a month, based on whether that month's deadlines need a boost.
 function bonusNoteFor(dbrackets) {
   if (!dbrackets || !dbrackets.length) return { note: 'Stream if you have spare time after your other games.', tight: false };
-  const total = dbrackets.reduce((s, b) => s + (b.weeks * b.hpw - b.neededHours), 0);
-  const tight = dbrackets.some((b) => !b.feasible) || total < 1;
+  const tight = dbrackets.some((b) => b.boost);
   return {
     note: tight ? 'Over capacity this month — stream these only if you get ahead.'
-                : `≈${Math.round(total)}h of slack — fit these in if you stay on pace.`,
+                : 'Some slack this month — fit these in if you stay on pace.',
     tight,
   };
 }
@@ -534,7 +521,7 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
     // Interleaved plan: stream sessions rotate among in-progress games; bonus games
     // fill only spare slots. Drives the calendar directly.
     const plan = streamPlan(placeable, pace, vacations);
-    const pos = plan.positions, sbd = plan.sessionByDay, bpd = plan.bonusByDay;
+    const pos = plan.positions, sbd = plan.sessionByDay, bpd = plan.bonusByDay, boosts = plan.boosts || {};
     const todayD = new Date();
     const today = utc(todayD.getUTCFullYear(), todayD.getUTCMonth() + 1, todayD.getUTCDate());
     const rbd = {}, gbi = {}, pbm = {}, bbm = {}, dbd = {};
@@ -565,7 +552,6 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
       (groupsByKey[g.finishBefore] = groupsByKey[g.finishBefore] || []).push(g);
     }
     const hpw = (pace && pace.hoursPerWeek) || 0;
-    const hps = (pace && pace.hoursPerStream) || 1;
     for (const key in groupsByKey) {
       const grp = groupsByKey[key];
       const t = gbi[key];
@@ -575,49 +561,14 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
       const flagDay = t ? deadline : addDays(deadline, -1); // last day to have it done
       const fk = dayKey(flagDay);
       (dbd[fk] = dbd[fk] || { title: t ? t.title : 'deadline', games: [] }).games.push(...grp.map((x) => x.title));
-      // Feasibility: from when this group can start (its earliest start month, but
-      // never before today) to the deadline, all stream time on this group.
-      let earliestAnchor = null;
-      for (const x of grp) { const a = anchorDate(x.release); if (a && (!earliestAnchor || a < earliestAnchor)) earliestAnchor = a; }
-      const winStart = earliestAnchor && earliestAnchor > today ? earliestAnchor : today;
-      const availDates = [];
-      for (let d = new Date(winStart); d < deadline; d = addDays(d, 1)) if (!inVacation(d, vacations)) availDates.push(new Date(d));
-      const availDays = availDates.length;
-      const weeks = availDays / 7;
       const neededHours = grp.reduce((s, x) => s + (Number(x.hltbHours) || 0), 0);
-      const feasible = availDays > 0 && weeks * hpw + 0.01 >= neededHours;
-      // Catch-up plan when it won't fit: stream EVERY remaining day at the minimum
-      // h/day that finishes everything, assigning games in file order; group into ranges.
-      let plan = null, perDay = 0, usualStreams = 0;
-      if (!feasible && availDays > 0) {
-        perDay = neededHours / availDays;
-        const remH = grp.map((g) => Number(g.hltbHours) || 0);
-        let gi2 = 0; const dayPrimary = [];
-        for (let i = 0; i < availDays; i++) {
-          let budget = perDay, best = null, bestH = 0;
-          while (budget > 0.001 && gi2 < grp.length) {
-            if (remH[gi2] <= 0.001) { gi2++; continue; }
-            const take = Math.min(budget, remH[gi2]);
-            if (take > bestH) { bestH = take; best = grp[gi2]; }
-            remH[gi2] -= take; budget -= take;
-          }
-          if (best) dayPrimary.push({ date: availDates[i], id: best.id, title: best.title });
-        }
-        plan = [];
-        for (const dp of dayPrimary) {
-          const last = plan[plan.length - 1];
-          if (last && last.id === dp.id) last.end = dp.date;
-          else plan.push({ id: dp.id, title: dp.title, start: dp.date, end: dp.date });
-        }
-        usualStreams = Math.max(1, Math.round(weeks * (hps ? hpw / hps : 0)));
-      }
+      // The plan itself tells us if this group needs a boosted cadence to finish in time.
+      const boost = boosts[key] || null;
       const dmk = `${flagDay.getUTCFullYear()}-${flagDay.getUTCMonth()}`;
       (dbm[dmk] = dbm[dmk] || []).push({
         key, deadline, games: grp, isGameRef: !!t, targetTitle: t ? t.title : null,
         precision: pr ? pr.precision : 'day', periodLabel: pr ? releaseLabel(pr) : null,
-        neededHours, availDays, weeks, hpw, hps, feasible, plan, perDay, usualStreams,
-        neededPerWeek: weeks > 0 ? neededHours / weeks : Infinity,
-        past: deadline <= today,
+        neededHours, hpw, feasible: !boost, boost, past: deadline <= today,
       });
     }
     return { releasesByDay: rbd, sessionByDay: sbd, gameById: gbi, plannedByMonth: pbm, bonusByMonth: bbm, bonusPlayByDay: bpd, deadlineByDay: dbd, deadlineBracketsByMonth: dbm, min: mn, max: mx };
