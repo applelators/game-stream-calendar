@@ -126,8 +126,9 @@ input, select, textarea { font-family: inherit; }
 .gc-cal { border: 1px solid var(--border-solid); border-radius: var(--radius); overflow: hidden; background: var(--panel); }
 .gc-dow { display: grid; grid-template-columns: repeat(7, 1fr); background: var(--panel-2); border-bottom: 1px solid var(--border-solid); }
 .gc-dow span { padding: 9px 11px; font-size: 0.66rem; letter-spacing: 0.09em; color: var(--faint); font-weight: 700; }
-.gc-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
-.gc-cell { position: relative; min-height: 118px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 6px 7px 8px; display: flex; flex-direction: column; gap: 3px; overflow: hidden; }
+/* fixed, uniform row height so weeks line up regardless of cover art aspect ratio */
+.gc-grid { display: grid; grid-template-columns: repeat(7, 1fr); grid-auto-rows: 96px; }
+.gc-cell { position: relative; min-height: 0; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 6px 7px 8px; display: flex; flex-direction: column; gap: 3px; overflow: hidden; }
 /* stream number in the day's corner, separate from the game pill */
 .gc-strno { position: absolute; top: 5px; right: 6px; font-family: var(--mono); font-size: 0.64rem;
   font-weight: 700; color: var(--muted); background: #00000080; border-radius: 4px; padding: 0 4px; line-height: 1.4; }
@@ -148,7 +149,7 @@ input, select, textarea { font-family: inherit; }
 /* stream-day "tile": rounded cover art with a coloured name badge below it
    (day number + coloured X/X badge sit above it in the cell corners) */
 .gc-tile { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 3px; cursor: pointer; }
-.gc-tileart { flex: 1; min-height: 34px; border-radius: 8px; overflow: hidden; background: #0d1320;
+.gc-tileart { flex: 1; min-height: 0; border-radius: 8px; overflow: hidden; background: #0d1320;
   box-shadow: 0 1px 4px #0006; }
 .gc-tileart img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .gc-tile:hover .gc-tileart { filter: brightness(1.08); }
