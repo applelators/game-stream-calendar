@@ -460,7 +460,7 @@ function withAutoPlacement(games, autoMap) {
 // deadlines: "by end of June" (a "2026-06" month) -> July 1, so all of June counts.
 function periodEndExclusive(r) {
   if (!r) return null;
-  if (r.precision === 'day') return anchorDate(r);
+  if (r.precision === 'day') return addDays(anchorDate(r), 1); // "by Aug 15" includes the 15th
   if (r.precision === 'month') return utc(r.year, (r.month || 1) + 1, 1);
   if (r.precision === 'quarter') return utc(r.year, (r.month || 1) + 3, 1);
   if (r.precision === 'year') return utc(r.year + 1, 1, 1);
@@ -507,12 +507,19 @@ function finishBeforeDays(games, pace, normVacs) {
       avail.push(new Date(d));
     }
     if (avail.length === 0) continue;
-    let ptr = 0; // forward — start as early as possible
-    for (let i = 0; i < grp.length; i++) {
-      const g = grp[i];
-      const s = avail[Math.min(ptr, avail.length - 1)];
+    // Pack in start-month order; each game begins no earlier than its own anchor
+    // month (so "start in August" is honoured even within a shared deadline) and
+    // after the previous game in the group.
+    grp.sort((a, b) => (anchorDate(a.release) - anchorDate(b.release)));
+    let cursor = 0;
+    for (const g of grp) {
+      const ga = anchorDate(g.release);
+      let startIdx = cursor;
+      while (startIdx < avail.length && ga && avail[startIdx] < ga) startIdx++;
+      if (startIdx >= avail.length) startIdx = avail.length - 1;
+      const s = avail[startIdx];
       out[g.id] = { year: s.getUTCFullYear(), month: s.getUTCMonth() + 1, day: s.getUTCDate() };
-      ptr += Math.max(1, activeDaysFor(g, pace));
+      cursor = startIdx + Math.max(1, activeDaysFor(g, pace));
     }
   }
   return out;

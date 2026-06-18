@@ -588,9 +588,13 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
       const flagDay = t ? deadline : addDays(deadline, -1); // last day to have it done
       const fk = dayKey(flagDay);
       (dbd[fk] = dbd[fk] || { title: t ? t.title : 'deadline', games: [] }).games.push(...grp.map((x) => x.title));
-      // Feasibility: from today to the deadline, all stream time on this group.
+      // Feasibility: from when this group can start (its earliest start month, but
+      // never before today) to the deadline, all stream time on this group.
+      let earliestAnchor = null;
+      for (const x of grp) { const a = anchorDate(x.release); if (a && (!earliestAnchor || a < earliestAnchor)) earliestAnchor = a; }
+      const winStart = earliestAnchor && earliestAnchor > today ? earliestAnchor : today;
       const availDates = [];
-      for (let d = new Date(today); d < deadline; d = addDays(d, 1)) if (!inVacation(d, vacations)) availDates.push(new Date(d));
+      for (let d = new Date(winStart); d < deadline; d = addDays(d, 1)) if (!inVacation(d, vacations)) availDates.push(new Date(d));
       const availDays = availDates.length;
       const weeks = availDays / 7;
       const neededHours = grp.reduce((s, x) => s + (Number(x.hltbHours) || 0), 0);
@@ -832,6 +836,7 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
                 {!info.vac && !info.launch && info.session && info.play && (
                   <div className="gc-ev" style={{ background: gameColor(info.play.id).solid }} onClick={() => onPick(info.play.id)}
                     title={`${info.play.title} — stream ${info.session.idx}/${info.session.total}`}>
+                    {isImgIcon(info.play.icon) && <img className="gc-ev-art" src={info.play.icon} alt="" loading="lazy" />}
                     <b>{info.session.idx}/{info.session.total}</b> {info.play.title}</div>
                 )}
                 {info.bonusPlay && (

@@ -149,7 +149,8 @@
       ],
       "editions": [],
       "earlyAccess": "",
-      "notes": "First playthrough; originally released Nov 2014."
+      "notes": "First playthrough; originally released Nov 2014.",
+      "finishBefore": "2026-08"
     },
     {
       "title": "Rhythm Heaven Groove",
@@ -170,7 +171,8 @@
       "earlyAccess": "",
       "notes": "First new Rhythm Heaven in over a decade.",
       "icon": "https://cdn.dekudeals.com/images/94f55390aaa495348d175d1024a57288f9e5b545/w500.jpg",
-      "iconColor": "#eede4f"
+      "iconColor": "#eede4f",
+      "finishBefore": "2026-07"
     },
     {
       "title": "Splatoon Raiders",
@@ -191,7 +193,8 @@
       "earlyAccess": "",
       "notes": "Single-player-focused Splatoon spin-off.",
       "icon": "https://cdn.dekudeals.com/images/7a30dd9a431ec4c530654e9cccbdb224ccff497a/w500.jpg",
-      "iconColor": "#cade5e"
+      "iconColor": "#cade5e",
+      "finishBefore": "2026-08"
     },
     {
       "title": "Splatoon 2: Octo Expansion",
@@ -281,7 +284,7 @@
     },
     {
       "title": "Xenoblade Chronicles 2 (NS2) — Pt. 1",
-      "date": "2026-08",
+      "date": "2026-09",
       "kind": "game",
       "backlog": true,
       "hltbHours": 31,
@@ -294,11 +297,12 @@
       "earlyAccess": "",
       "notes": "",
       "icon": "https://cdn.dekudeals.com/images/e2119fd96155112a20b409962b182dbee4b0e8f1/w500.jpg",
-      "iconColor": "#5bb0e1"
+      "iconColor": "#5bb0e1",
+      "finishBefore": "2026-10"
     },
     {
       "title": "Xenoblade Chronicles 2 (NS2) — Pt. 2",
-      "date": "2026-09",
+      "date": "2026-10",
       "kind": "game",
       "backlog": true,
       "hltbHours": 31,
@@ -311,7 +315,8 @@
       "earlyAccess": "",
       "notes": "",
       "icon": "https://cdn.dekudeals.com/images/e2119fd96155112a20b409962b182dbee4b0e8f1/w500.jpg",
-      "iconColor": "#5bb0e1"
+      "iconColor": "#5bb0e1",
+      "finishBefore": "2026-10"
     },
     {
       "title": "Fire Emblem Engage",
@@ -328,7 +333,8 @@
       "earlyAccess": "",
       "notes": "First playthrough; originally released Jan 2023.",
       "icon": "https://cdn.dekudeals.com/images/da497588efc1c13cde341850e8e3d4df7e49ad88/w500.jpg",
-      "iconColor": "#7f60dd"
+      "iconColor": "#7f60dd",
+      "finishBefore": "2026-08"
     },
     {
       "title": "Pokémon Pokopia Expansion Pass: Bubbly Basin",
@@ -347,7 +353,8 @@
         }
       ],
       "earlyAccess": "",
-      "notes": "Date per your note (August); some reports peg the DLC to Q1 2027."
+      "notes": "Date per your note (August); some reports peg the DLC to Q1 2027.",
+      "finishBefore": "2026-08"
     },
     {
       "title": "Final Fantasy XIV",
@@ -383,7 +390,8 @@
       "earlyAccess": "",
       "notes": "First playthrough; originally released Mar 2020.",
       "icon": "https://cdn.dekudeals.com/images/b25e938e729e663863dec4a3e20c928e4c244b8d/w500.jpg",
-      "iconColor": "#cfa16e"
+      "iconColor": "#cfa16e",
+      "finishBefore": "2026-09"
     },
     {
       "title": "Orbitals",
@@ -431,7 +439,8 @@
       "earlyAccess": "Pre-order: Classic Brown suit + Reflective Claws (early unlock), 1 Technique Point, 4 avatars.",
       "notes": "PS5 exclusive, Insomniac Games.",
       "icon": "https://cdn.dekudeals.com/images/a0a9511514e93617286cd0ae9d9e8369417b925e/w500.jpg",
-      "iconColor": "#eabf52"
+      "iconColor": "#eabf52",
+      "finishBefore": "2026-09"
     },
     {
       "title": "Fire Emblem: Fortune's Weave",
@@ -460,7 +469,8 @@
       "earlyAccess": "",
       "notes": "Switch 2 exclusive.",
       "icon": "https://cdn.dekudeals.com/images/946c11337a71895a9def9a330c604c7c602d98ca/w500.jpg",
-      "iconColor": "#cf776e"
+      "iconColor": "#cf776e",
+      "finishBefore": "2026-10"
     },
     {
       "title": "Pokémon Platinum",
@@ -475,7 +485,8 @@
       ],
       "editions": [],
       "earlyAccess": "",
-      "notes": "First playthrough; originally released Mar 2009."
+      "notes": "First playthrough; originally released Mar 2009.",
+      "finishBefore": "grand-theft-auto-vi"
     },
     {
       "title": "KINGDOM HEARTS Collection [I～III]",
@@ -541,7 +552,8 @@
       "earlyAccess": "",
       "notes": "Editions/pricing not fully confirmed.",
       "icon": "https://cdn.dekudeals.com/images/120b493fd548a41f292e63d6e74ad78b194b3cb2/w500.jpg",
-      "iconColor": "#6e79cf"
+      "iconColor": "#6e79cf",
+      "finishBefore": "2026-12"
     },
     {
       "title": "Xenoblade Chronicles 3 — Nintendo Switch 2 Edition",
@@ -557,7 +569,8 @@
       "earlyAccess": "",
       "notes": "First playthrough.",
       "icon": "https://cdn.dekudeals.com/images/f995e12bf4034326f6a3ad1a227f24f2b5397ec6/w500.jpg",
-      "iconColor": "#60bcdc"
+      "iconColor": "#60bcdc",
+      "finishBefore": "2027-01"
     },
     {
       "title": "The Legend of Zelda: Ocarina of Time — Nintendo Switch 2",
@@ -639,7 +652,7 @@
       "date": "2027-01",
       "kind": "game",
       "backlog": true,
-      "hltbHours": 46,
+      "hltbHours": 23,
       "basis": "self",
       "hltbNote": "Main story (~45–50h).",
       "platforms": [
@@ -652,7 +665,8 @@
       "earlyAccess": "",
       "notes": "First playthrough; originally released Feb 2024.",
       "icon": "https://cdn.dekudeals.com/images/e68fbad88926a5a858429bd346a967bedb250bd5/w500.jpg",
-      "iconColor": "#4fa7ee"
+      "iconColor": "#4fa7ee",
+      "finishBefore": "2027-01"
     },
     {
       "title": "Stranger Than Heaven",
@@ -674,7 +688,8 @@
         }
       ],
       "earlyAccess": "",
-      "notes": "RGG Studio (Project Century). Day one on Game Pass."
+      "notes": "RGG Studio (Project Century). Day one on Game Pass.",
+      "finishBefore": "persona-4-revival"
     },
     {
       "title": "Tomb Raider: Legacy of Atlantis",
@@ -698,7 +713,8 @@
       "earlyAccess": "",
       "notes": "Unreal Engine 5 full remake of Tomb Raider (1996).",
       "icon": "https://cdn.dekudeals.com/images/ee4bc711f641a150fefdc08242f9b62f74ca8d15/w500.jpg",
-      "iconColor": "#68d4cd"
+      "iconColor": "#68d4cd",
+      "finishBefore": "persona-4-revival"
     },
     {
       "title": "Persona 4 Revival",
@@ -741,7 +757,8 @@
       ],
       "editions": [],
       "earlyAccess": "",
-      "notes": "First playthrough; originally released Mar 2011."
+      "notes": "First playthrough; originally released Mar 2011.",
+      "finishBefore": "2027-03"
     },
     {
       "title": "Pokémon Black 2",
@@ -756,7 +773,8 @@
       ],
       "editions": [],
       "earlyAccess": "",
-      "notes": "First playthrough; originally released Oct 2012."
+      "notes": "First playthrough; originally released Oct 2012.",
+      "finishBefore": "2027-04"
     },
     {
       "title": "Pokémon Mystery Dungeon: Explorers of Sky",
@@ -771,7 +789,8 @@
       ],
       "editions": [],
       "earlyAccess": "",
-      "notes": "First playthrough; originally released Oct 2009."
+      "notes": "First playthrough; originally released Oct 2009.",
+      "finishBefore": "2027-05"
     },
     {
       "title": "Pokémon Ultra Sun",
@@ -786,7 +805,8 @@
       ],
       "editions": [],
       "earlyAccess": "",
-      "notes": "First playthrough; originally released Nov 2017."
+      "notes": "First playthrough; originally released Nov 2017.",
+      "finishBefore": "2027-06"
     },
     {
       "title": "Final Fantasy VII Revelation",
@@ -812,7 +832,7 @@
     },
     {
       "title": "Pokémon Sword",
-      "date": "2027-08",
+      "date": "2027-07",
       "kind": "game",
       "backlog": true,
       "hltbHours": 26,
@@ -825,11 +845,12 @@
       "earlyAccess": "",
       "notes": "First playthrough; originally released Nov 2019.",
       "icon": "https://cdn.dekudeals.com/images/a33541a02e6ff30c5c8e2bbb63bba4ecc450d5d5/w500.jpg",
-      "iconColor": "#63c4d9"
+      "iconColor": "#63c4d9",
+      "finishBefore": "2027-08-15"
     },
     {
       "title": "New Pokémon Snap",
-      "date": "2027-09",
+      "date": "2027-08-16",
       "kind": "game",
       "backlog": true,
       "hltbHours": 10,
@@ -842,11 +863,12 @@
       "earlyAccess": "",
       "notes": "First playthrough; originally released Apr 2021.",
       "icon": "https://cdn.dekudeals.com/images/fb37e68b34f61d6beeca1552234c5c6d45a5c862/w500.jpg",
-      "iconColor": "#8cdb61"
+      "iconColor": "#8cdb61",
+      "finishBefore": "2027-08"
     },
     {
       "title": "Pokémon Violet",
-      "date": "2027-10",
+      "date": "2027-09",
       "kind": "game",
       "backlog": true,
       "hltbHours": 30,
@@ -859,7 +881,31 @@
       "earlyAccess": "",
       "notes": "First playthrough; originally released Nov 2022.",
       "icon": "https://cdn.dekudeals.com/images/4de144fe89642562a1364c89fb8f6ea9efc3b8cb/w500.jpg",
-      "iconColor": "#db61db"
+      "iconColor": "#db61db",
+      "finishBefore": "2027-09"
+    },
+    {
+      "title": "Pokémon Legends: Z-A",
+      "date": "2027-10",
+      "kind": "game",
+      "finishBefore": "2027-10",
+      "hltbHours": 30,
+      "basis": "series-avg",
+      "hltbNote": "Estimate from Pokémon Legends: Arceus main (~27h).",
+      "platforms": [
+        "Switch 2",
+        "Switch"
+      ],
+      "editions": [
+        {
+          "name": "Standard (est.)",
+          "price": 69.99
+        }
+      ],
+      "earlyAccess": "",
+      "notes": "Set in Lumiose City; latest Legends entry.",
+      "icon": "https://cdn.dekudeals.com/images/5d0a4118faf51d4be2c2ae54850ff8a79319d68d/w500.jpg",
+      "iconColor": "#6e8ecf"
     },
     {
       "title": "Pokémon Winds and Waves",
@@ -879,7 +925,8 @@
         }
       ],
       "earlyAccess": "",
-      "notes": "Gen 10. Official window is 2027; you noted November."
+      "notes": "Gen 10. Official window is 2027; you noted November.",
+      "finishBefore": "2027-12"
     },
     {
       "title": "Pikuniku 2",
