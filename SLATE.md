@@ -88,14 +88,22 @@ re-balance automatically. Click a placed (✓) chip again to unset it. These pla
 
 ## Finish a series before the next entry drops
 
-Add **`finishBefore`** to a game to require it be finished *before* another game's
-release: the value is that game's **id/slug** (e.g. `"finishBefore": "splatoon-raiders"`)
-or a **date** (`"2026-07-23"`). All games pointing at the same target are auto-placed and
-**packed back-to-back, in file order**, into the open days leading up to the deadline so
-they finish in time. On the **Month grid** they appear under a `⤿ finish before X · by <date>`
-bracket, and the target's release day gets a ⚑ flag. Because it references the target by id,
-the deadline auto-follows if that game's date changes. Tip: list the grouped games in the
-order you want to play them.
+Add **`finishBefore`** to a game to set a deadline. The value can be:
+- another game's **id/slug** (`"finishBefore": "splatoon-raiders"`) → finish **before that
+  game's release**; or
+- a **month** (`"2026-06"`) → finish **by the end of that month**; a quarter (`"2026-Q3"`);
+  or a specific **date** (`"2026-07-23"`).
+
+Games that share a deadline appear under a `⤿ finish before / by …` **bracket** on the Month
+grid. Month/quarter games (no set day) sharing a deadline are auto-placed and **packed
+back-to-back, in file order**, into the open days before it. Games that already have a real
+date keep it (a deadline never moves a dated release).
+
+**Feasibility note:** under each bracket, the app checks whether your current pace (last-90-day
+h/week) can finish the group's remaining hours before the deadline. If not, it surfaces a
+warning with the **optimal cadence** needed (e.g. *"aim for ~32.5h/wk (≈6 streams/wk)"*);
+otherwise it shows ✓ on-track. The deadline day gets a ⚑ flag; a game-id deadline auto-follows
+the target's date. Tip: list the grouped games in the order you want to play them.
 
 ## What stays in the app (not the file)
 

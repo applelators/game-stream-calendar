@@ -453,13 +453,24 @@ function withAutoPlacement(games, autoMap) {
 
 // ---- "finish before" deadlines ---------------------------------------------
 
-// Resolve a game's finish-before deadline (a Date): the referenced game's release
-// day (by id/slug), or a parsed date string. null if absent/unresolvable.
+// Exclusive end of a release period — the first instant AFTER it. Used for date
+// deadlines: "by end of June" (a "2026-06" month) -> July 1, so all of June counts.
+function periodEndExclusive(r) {
+  if (!r) return null;
+  if (r.precision === 'day') return anchorDate(r);
+  if (r.precision === 'month') return utc(r.year, (r.month || 1) + 1, 1);
+  if (r.precision === 'quarter') return utc(r.year, (r.month || 1) + 3, 1);
+  if (r.precision === 'year') return utc(r.year + 1, 1, 1);
+  return anchorDate(r);
+}
+
+// Resolve a game's finish-before deadline (an exclusive Date): the referenced game's
+// release day (by id/slug), or the end of a date/month/quarter string. null if absent.
 function finishBeforeDeadline(game, gamesById) {
   if (!game || !game.finishBefore) return null;
   const t = gamesById && gamesById[game.finishBefore];
   if (t) return anchorDate(t.release);
-  return anchorDate(parseDate(game.finishBefore));
+  return periodEndExclusive(parseDate(game.finishBefore));
 }
 
 // Pack each finish-before group back-to-back from the earliest open day in its
@@ -472,6 +483,9 @@ function finishBeforeDays(games, pace, normVacs) {
   const groups = {}; // targetKey -> { deadline, games: [] }
   for (const g of (games || [])) {
     if (!g.finishBefore || g.kind === 'event') continue;
+    // Only auto-place games without a set day (month/quarter). Games that already
+    // have a real date keep it — a deadline never moves a dated release.
+    if (!isFuzzy(g.release)) continue;
     const deadline = finishBeforeDeadline(g, byId);
     if (!deadline) continue;
     (groups[g.finishBefore] = groups[g.finishBefore] || { deadline, games: [] }).games.push(g);

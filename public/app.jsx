@@ -418,24 +418,41 @@ function dayInfo(day, ctx) {
   return { releases, play, session };
 }
 
-// Split a month's planned games into "finish before X" brackets and loose games.
-function splitPlanned(list, byId) {
-  const loose = [], bmap = {};
-  for (const g of (list || [])) {
-    if (g.finishBefore) (bmap[g.finishBefore] = bmap[g.finishBefore] || []).push(g);
-    else loose.push(g);
-  }
-  const brackets = Object.keys(bmap).map((k) => {
-    const t = byId[k];
-    const deadline = t ? anchorDate(t.release) : anchorDate(parseDate(k));
-    return { key: k, games: bmap[k], title: t ? t.title : k, deadline };
-  });
-  return { brackets, loose };
+// A "finish before / by" deadline bracket: the grouped games + a feasibility note
+// that suggests an optimal cadence when the current pace won't make it in time.
+function DeadlineBracket({ br, onPick, mobile }) {
+  const pfx = mobile ? 'mg' : 'gc';
+  const label = br.isGameRef
+    ? <span>⤿ finish before <b>{br.targetTitle}</b> · by {shortDate(addDays(br.deadline, -1))}</span>
+    : (br.precision === 'month' || br.precision === 'quarter' || br.precision === 'year')
+      ? <span>⤿ finish by <b>end of {br.periodLabel}</b></span>
+      : <span>⤿ finish by <b>{br.periodLabel}</b></span>;
+  const streamsWk = Math.max(1, Math.round(br.neededPerWeek / br.hps));
+  return (
+    <div className={`${pfx}-bracket`}>
+      <span className={`${pfx}-bracket-h`}>{label}</span>
+      {br.games.map((g) => (
+        <button key={g.id} className={`${pfx}-planned-chip placed`}
+          style={{ background: gameColor(g.id).solid, borderColor: gameColor(g.id).solid }}
+          onClick={() => onPick(g.id)}
+          title={`${g.title}${g.placedDay ? ` — starts ${fmtDate(g.placedDay)}` : ''}`}>
+          {g.title}{g.placedDay ? (mobile ? ` · ${shortDate(g.placedDay)}` : <small>▸ {shortDate(g.placedDay)}</small>) : null}</button>
+      ))}
+      {!br.past && br.availDays > 0 && !br.feasible && (
+        <div className={`${pfx}-deadnote warn`}>
+          ⚠ At ~{br.hpw}h/wk you likely won’t finish these <b>{br.neededHours}h</b> in time — aim for{' '}
+          <b>~{br.neededPerWeek.toFixed(1)}h/wk</b> (≈{streamsWk} stream{streamsWk === 1 ? '' : 's'}/wk of {br.hps}h).
+        </div>
+      )}
+      {!br.past && br.availDays > 0 && br.feasible && (
+        <div className={`${pfx}-deadnote ok`}>✓ On track at your current ~{br.hpw}h/wk.</div>
+      )}
+    </div>
+  );
 }
 
 function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }) {
   const isMobile = useIsMobile();
-  const allById = useMemo(() => { const m = {}; for (const g of games) m[g.id] = g; return m; }, [games]);
 
   // Actual streams already done (from @nabunan's Twitch history) keyed by calendar
   // day, so past days show what really happened (✓) instead of the plan.
@@ -456,7 +473,7 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
 
   // The realistic one-game-per-day plan (release-priority queue) drives the
   // calendar: each stream day maps to the game you'll actually be playing.
-  const { releasesByDay, playByDay, sessionByDay, gameById, plannedByMonth, deadlineByDay, min, max } = useMemo(() => {
+  const { releasesByDay, playByDay, sessionByDay, gameById, plannedByMonth, deadlineByDay, deadlineBracketsByMonth, min, max } = useMemo(() => {
     const pos = schedule(placeable, pace, 'sequential', vacations);
     const rbd = {}, pbd = {}, gbi = {}, pbm = {}, dbd = {};
     let mn = null, mx = null;
@@ -468,7 +485,7 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
       // month they're planned for, so they show even when the release-priority queue
       // pushes their actual play band far away. A game the user has auto-placed keeps
       // its planned-month grouping (plannedMonthKey) even though it's now day-anchored.
-      if (g.kind !== 'event' && (g.placedDay || isFuzzy(g.release))) {
+      if (g.kind !== 'event' && !g.finishBefore && (g.placedDay || isFuzzy(g.release))) {
         const mk = g.placedDay ? g.plannedMonthKey : (a ? `${a.getUTCFullYear()}-${a.getUTCMonth()}` : null);
         if (mk) (pbm[mk] = pbm[mk] || []).push(g);
       }
@@ -480,17 +497,43 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
       for (const seg of p.segments)
         for (let d = new Date(seg.start); d < seg.end; d = addDays(d, 1)) pbd[dayKey(d)] = g.id;
     }
-    // Flag each finish-before target's release day ("have the series done by here").
+    // Finish-before deadline groups → a bracket per month with a feasibility note.
+    const dbm = {}; // displayMonthKey -> [bracket]
+    const groupsByKey = {};
     for (const g of placeable) {
       if (!g.finishBefore) continue;
-      const t = gbi[g.finishBefore];
-      const deadline = t ? anchorDate(t.release) : anchorDate(parseDate(g.finishBefore));
+      (groupsByKey[g.finishBefore] = groupsByKey[g.finishBefore] || []).push(g);
+    }
+    const todayD = new Date();
+    const today = utc(todayD.getUTCFullYear(), todayD.getUTCMonth() + 1, todayD.getUTCDate());
+    const hpw = (pace && pace.hoursPerWeek) || 0;
+    const hps = (pace && pace.hoursPerStream) || 1;
+    for (const key in groupsByKey) {
+      const grp = groupsByKey[key];
+      const t = gbi[key];
+      const pr = t ? null : parseDate(key);
+      const deadline = t ? anchorDate(t.release) : periodEndExclusive(pr);
       if (!deadline) continue;
-      const k = dayKey(deadline);
-      (dbd[k] = dbd[k] || { title: t ? t.title : g.finishBefore, games: [] }).games.push(g.title);
+      const flagDay = t ? deadline : addDays(deadline, -1); // last day to have it done
+      const fk = dayKey(flagDay);
+      (dbd[fk] = dbd[fk] || { title: t ? t.title : 'deadline', games: [] }).games.push(...grp.map((x) => x.title));
+      // Feasibility: from today to the deadline, all stream time on this group.
+      let availDays = 0;
+      for (let d = new Date(today); d < deadline; d = addDays(d, 1)) if (!inVacation(d, vacations)) availDays++;
+      const weeks = availDays / 7;
+      const neededHours = grp.reduce((s, x) => s + (Number(x.hltbHours) || 0), 0);
+      const feasible = availDays > 0 && weeks * hpw + 0.01 >= neededHours;
+      const dmk = `${flagDay.getUTCFullYear()}-${flagDay.getUTCMonth()}`;
+      (dbm[dmk] = dbm[dmk] || []).push({
+        key, deadline, games: grp, isGameRef: !!t, targetTitle: t ? t.title : null,
+        precision: pr ? pr.precision : 'day', periodLabel: pr ? releaseLabel(pr) : null,
+        neededHours, availDays, weeks, hpw, hps, feasible,
+        neededPerWeek: weeks > 0 ? neededHours / weeks : Infinity,
+        past: deadline <= today,
+      });
     }
     const sbd = streamSessions(placeable, pace, pos, vacations);
-    return { releasesByDay: rbd, playByDay: pbd, sessionByDay: sbd, gameById: gbi, plannedByMonth: pbm, deadlineByDay: dbd, min: mn, max: mx };
+    return { releasesByDay: rbd, playByDay: pbd, sessionByDay: sbd, gameById: gbi, plannedByMonth: pbm, deadlineByDay: dbd, deadlineBracketsByMonth: dbm, min: mn, max: mx };
   }, [placeable, pace, vacations]);
 
   const eves = useMemo(() => launchEves(placeable), [placeable]);
@@ -560,22 +603,12 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
                 </div>
               );
             }
-            const { brackets, loose } = splitPlanned(plannedByMonth[`${y}-${mon}`], allById);
+            const loose = plannedByMonth[`${y}-${mon}`] || [];
+            const dbrackets = deadlineBracketsByMonth[`${y}-${mon}`] || [];
             return (
               <div className="mg-card" key={i}>
                 <div className="mg-head">{MONTHS_LONG[mon]} {y}<span className="cnt">{monthCount} release{monthCount === 1 ? '' : 's'}</span></div>
-                {brackets.map((br) => (
-                  <div className="mg-bracket" key={br.key}>
-                    <span className="mg-bracket-h">⤿ before {br.title}{br.deadline ? ` · ${shortDate(br.deadline)}` : ''}</span>
-                    {br.games.map((g) => (
-                      <button key={g.id} className="mg-planned-chip placed"
-                        style={{ background: gameColor(g.id).solid, borderColor: gameColor(g.id).solid }}
-                        onClick={() => onPick(g.id)}
-                        title={`${g.title}${g.placedDay ? ` — starts ${fmtDate(g.placedDay)}` : ''} · finish before ${br.title}`}>
-                        {g.title}{g.placedDay ? ` · ${shortDate(g.placedDay)}` : ''}</button>
-                    ))}
-                  </div>
-                ))}
+                {dbrackets.map((br) => <DeadlineBracket key={br.key} br={br} onPick={onPick} mobile={true} />)}
                 {loose.length > 0 && (
                   <div className="mg-planned">
                     <span className="mg-planned-h">Planned · tap to auto-pick a day</span>
@@ -664,23 +697,13 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
               </div>
             );
           }
-          const { brackets, loose } = splitPlanned(plannedByMonth[`${y}-${mon}`], allById);
+          const loose = plannedByMonth[`${y}-${mon}`] || [];
+          const dbrackets = deadlineBracketsByMonth[`${y}-${mon}`] || [];
           return (
             <div className="gc-month" id={`gcm-${y}-${mon}`} key={idx}>
               <div className="gc-mhead">{MONTHS_LONG[mon]} {y}
                 <span className="gc-headcnt">{monthCount} release{monthCount === 1 ? '' : 's'}</span></div>
-              {brackets.map((br) => (
-                <div className="gc-bracket" key={br.key}>
-                  <span className="gc-bracket-h">⤿ finish before <b>{br.title}</b>{br.deadline ? ` · by ${shortDate(br.deadline)}` : ''}</span>
-                  {br.games.map((g) => (
-                    <button key={g.id} className="gc-planned-chip placed"
-                      style={{ background: gameColor(g.id).solid, borderColor: gameColor(g.id).solid }}
-                      onClick={() => onPick(g.id)}
-                      title={`${g.title}${g.placedDay ? ` — starts ${fmtDate(g.placedDay)}` : ''} · finish before ${br.title}`}>
-                      {g.title}{g.placedDay ? <small>▸ {shortDate(g.placedDay)}</small> : null}</button>
-                  ))}
-                </div>
-              ))}
+              {dbrackets.map((br) => <DeadlineBracket key={br.key} br={br} onPick={onPick} mobile={false} />)}
               {loose.length > 0 && (
                 <div className="gc-planned">
                   <span className="gc-planned-h">Planned this month · click to auto-pick a start day</span>

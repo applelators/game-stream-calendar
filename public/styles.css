@@ -305,6 +305,14 @@ input, select, textarea { font-family: inherit; }
   font-family: var(--mono); margin-right: 2px; letter-spacing: 0.02em; }
 .gc-bracket-h b, .mg-bracket-h b { color: var(--text); }
 .gc-deadflag, .mg-deadflag { color: var(--warn); font-size: 0.78rem; margin-left: 4px; }
+/* feasibility note under a deadline bracket */
+.gc-deadnote, .mg-deadnote { flex-basis: 100%; width: 100%; font-size: 0.74rem; line-height: 1.35;
+  margin-top: 2px; padding: 6px 9px; border-radius: var(--radius-sm); }
+.mg-deadnote { font-size: 0.7rem; }
+.gc-deadnote.warn, .mg-deadnote.warn { color: var(--warn); background: rgba(245, 177, 76, 0.12);
+  border: 1px solid rgba(245, 177, 76, 0.35); }
+.gc-deadnote.ok, .mg-deadnote.ok { color: var(--good); }
+.gc-deadnote b, .mg-deadnote b { color: var(--text); }
 
 /* placed = a start day was auto-picked: solid border + tinted fill */
 .gc-planned-chip.placed, .mg-planned-chip.placed { border-style: solid; color: #0c0c12; }
