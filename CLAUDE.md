@@ -99,7 +99,15 @@ File entry (friendly format):
 Positions are `{ start, end, segments:[{start,end}] }` — multiple segments only for a
 split game in the queue.
 - **`parallel`** ("True dates"): each game sits on its real release date; one segment.
-- **`sequential`** ("My queue"): a **preemptive** day-by-day simulation. New releases take
+- **`sequential`** ("My queue") is now an **interleaved** stream plan via `streamPlan(games, pace,
+  normVacs)` → `{ positions, sessionByDay, bonusByDay }` (`scheduleSequential` returns its
+  `positions`). Each game needs `streamsToFinish` streams; stream slots occur at the real
+  ~`streamsPerWeek` cadence and are shared **round-robin** among all concurrently-in-progress
+  games (so you alternate, not binge). A game with `binge:true` holds the rotation once started;
+  a specific-day release still gets its midnight-launch slot on release day; `bonus` games only
+  take a slot when no committed game needs one. The Month grid consumes `streamPlan` directly
+  (sessionByDay = the per-day game + idx/total; bonusByDay = spare-slot bonus bands). Old note:
+- **`sequential`** ("My queue") [legacy preemptive LIFO — replaced by the above]: a **preemptive** day-by-day simulation. New releases take
   priority — on a game's release day you drop the current game and start the new one; the
   interrupted game resumes (LIFO) once the newer one finishes, so a long game splits into
   several segments (rendered as separate bars joined by dotted `.bar-link` connectors).

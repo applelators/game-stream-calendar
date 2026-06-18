@@ -243,21 +243,17 @@ function App() {
 function TimelineView({ games, pace, mode, vacations, onPick }) {
   const placeable = useMemo(() => games.filter((g) => isPlaceable(g.release)), [games]);
   const rail = useMemo(() => games.filter((g) => !isPlaceable(g.release)), [games]);
-  // Bonus games are excluded from the committed queue (so they never push priorities);
-  // they're shown as faded bars on their true date.
-  const prior = useMemo(() => placeable.filter((g) => !g.bonus), [placeable]);
-  const bonusGames = useMemo(() => placeable.filter((g) => g.bonus), [placeable]);
-  const positions = useMemo(() => schedule(prior, pace, mode, vacations), [prior, pace, mode, vacations]);
-  const bonusPositions = useMemo(() => schedule(bonusGames, pace, 'parallel', vacations), [bonusGames, pace, vacations]);
+  // "My queue" uses the interleaved plan; "True dates" places each game on its date.
+  const positions = useMemo(
+    () => (mode === 'sequential' ? streamPlan(placeable, pace, vacations).positions : schedule(placeable, pace, 'parallel', vacations)),
+    [placeable, pace, mode, vacations]
+  );
 
   const rows = useMemo(() => {
-    return [
-      ...prior.map((g) => ({ g, pos: positions[g.id], bonus: false })),
-      ...bonusGames.map((g) => ({ g, pos: bonusPositions[g.id], bonus: true })),
-    ]
+    return placeable.map((g) => ({ g, pos: positions[g.id], bonus: g.bonus }))
       .filter((r) => r.pos)
       .sort((a, b) => a.pos.start - b.pos.start);
-  }, [prior, bonusGames, positions, bonusPositions]);
+  }, [placeable, positions]);
 
   if (rows.length === 0 && rail.length === 0) {
     return <div className="tl-wrap"><div className="mg-empty">No games yet — add one to get started.</div></div>;
@@ -430,10 +426,7 @@ function dayInfo(day, ctx) {
   // "streams to finish" days, at your real cadence), not every in-progress day.
   const session = ctx.sessionByDay[k];
   if (session) return { releases, play: ctx.gameById[session.id], session };
-  // in-progress (within a game's span) but not a stream day → faint connecting tint.
-  const spanId = ctx.playByDay[k];
-  if (spanId) return { releases, span: ctx.gameById[spanId] };
-  // free day with no committed game → a bonus game can fill it (faded).
+  // bonus game filling a spare slot (faded).
   const bonusId = ctx.bonusPlayByDay && ctx.bonusPlayByDay[k];
   if (bonusId) {
     return { releases, bonusPlay: ctx.gameById[bonusId], bonusFirst: ctx.bonusPlayByDay[dayKey(prev)] !== bonusId };
@@ -537,16 +530,19 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
 
   // The realistic one-game-per-day plan (release-priority queue) drives the
   // calendar: each stream day maps to the game you'll actually be playing.
-  const { releasesByDay, playByDay, sessionByDay, gameById, plannedByMonth, bonusByMonth, bonusPlayByDay, deadlineByDay, deadlineBracketsByMonth, min, max } = useMemo(() => {
-    const prior = placeable.filter((g) => !g.bonus);   // committed schedule excludes bonus games
-    const pos = schedule(prior, pace, 'sequential', vacations);
+  const { releasesByDay, sessionByDay, gameById, plannedByMonth, bonusByMonth, bonusPlayByDay, deadlineByDay, deadlineBracketsByMonth, min, max } = useMemo(() => {
+    // Interleaved plan: stream sessions rotate among in-progress games; bonus games
+    // fill only spare slots. Drives the calendar directly.
+    const plan = streamPlan(placeable, pace, vacations);
+    const pos = plan.positions, sbd = plan.sessionByDay, bpd = plan.bonusByDay;
     const todayD = new Date();
     const today = utc(todayD.getUTCFullYear(), todayD.getUTCMonth() + 1, todayD.getUTCDate());
-    const rbd = {}, pbd = {}, gbi = {}, pbm = {}, bbm = {}, dbd = {};
+    const rbd = {}, gbi = {}, pbm = {}, bbm = {}, dbd = {};
     let mn = null, mx = null;
+    for (const id in pos) { const p = pos[id]; if (!mn || p.start < mn) mn = p.start; if (!mx || p.end > mx) mx = p.end; }
     for (const g of placeable) {
       gbi[g.id] = g;
-      if (g.bonus) { // optional — listed in a bonus strip, never on the committed grid
+      if (g.bonus) { // optional — listed in a bonus strip; only fills spare calendar slots
         const ab = anchorDate(g.release);
         const mk = ab ? `${ab.getUTCFullYear()}-${ab.getUTCMonth()}` : null;
         if (mk) (bbm[mk] = bbm[mk] || []).push(g);
@@ -554,22 +550,13 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
       }
       const a = anchorDate(g.release);
       if (a) { const k = dayKey(a); (rbd[k] = rbd[k] || []).push(g); }
-      // Games with only a month/quarter window (no specific day) are listed under the
-      // month they're planned for, so they show even when the release-priority queue
-      // pushes their actual play band far away. A game the user has auto-placed keeps
-      // its planned-month grouping (plannedMonthKey) even though it's now day-anchored.
+      // Month/quarter (no set day) games are listed under their planned month.
       if (g.kind !== 'event' && !g.finishBefore && (g.placedDay || isFuzzy(g.release))) {
         const mk = g.placedDay ? g.plannedMonthKey : (a ? `${a.getUTCFullYear()}-${a.getUTCMonth()}` : null);
         if (mk) (pbm[mk] = pbm[mk] || []).push(g);
       }
-      const p = pos[g.id];
-      if (!p) continue;
-      if (!mn || p.start < mn) mn = p.start;
-      if (!mx || p.end > mx) mx = p.end;
-      if (g.kind === 'event') continue; // events are background, not the daily game
-      for (const seg of p.segments)
-        for (let d = new Date(seg.start); d < seg.end; d = addDays(d, 1)) pbd[dayKey(d)] = g.id;
     }
+    const prior = placeable.filter((g) => !g.bonus);
     // Finish-before deadline groups → a bracket per month with a feasibility note.
     const dbm = {}; // displayMonthKey -> [bracket]
     const groupsByKey = {};
@@ -633,30 +620,7 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
         past: deadline <= today,
       });
     }
-    const sbd = streamSessions(prior, pace, pos, vacations);
-
-    // Bonus gap-fill: lay each bonus game into the FREE days of its own month — days
-    // the committed plan, vacations, and launch eves don't use, from today onward. So
-    // bonus bands appear only where a month genuinely has slack; full months show none.
-    const bpd = {};
-    const { eveByDay: cEve, releaseDays: cRel } = launchEves(prior);
-    const bonusList = placeable.filter((g) => g.bonus)
-      .map((g) => ({ g, a: anchorDate(g.release) })).filter((x) => x.a)
-      .sort((p, q) => (p.a - q.a) || (p.g.id < q.g.id ? -1 : 1));
-    for (const { g, a } of bonusList) {
-      const y = a.getUTCFullYear(), m = a.getUTCMonth();
-      const monthEnd = utc(y, m + 2, 1);
-      let need = activeDaysFor(g, pace);
-      let d = new Date(Math.max(utc(y, m + 1, 1).getTime(), today.getTime()));
-      while (d < monthEnd && need > 0) {
-        const k = dayKey(d);
-        if (!pbd[k] && !bpd[k] && !inVacation(d, vacations) && !(cEve[k] && !cRel[k])) {
-          bpd[k] = g.id; need--;
-        }
-        d = addDays(d, 1);
-      }
-    }
-    return { releasesByDay: rbd, playByDay: pbd, sessionByDay: sbd, gameById: gbi, plannedByMonth: pbm, bonusByMonth: bbm, bonusPlayByDay: bpd, deadlineByDay: dbd, deadlineBracketsByMonth: dbm, min: mn, max: mx };
+    return { releasesByDay: rbd, sessionByDay: sbd, gameById: gbi, plannedByMonth: pbm, bonusByMonth: bbm, bonusPlayByDay: bpd, deadlineByDay: dbd, deadlineBracketsByMonth: dbm, min: mn, max: mx };
   }, [placeable, pace, vacations]);
 
   // Bonus games don't reserve midnight-launch eves (they're not committed).
@@ -664,7 +628,7 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
 
   const now = new Date();
   const tY = now.getFullYear(), tM = now.getMonth(), tD = now.getDate();
-  const ctx = { vacations, playByDay, sessionByDay, bonusPlayByDay, gameById, releasesByDay, deadlineByDay, streamedByDay, eveByDay: eves.eveByDay, releaseDays: eves.releaseDays };
+  const ctx = { vacations, sessionByDay, bonusPlayByDay, gameById, releasesByDay, deadlineByDay, streamedByDay, eveByDay: eves.eveByDay, releaseDays: eves.releaseDays };
 
   if (!min) {
     return (

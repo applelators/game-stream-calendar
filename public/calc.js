@@ -119,6 +119,7 @@ function gameFromFile(e, i) {
     kind: e.kind || 'game',
     backlog: !!e.backlog,   // catalog game scheduled at a planned start (not a new release)
     bonus: !!e.bonus,       // optional "if there's time" game — excluded from the committed schedule
+    binge: !!e.binge,       // play start-to-finish without interleaving (default: interleave)
     hltbHours: Number(e.hltbHours) || 0,
     hltbBasis: e.basis || e.hltbBasis || 'estimate',
     hltbNote: e.hltbNote || '',
@@ -279,74 +280,88 @@ function scheduleParallel(games, pace, normVacs) {
   return out;
 }
 
-// Sequential ("my queue"): NEW RELEASES TAKE PRIORITY. On a game's release day you
-// drop whatever you're playing and start the new one; the interrupted game is
-// paused and resumed (most-recent-first) once the newer game is finished — so a
-// game can be split into several segments. Vacations make no progress; events
-// keep their fixed window and don't take part in the queue.
-function scheduleSequential(games, pace, normVacs) {
-  const out = {};
-  const playable = [];
-  for (const g of games) {
+// Sequential ("my queue"): an INTERLEAVED stream plan. Each game needs N streams
+// (streamsToFinish); streams happen at the real ~streamsPerWeek cadence and are
+// shared round-robin among all games that are concurrently in progress, so you
+// alternate between active games instead of bingeing one to completion. A game
+// flagged `binge` holds the rotation once started until it's finished. New specific-
+// day releases still get their midnight-launch session on release day. Bonus games
+// only take a slot when no committed game needs it. Vacations/eves make no progress.
+// Returns { positions, sessionByDay, bonusByDay }.
+function streamPlan(games, pace, normVacs) {
+  const out = {};                  // positions {start,end,segments}
+  const sessionByDay = {};         // dayKey -> {id, idx, total} (committed)
+  const bonusByDay = {};           // dayKey -> id (bonus fills spare slots)
+  const committed = [], bonusList = [];
+  for (const g of (games || [])) {
     const start = anchorDate(g.release);
     if (!start) continue;
     if (g.kind === 'event') {
       const end = gameEnd(g, start, pace, normVacs);
       out[g.id] = { start, end, segments: [{ start, end }] };
-    } else {
-      playable.push({ id: g.id, release: start, remaining: activeDaysFor(g, pace), open: null });
+      continue;
     }
+    const streams = streamsToFinish(g.hltbHours, pace);
+    if (!streams) continue;
+    (g.bonus ? bonusList : committed).push({ id: g.id, start, streams, done: 0, binge: !!g.binge, lastSlot: -Infinity, slots: [] });
   }
-  if (playable.length === 0) return out;
-  playable.sort((a, b) => (a.release - b.release) || (a.id < b.id ? -1 : 1));
+  const all = committed.concat(bonusList);
+  if (all.length === 0) return { positions: out, sessionByDay, bonusByDay };
 
-  // Eve of each specific-day release = no progress (midnight-launch night).
+  const spw = (pace && pace.hoursPerStream && pace.hoursPerWeek) ? pace.hoursPerWeek / pace.hoursPerStream : 2;
+  const perDay = Math.max(0.01, spw / 7);
   const { eveByDay, releaseDays } = launchEves(games);
   const blockedEve = (d) => { const k = dkey(d); return !!eveByDay[k] && !releaseDays[k]; };
+  // A reserved midnight-launch eve means its release day is a forced session for that game.
+  const launchOnDay = {};
+  for (const p of committed) {
+    const ev = eveByDay[dkey(addDays(p.start, -1))];
+    if (ev && ev.id === p.id) launchOnDay[dkey(p.start)] = p.id;
+  }
 
-  const segs = {};
-  for (const p of playable) segs[p.id] = [];
-  const closeSeg = (p, end) => { if (p.open && end > p.open) segs[p.id].push({ start: p.open, end }); p.open = null; };
+  let earliest = null;
+  for (const p of all) if (!earliest || p.start < earliest) earliest = p.start;
+  let day = new Date(earliest), acc = 0, guard = 0;
+  let remaining = all.reduce((s, p) => s + p.streams, 0);
+  const pickRR = (pool) => { pool.sort((a, b) => (a.lastSlot - b.lastSlot) || (a.done - b.done) || (a.start - b.start) || (a.id < b.id ? -1 : 1)); return pool[0]; };
 
-  let idx = 0, cur = null, guard = 0;
-  const stack = [];
-  let day = new Date(playable[0].release);
+  while (remaining > 0 && guard++ < 400000) {
+    if (inVacation(day, normVacs) || blockedEve(day)) { day = addDays(day, 1); continue; }
+    const k = dkey(day);
+    const forcedId = launchOnDay[k];
+    let isSlot = false;
+    if (forcedId) isSlot = true;
+    else { acc += perDay; if (acc >= 1) { acc -= 1; isSlot = true; } }
+    if (!isSlot) { day = addDays(day, 1); continue; }
 
-  while (guard++ < 200000) {
-    // 1) releases today preempt the current game (priority on release day)
-    while (idx < playable.length && playable[idx].release <= day) {
-      const next = playable[idx++];
-      if (cur) { closeSeg(cur, day); stack.push(cur); }
-      cur = next; cur.open = new Date(day);
+    const activeC = committed.filter((p) => p.start <= day && p.done < p.streams);
+    let pick = null;
+    if (forcedId) pick = committed.find((p) => p.id === forcedId && p.done < p.streams) || null;
+    if (!pick) { const hold = activeC.filter((p) => p.binge && p.done > 0); if (hold.length) pick = pickRR(hold); }
+    if (!pick && activeC.length) pick = pickRR(activeC);
+    if (!pick) {
+      const activeB = bonusList.filter((p) => p.start <= day && p.done < p.streams);
+      if (activeB.length) { const bp = pickRR(activeB); bp.done++; bp.lastSlot = day.getTime(); bp.slots.push(new Date(day)); bonusByDay[dkey(day)] = bp.id; remaining--; }
+      day = addDays(day, 1); continue;
     }
-    // 2) nothing active -> jump to the next release, or stop if none remain
-    if (!cur) {
-      if (idx < playable.length) { day = new Date(playable[idx].release); continue; }
-      break;
-    }
-    // 3) play the current game (no progress during vacations or launch eves)
-    if (!inVacation(day, normVacs) && !blockedEve(day)) {
-      cur.remaining -= 1;
-      if (cur.remaining <= 0) {
-        const fin = addDays(day, 1);
-        closeSeg(cur, fin);
-        cur = stack.length ? stack.pop() : null;
-        if (cur) cur.open = new Date(fin);
-        day = fin;
-        continue;
-      }
-    }
+    pick.done++; pick.lastSlot = day.getTime(); pick.slots.push(new Date(day)); remaining--;
     day = addDays(day, 1);
   }
-  if (cur && cur.open) closeSeg(cur, day);
-  for (const p of stack) if (p.open) closeSeg(p, day);
 
-  for (const p of playable) {
-    let s = segs[p.id];
-    if (s.length === 0) { const e = addDays(p.release, 1); s = [{ start: p.release, end: e }]; }
-    out[p.id] = { start: s[0].start, end: s[s.length - 1].end, segments: s };
+  for (const p of committed) {
+    if (!p.slots.length) { const e = addDays(p.start, 1); out[p.id] = { start: p.start, end: e, segments: [{ start: p.start, end: e }] }; continue; }
+    const first = p.slots[0], last = addDays(p.slots[p.slots.length - 1], 1);
+    out[p.id] = { start: first, end: last, segments: [{ start: first, end: last }] };
+    p.slots.forEach((d, i) => { sessionByDay[dkey(d)] = { id: p.id, idx: i + 1, total: p.streams }; });
   }
-  return out;
+  for (const p of bonusList) {
+    if (p.slots.length) { const first = p.slots[0], last = addDays(p.slots[p.slots.length - 1], 1); out[p.id] = { start: first, end: last, segments: [{ start: first, end: last }] }; }
+  }
+  return { positions: out, sessionByDay, bonusByDay };
+}
+
+function scheduleSequential(games, pace, normVacs) {
+  return streamPlan(games, pace, normVacs).positions;
 }
 
 function schedule(games, pace, mode /* 'parallel' | 'sequential' */, normVacs) {
