@@ -60,6 +60,7 @@ Also accepts `"August 2026"`, `"Nov 2027"`, `"Jun 9, 2026"`. Anything unrecogniz
 | `editions` | array of `{ "name", "price" }` (USD); first one is the headline price |
 | `earlyAccess` | pre-order / early-access bonus text |
 | `notes` | free text shown in the detail card |
+| `icon` | optional visual: an **emoji** (`"🦑"`) or an **image URL/path** (`"https://…/art.jpg"` or `"/art/splat3.png"`). Defaults to a colour-coded **monogram** badge from the title. |
 
 ## Midnight launches
 

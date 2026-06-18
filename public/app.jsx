@@ -44,6 +44,35 @@ function gameColor(id) {
   const c = GAME_PALETTE[h % GAME_PALETTE.length];
   return { solid: c, tint: c + '2e' /* ~18% alpha */ };
 }
+
+// A short monogram for a game's title — first letters of its first two real words,
+// keeping standalone numbers ("Splatoon 3" -> "S3", "Pokémon HeartGold" -> "PH").
+function gameInitials(title) {
+  const toks = ((title || '').match(/[\p{L}\p{N}]+/gu) || []);
+  let out = '';
+  for (const t of toks) {
+    out += /^\d+$/.test(t) ? t : t[0].toUpperCase();
+    if (out.replace(/\d/g, '').length >= 2 || out.length >= 3) break;
+  }
+  return (out || '?').slice(0, 3);
+}
+
+// Per-game visual: an <img> if `icon` is an image URL/path, the emoji if `icon` is
+// short text, else a colour-coded monogram badge. One asset per game, used in the
+// detail card, timeline labels, and chips.
+function GameBadge({ game, size = 20 }) {
+  const px = size + 'px';
+  const icon = game.icon;
+  const isImg = icon && /^(https?:\/\/|\/|data:)/.test(icon);
+  if (isImg) return <img className="gbadge gbadge-img" src={icon} alt="" style={{ width: px, height: px }} />;
+  const col = gameColor(game.id);
+  return (
+    <span className="gbadge" style={{ width: px, height: px, background: col.solid,
+      fontSize: Math.round(size * (icon ? 0.62 : 0.44)) + 'px', color: icon ? undefined : '#0c0c12' }}>
+      {icon || gameInitials(game.title)}
+    </span>
+  );
+}
 const PX_PER_DAY = 4.2;
 
 // ----------------------------------------------------------------------------
@@ -264,8 +293,11 @@ function TimelineView({ games, pace, mode, vacations, onPick }) {
               return (
                 <div className="tl-row" key={g.id}>
                   <div className="tl-label">
-                    <span className="nm">{g.title}</span>
-                    <span className="meta">{releaseLabel(g.release)}{g.kind !== 'game' ? ' · ' + KIND_LABEL[g.kind] : ''}</span>
+                    <GameBadge game={g} size={22} />
+                    <span className="tl-label-txt">
+                      <span className="nm">{g.title}</span>
+                      <span className="meta">{releaseLabel(g.release)}{g.kind !== 'game' ? ' · ' + KIND_LABEL[g.kind] : ''}</span>
+                    </span>
                   </div>
                   <div className="tl-track" style={{ width: trackW }}>
                     {months.map((mo, i) => (
@@ -315,7 +347,7 @@ function TimelineView({ games, pace, mode, vacations, onPick }) {
           <div className="rail-chips">
             {rail.map((g) => (
               <div className="chip" key={g.id} onClick={() => onPick(g.id)}>
-                <span className="swatch" style={{ background: KIND_COLOR[g.kind] }} />
+                <GameBadge game={g} size={16} />
                 {g.title}
                 <span className="when">{releaseLabel(g.release)}</span>
               </div>
@@ -649,7 +681,7 @@ function RailBlock({ rail, onPick }) {
       <div className="rail-chips">
         {rail.map((g) => (
           <div className="chip" key={g.id} onClick={() => onPick(g.id)}>
-            <span className="swatch" style={{ background: KIND_COLOR[g.kind] }} />
+            <GameBadge game={g} size={16} />
             {g.title}<span className="when">{releaseLabel(g.release)}</span>
           </div>
         ))}
@@ -672,7 +704,7 @@ function DetailCard({ game: g, pace, vacations, queuedPos, onClose }) {
     <div className="scrim" onClick={onClose}>
       <div className="modal detail" onClick={(e) => e.stopPropagation()}>
         <div className="modal-h">
-          <h3>{g.title}</h3>
+          <div className="modal-h-title"><GameBadge game={g} size={34} /><h3>{g.title}</h3></div>
           <button className="x" onClick={onClose}>×</button>
         </div>
         <div className="modal-b">

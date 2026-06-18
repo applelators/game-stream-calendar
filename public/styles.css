@@ -63,9 +63,10 @@ input, select, textarea { font-family: inherit; }
 
 .tl-row { display: flex; align-items: stretch; min-height: 38px; border-bottom: 1px solid var(--border); }
 .tl-row:hover { background: #ffffff05; }
-.tl-label { position: sticky; left: 0; z-index: 4; width: var(--label-w); min-width: var(--label-w); background: var(--panel); border-right: 1px solid var(--border-solid); padding: 7px 14px; display: flex; flex-direction: column; justify-content: center; gap: 1px; }
+.tl-label { position: sticky; left: 0; z-index: 4; width: var(--label-w); min-width: var(--label-w); background: var(--panel); border-right: 1px solid var(--border-solid); padding: 7px 14px; display: flex; flex-direction: row; align-items: center; gap: 9px; }
+.tl-label-txt { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .tl-row:hover .tl-label { background: #161d2a; }
-.tl-label .nm { font-size: 0.82rem; font-weight: 600; line-height: 1.15; }
+.tl-label .nm { font-size: 0.82rem; font-weight: 600; line-height: 1.15; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tl-label .meta { font-size: 0.68rem; color: var(--faint); font-family: var(--mono); }
 .tl-track { position: relative; flex: 1; }
 
@@ -155,8 +156,15 @@ input, select, textarea { font-family: inherit; }
 .scrim { position: fixed; inset: 0; background: #04060bcc; backdrop-filter: blur(3px); z-index: 50; display: flex; align-items: flex-start; justify-content: center; padding: 40px 16px; overflow-y: auto; }
 .modal { width: 100%; max-width: 560px; background: var(--panel); border: 1px solid var(--border-solid); border-radius: var(--radius); box-shadow: 0 20px 60px #000a; }
 .modal.detail { max-width: 460px; }
-.modal-h { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid var(--border); }
-.modal-h h3 { font-family: var(--display); font-size: 1.1rem; font-weight: 700; }
+.modal-h { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid var(--border); gap: 10px; }
+.modal-h-title { display: flex; align-items: center; gap: 11px; min-width: 0; }
+.modal-h h3 { font-family: var(--display); font-size: 1.1rem; font-weight: 700; overflow: hidden; text-overflow: ellipsis; }
+
+/* per-game visual badge (monogram / emoji / image) */
+.gbadge { display: inline-flex; align-items: center; justify-content: center; flex: none;
+  border-radius: 6px; font-family: var(--display); font-weight: 800; line-height: 1;
+  letter-spacing: -0.02em; overflow: hidden; }
+.gbadge-img { object-fit: cover; border-radius: 6px; background: var(--panel-2); }
 .modal-b { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
 .modal-f { padding: 14px 18px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; }
 .x { background: transparent; border: 0; color: var(--muted); font-size: 1.3rem; line-height: 1; padding: 2px 6px; border-radius: 6px; }

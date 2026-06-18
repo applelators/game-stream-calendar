@@ -129,6 +129,8 @@ function gameFromFile(e, i) {
     notes: e.notes || '',
   };
   if (e.endDate) g.eventEnd = parseDate(e.endDate);
+  // Optional visual: an emoji, or an image URL/path. Falls back to a colour monogram.
+  if (e.icon) g.icon = String(e.icon);
   // Optional deadline: finish this game before another game's release (by id/slug)
   // or before a date string. Grouped games are packed to finish before the target.
   if (e.finishBefore) g.finishBefore = String(e.finishBefore);
