@@ -31,7 +31,7 @@
       "earlyAccess": "",
       "notes": "",
       "icon": "https://cdn.dekudeals.com/images/14a9585aef502398de4d06d44d8709f1de6f26b4/w500.jpg",
-      "iconColor": "#5ed2de"
+      "iconColor": "#5ed3de"
     },
     {
       "title": "Xenoblade Chronicles: Definitive Edition (NS2) — Pt. 2",
@@ -48,7 +48,7 @@
       "earlyAccess": "",
       "notes": "",
       "icon": "https://cdn.dekudeals.com/images/14a9585aef502398de4d06d44d8709f1de6f26b4/w500.jpg",
-      "iconColor": "#5ed2de"
+      "iconColor": "#5ed3de"
     },
     {
       "title": "Pokémon HeartGold",
@@ -64,7 +64,9 @@
       ],
       "editions": [],
       "earlyAccess": "",
-      "notes": "First playthrough; originally released Mar 2010."
+      "notes": "First playthrough; originally released Mar 2010.",
+      "icon": "https://cdn2.steamgriddb.com/thumb/bb05ae57de563e3e8a035537cd5fa9ee.jpg",
+      "iconColor": "#eec94f"
     },
     {
       "title": "Deltarune Chapters 3+4",
@@ -86,7 +88,7 @@
       "earlyAccess": "",
       "notes": "First playthrough; chapters released Jun 2025.",
       "icon": "https://cdn2.steamgriddb.com/thumb/1826158ab2775c08e5fa3c729045e680.jpg",
-      "iconColor": "#4fd0ee"
+      "iconColor": "#4fd1ee"
     },
     {
       "title": "Deltarune — Chapter 5",
@@ -112,7 +114,7 @@
       "earlyAccess": "",
       "notes": "Free chapter update for existing owners.",
       "icon": "https://cdn2.steamgriddb.com/thumb/1826158ab2775c08e5fa3c729045e680.jpg",
-      "iconColor": "#4fd0ee"
+      "iconColor": "#4fd1ee"
     },
     {
       "title": "Star Fox (Switch 2)",
@@ -151,7 +153,9 @@
       "editions": [],
       "earlyAccess": "",
       "notes": "First playthrough; originally released Nov 2014.",
-      "finishBefore": "2026-08"
+      "finishBefore": "2026-08",
+      "icon": "https://cdn2.steamgriddb.com/thumb/ba3072daa7d54d117b22019c3974b0fe.jpg",
+      "iconColor": "#eeb94f"
     },
     {
       "title": "Rhythm Heaven Groove",
@@ -215,7 +219,7 @@
       "earlyAccess": "",
       "notes": "First playthrough; originally released Jun 2018.",
       "icon": "https://cdn.dekudeals.com/images/e8f7cfe5e1786410d6ead1e241deace6ee33b321/w500.jpg",
-      "iconColor": "#5d60e0",
+      "iconColor": "#5d63e0",
       "binge": true
     },
     {
@@ -253,7 +257,7 @@
       "earlyAccess": "",
       "notes": "First playthrough; originally released Feb 2024.",
       "icon": "https://cdn.dekudeals.com/images/c178eb9e18768f4b5e2b506c998811630b114b88/w500.jpg",
-      "iconColor": "#90ee4f",
+      "iconColor": "#96ee4f",
       "binge": true
     },
     {
@@ -303,7 +307,7 @@
       "earlyAccess": "",
       "notes": "",
       "icon": "https://cdn.dekudeals.com/images/e2119fd96155112a20b409962b182dbee4b0e8f1/w500.jpg",
-      "iconColor": "#5bb0e1",
+      "iconColor": "#5bb1e1",
       "finishBefore": "2026-10"
     },
     {
@@ -321,7 +325,7 @@
       "earlyAccess": "",
       "notes": "",
       "icon": "https://cdn.dekudeals.com/images/e2119fd96155112a20b409962b182dbee4b0e8f1/w500.jpg",
-      "iconColor": "#5bb0e1",
+      "iconColor": "#5bb1e1",
       "finishBefore": "2026-10"
     },
     {
@@ -339,7 +343,7 @@
       "earlyAccess": "",
       "notes": "First playthrough; originally released Jan 2023.",
       "icon": "https://cdn2.steamgriddb.com/thumb/ce89d7d8c6c4c0f6b4dab0a8606d2d68.jpg",
-      "iconColor": "#b85fdd",
+      "iconColor": "#b65fdd",
       "finishBefore": "2026-08"
     },
     {
@@ -360,7 +364,9 @@
       ],
       "earlyAccess": "",
       "notes": "Date per your note (August); some reports peg the DLC to Q1 2027.",
-      "finishBefore": "2026-08"
+      "finishBefore": "2026-08",
+      "icon": "https://cdn2.steamgriddb.com/thumb/dd343c779597afece742459153202eb6.jpg",
+      "iconColor": "#96dc60"
     },
     {
       "title": "Final Fantasy XIV",
@@ -379,7 +385,7 @@
       "earlyAccess": "",
       "notes": "Live-service MMO; adjust hours to the content you'll stream.",
       "icon": "https://cdn.dekudeals.com/images/7dd2b8547dd0e83c4609e0032de5be924c7048ce/w500.jpg",
-      "iconColor": "#cf886e"
+      "iconColor": "#cf876e"
     },
     {
       "title": "Pokémon Mystery Dungeon: Rescue Team DX",
@@ -444,8 +450,8 @@
       ],
       "earlyAccess": "Pre-order: Classic Brown suit + Reflective Claws (early unlock), 1 Technique Point, 4 avatars.",
       "notes": "PS5 exclusive, Insomniac Games.",
-      "icon": "https://cdn.dekudeals.com/images/a0a9511514e93617286cd0ae9d9e8369417b925e/w500.jpg",
-      "iconColor": "#eabf52",
+      "icon": "https://cdn2.steamgriddb.com/thumb/7943d3a10ac2f59ec51d0d060e6f88cb.jpg",
+      "iconColor": "#eec44f",
       "finishBefore": "2026-09",
       "binge": true
     },
@@ -494,7 +500,9 @@
       "editions": [],
       "earlyAccess": "",
       "notes": "First playthrough; originally released Mar 2009.",
-      "finishBefore": "grand-theft-auto-vi"
+      "finishBefore": "grand-theft-auto-vi",
+      "icon": "https://cdn2.steamgriddb.com/thumb/91f618d4453134d636932694dcb160f9.jpg",
+      "iconColor": "#dd8d60"
     },
     {
       "title": "KINGDOM HEARTS Collection [I～III]",
@@ -560,8 +568,8 @@
       ],
       "earlyAccess": "",
       "notes": "Editions/pricing not fully confirmed.",
-      "icon": "https://cdn.dekudeals.com/images/120b493fd548a41f292e63d6e74ad78b194b3cb2/w500.jpg",
-      "iconColor": "#6e79cf",
+      "icon": "https://cdn2.steamgriddb.com/thumb/ee07f017862fef0aeb071675794e0b7a.jpg",
+      "iconColor": "#d666a7",
       "finishBefore": "2026-12",
       "binge": true
     },
@@ -601,7 +609,9 @@
       ],
       "earlyAccess": "",
       "notes": "Announced for later 2026, no firm date yet.",
-      "binge": true
+      "binge": true,
+      "icon": "https://cdn2.steamgriddb.com/thumb/15194f712be2d4926ef5c906765d709c.png",
+      "iconColor": "#e755bf"
     },
     {
       "title": "The Wolf Among Us Remastered",
@@ -754,7 +764,7 @@
       "earlyAccess": "",
       "notes": "Eight editions; physical PS5 only. Day one on Game Pass.",
       "icon": "https://cdn.dekudeals.com/images/eaa46dc1f6dede6e119446c992edb6d1c1508c2e/w500.jpg",
-      "iconColor": "#75ee4f"
+      "iconColor": "#78ee4f"
     },
     {
       "title": "Pokémon Black",
@@ -770,7 +780,9 @@
       "editions": [],
       "earlyAccess": "",
       "notes": "First playthrough; originally released Mar 2011.",
-      "finishBefore": "2027-03"
+      "finishBefore": "2027-03",
+      "icon": "https://cdn2.steamgriddb.com/thumb/1dda5bc8b529f9dc6719c341656a8e4e.png",
+      "iconColor": "#cb56e6"
     },
     {
       "title": "Pokémon Black 2",
@@ -786,7 +798,9 @@
       "editions": [],
       "earlyAccess": "",
       "notes": "First playthrough; originally released Oct 2012.",
-      "finishBefore": "2027-04"
+      "finishBefore": "2027-04",
+      "icon": "https://cdn2.steamgriddb.com/thumb/1d178bbecb5fe472eabd360fd56134c6.jpg",
+      "iconColor": "#53c4e9"
     },
     {
       "title": "Pokémon Mystery Dungeon: Explorers of Sky",
@@ -802,7 +816,9 @@
       "editions": [],
       "earlyAccess": "",
       "notes": "First playthrough; originally released Oct 2009.",
-      "finishBefore": "2027-05"
+      "finishBefore": "2027-05",
+      "icon": "https://cdn2.steamgriddb.com/thumb/208ef41fb9dc674c9ff340fc0e4e7dab.jpg",
+      "iconColor": "#5be1bf"
     },
     {
       "title": "Pokémon Ultra Sun",
@@ -818,7 +834,9 @@
       "editions": [],
       "earlyAccess": "",
       "notes": "First playthrough; originally released Nov 2017.",
-      "finishBefore": "2027-06"
+      "finishBefore": "2027-06",
+      "icon": "https://cdn2.steamgriddb.com/thumb/0cc963329f477f669d4cdbef1217ed5d.png",
+      "iconColor": "#ec9c50"
     },
     {
       "title": "Final Fantasy VII Revelation",
@@ -840,7 +858,9 @@
         }
       ],
       "earlyAccess": "",
-      "notes": "Final part of the FF7 remake trilogy."
+      "notes": "Final part of the FF7 remake trilogy.",
+      "icon": "https://cdn2.steamgriddb.com/thumb/b36f15b6a95add0eabe7d206aa858c21.jpg",
+      "iconColor": "#706ecf"
     },
     {
       "title": "Pokémon Sword",
@@ -875,7 +895,7 @@
       "earlyAccess": "",
       "notes": "First playthrough; originally released Apr 2021.",
       "icon": "https://cdn.dekudeals.com/images/fb37e68b34f61d6beeca1552234c5c6d45a5c862/w500.jpg",
-      "iconColor": "#8cdb61",
+      "iconColor": "#8ddb61",
       "finishBefore": "2027-08"
     },
     {
@@ -1061,7 +1081,7 @@
       "earlyAccess": "",
       "notes": "First playthrough; originally released Feb 2024. Unscheduled.",
       "icon": "https://cdn.dekudeals.com/images/1c13f2cbb7a62c0d11ff5d0e5adb9cebc0b8ee9b/w500.jpg",
-      "iconColor": "#de835e"
+      "iconColor": "#de825e"
     }
   ]
 }
