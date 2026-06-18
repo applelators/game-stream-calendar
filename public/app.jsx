@@ -419,10 +419,17 @@ function dayInfo(day, ctx) {
   const eve = ctx.eveByDay && ctx.eveByDay[k];
   if (eve && !(ctx.releaseDays && ctx.releaseDays[k])) return { launch: eve, releases };
   const playId = ctx.playByDay[k];
-  if (!playId) return { releases, play: null };
-  const play = ctx.gameById[playId];
-  const session = ctx.sessionByDay[k] || null; // { id, idx, total } on actual stream days
-  return { releases, play, session };
+  if (playId) {
+    const play = ctx.gameById[playId];
+    const session = ctx.sessionByDay[k] || null; // { id, idx, total } on actual stream days
+    return { releases, play, session };
+  }
+  // free day with no committed game → a bonus game can fill it (faded).
+  const bonusId = ctx.bonusPlayByDay && ctx.bonusPlayByDay[k];
+  if (bonusId) {
+    return { releases, bonusPlay: ctx.gameById[bonusId], bonusFirst: ctx.bonusPlayByDay[dayKey(prev)] !== bonusId };
+  }
+  return { releases, play: null };
 }
 
 // A "finish before / by" deadline bracket: the grouped games + a feasibility note
@@ -509,9 +516,11 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
 
   // The realistic one-game-per-day plan (release-priority queue) drives the
   // calendar: each stream day maps to the game you'll actually be playing.
-  const { releasesByDay, playByDay, sessionByDay, gameById, plannedByMonth, bonusByMonth, deadlineByDay, deadlineBracketsByMonth, min, max } = useMemo(() => {
+  const { releasesByDay, playByDay, sessionByDay, gameById, plannedByMonth, bonusByMonth, bonusPlayByDay, deadlineByDay, deadlineBracketsByMonth, min, max } = useMemo(() => {
     const prior = placeable.filter((g) => !g.bonus);   // committed schedule excludes bonus games
     const pos = schedule(prior, pace, 'sequential', vacations);
+    const todayD = new Date();
+    const today = utc(todayD.getUTCFullYear(), todayD.getUTCMonth() + 1, todayD.getUTCDate());
     const rbd = {}, pbd = {}, gbi = {}, pbm = {}, bbm = {}, dbd = {};
     let mn = null, mx = null;
     for (const g of placeable) {
@@ -547,8 +556,6 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
       if (!g.finishBefore) continue;
       (groupsByKey[g.finishBefore] = groupsByKey[g.finishBefore] || []).push(g);
     }
-    const todayD = new Date();
-    const today = utc(todayD.getUTCFullYear(), todayD.getUTCMonth() + 1, todayD.getUTCDate());
     const hpw = (pace && pace.hoursPerWeek) || 0;
     const hps = (pace && pace.hoursPerStream) || 1;
     for (const key in groupsByKey) {
@@ -576,7 +583,29 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
       });
     }
     const sbd = streamSessions(prior, pace, pos, vacations);
-    return { releasesByDay: rbd, playByDay: pbd, sessionByDay: sbd, gameById: gbi, plannedByMonth: pbm, bonusByMonth: bbm, deadlineByDay: dbd, deadlineBracketsByMonth: dbm, min: mn, max: mx };
+
+    // Bonus gap-fill: lay each bonus game into the FREE days of its own month — days
+    // the committed plan, vacations, and launch eves don't use, from today onward. So
+    // bonus bands appear only where a month genuinely has slack; full months show none.
+    const bpd = {};
+    const { eveByDay: cEve, releaseDays: cRel } = launchEves(prior);
+    const bonusList = placeable.filter((g) => g.bonus)
+      .map((g) => ({ g, a: anchorDate(g.release) })).filter((x) => x.a)
+      .sort((p, q) => (p.a - q.a) || (p.g.id < q.g.id ? -1 : 1));
+    for (const { g, a } of bonusList) {
+      const y = a.getUTCFullYear(), m = a.getUTCMonth();
+      const monthEnd = utc(y, m + 2, 1);
+      let need = activeDaysFor(g, pace);
+      let d = new Date(Math.max(utc(y, m + 1, 1).getTime(), today.getTime()));
+      while (d < monthEnd && need > 0) {
+        const k = dayKey(d);
+        if (!pbd[k] && !bpd[k] && !inVacation(d, vacations) && !(cEve[k] && !cRel[k])) {
+          bpd[k] = g.id; need--;
+        }
+        d = addDays(d, 1);
+      }
+    }
+    return { releasesByDay: rbd, playByDay: pbd, sessionByDay: sbd, gameById: gbi, plannedByMonth: pbm, bonusByMonth: bbm, bonusPlayByDay: bpd, deadlineByDay: dbd, deadlineBracketsByMonth: dbm, min: mn, max: mx };
   }, [placeable, pace, vacations]);
 
   // Bonus games don't reserve midnight-launch eves (they're not committed).
@@ -584,7 +613,7 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
 
   const now = new Date();
   const tY = now.getFullYear(), tM = now.getMonth(), tD = now.getDate();
-  const ctx = { vacations, playByDay, sessionByDay, gameById, releasesByDay, deadlineByDay, streamedByDay, eveByDay: eves.eveByDay, releaseDays: eves.releaseDays };
+  const ctx = { vacations, playByDay, sessionByDay, bonusPlayByDay, gameById, releasesByDay, deadlineByDay, streamedByDay, eveByDay: eves.eveByDay, releaseDays: eves.releaseDays };
 
   if (!min) {
     return (
@@ -618,8 +647,12 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
               monthCount += info.releases.length;
               const isToday = y === tY && mon === tM && d === tD;
               const cls = 'mg-cell' + (info.vac ? ' vac' : info.streamed ? ' streamed' : '') + (isToday ? ' today' : '');
-              const tintId = info.vac || info.streamed ? null : (info.launch ? info.launch.id : info.play ? info.play.id : null);
-              const cellStyle = tintId ? { backgroundColor: gameColor(tintId).tint } : undefined;
+              let cellStyle;
+              if (!info.vac && !info.streamed) {
+                if (info.launch) cellStyle = { backgroundColor: gameColor(info.launch.id).tint };
+                else if (info.play) cellStyle = { backgroundColor: gameColor(info.play.id).tint };
+                else if (info.bonusPlay) cellStyle = { backgroundColor: gameColor(info.bonusPlay.id).solid + '14' };
+              }
               const dl = deadlineByDay[`${y}-${mon}-${d}`];
               cells.push(
                 <div key={d} className={cls} style={cellStyle}>
@@ -642,6 +675,12 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
                       title={`${info.play.title}${info.session ? ` — stream ${info.session.idx}/${info.session.total}` : ''}`}>
                       <span className="mg-gt">{info.play.title}</span>
                       {info.session && <span className="mg-gn">{info.session.idx}/{info.session.total}</span>}
+                    </span>
+                  )}
+                  {info.bonusPlay && (
+                    <span className="mg-pill mg-bonusband" style={{ borderColor: gameColor(info.bonusPlay.id).solid }}
+                      onClick={() => onPick(info.bonusPlay.id)} title={`${info.bonusPlay.title} — bonus`}>
+                      <span className="mg-gt">★ {info.bonusPlay.title}</span>
                     </span>
                   )}
                 </div>
@@ -719,8 +758,12 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
             const isToday = y === tY && mon === tM && d === tD;
             const cls = 'gc-cell' + (info.vac ? ' vac' : info.streamed ? ' streamed' : '') + (isToday ? ' today' : '');
             const relTitles = info.releases.map((r) => r.title).join(', ');
-            const tintId = info.vac || info.streamed ? null : (info.launch ? info.launch.id : info.play ? info.play.id : null);
-            const cellStyle = tintId ? { backgroundColor: gameColor(tintId).tint } : undefined;
+            let cellStyle;
+            if (!info.vac && !info.streamed) {
+              if (info.launch) cellStyle = { backgroundColor: gameColor(info.launch.id).tint };
+              else if (info.play) cellStyle = { backgroundColor: gameColor(info.play.id).tint };
+              else if (info.bonusPlay) cellStyle = { backgroundColor: gameColor(info.bonusPlay.id).solid + '14' };
+            }
             const dl = deadlineByDay[`${y}-${mon}-${d}`];
             cells.push(
               <div key={d} className={cls} style={cellStyle}>
@@ -740,6 +783,11 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
                   <div className="gc-ev" style={{ background: gameColor(info.play.id).solid }} onClick={() => onPick(info.play.id)}
                     title={`${info.play.title} — stream ${info.session.idx}/${info.session.total}`}>
                     <b>{info.session.idx}/{info.session.total}</b>{info.session.idx === 1 ? ' ' + info.play.title : ''}</div>
+                )}
+                {info.bonusPlay && (
+                  <div className="gc-ev bonus" style={{ borderColor: gameColor(info.bonusPlay.id).solid }}
+                    onClick={() => onPick(info.bonusPlay.id)} title={`${info.bonusPlay.title} — bonus (free time)`}>
+                    <span className="bstar">★</span>{info.bonusFirst ? ' ' + info.bonusPlay.title : ' bonus'}</div>
                 )}
               </div>
             );

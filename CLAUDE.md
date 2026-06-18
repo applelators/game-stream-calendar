@@ -121,6 +121,9 @@ split game in the queue.
   queue) so they never push priorities. The Month grid lists them per month in a `BonusStrip`
   (★ Bonus · if time allows) with a slack note from `bonusNoteFor(dbrackets)` — over-capacity →
   warn, else "≈Nh slack". The timeline shows them as faded true-date bars (`.bar.bonus`).
+  Gap-fill: `bonusPlayByDay` lays each bonus game into the **free days of its own month**
+  (days not in the committed `playByDay`, vacations, or eves, from today on) as faded `.gc-ev.bonus`
+  / `.mg-bonusband` bands — so a month with slack shows them, a packed month shows none.
 - **Auto-placed month games** (`settings.autoPlace`, array of game ids): a month/quarter
   ("no set day") game the user clicked its **"Planned this month"** chip for. `autoPlaceDays`
   spreads all placed games in a month evenly across that month's OPEN days (excluding

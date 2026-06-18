@@ -323,6 +323,13 @@ input, select, textarea { font-family: inherit; }
 .mg-bonus { padding: 7px 12px; }
 .gc-bonus-h, .mg-bonus-h { font-size: 0.7rem; color: var(--accent); font-weight: 700;
   font-family: var(--mono); margin-right: 2px; letter-spacing: 0.02em; }
+/* faded bonus band filling a genuinely free day */
+.gc-ev.bonus { background: transparent; color: var(--muted); border: 1px dashed var(--border-hi);
+  font-weight: 600; }
+.gc-ev.bonus .bstar { color: var(--accent); }
+.mg-pill.mg-bonusband { background: transparent; color: var(--muted); border: 1px dashed var(--border-hi);
+  white-space: normal; line-height: 1.12; padding: 2px 4px; }
+.mg-pill.mg-bonusband .mg-gt { font-weight: 700; font-size: 0.56rem; color: var(--muted); }
 
 /* placed = a start day was auto-picked: solid border + tinted fill */
 .gc-planned-chip.placed, .mg-planned-chip.placed { border-style: solid; color: #0c0c12; }

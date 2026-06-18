@@ -53,7 +53,7 @@ Also accepts `"August 2026"`, `"Nov 2027"`, `"Jun 9, 2026"`. Anything unrecogniz
 | `title` | required; its slug becomes the id |
 | `kind` | `game` · `dlc` · `event` (events use `date`→`endDate`, no pace math) |
 | `backlog` | `true` for catalog games scheduled at a *planned start* (not a new release). Backlog games never get a midnight-launch eve. Omit/false for genuine new releases. |
-| `bonus` | `true` = an optional "if there's time" game. Excluded from the committed schedule (never pushes/delays your prioritized games); listed in a **★ Bonus · if time allows** strip for its month (with a slack note), and shown faded on the timeline. |
+| `bonus` | `true` = an optional "if there's time" game. Excluded from the committed schedule (never pushes/delays your prioritized games); listed in a **★ Bonus · if time allows** strip for its month (with a slack note). If its month has **genuine free days** (the committed plan + vacations don't use them), it auto-fills them as **faded ★ bands**; a packed month shows none. Also shown faded on the timeline. |
 | `hltbHours` | hours to beat; drives bar length & "streams to finish" |
 | `basis` | how `hltbHours` was derived: `self` · `remake-original` · `series-avg` · `estimate` |
 | `hltbNote` | short provenance note (shown in detail card) |
