@@ -151,6 +151,13 @@ shows the live value + a manual override that wins when enabled.
 **Formulas (calc.js):** `streamsToFinish = ceil(hltbHours / hoursPerStream)`;
 `weeksToFinish = hltbHours / hoursPerWeek`; bar length = days of `weeksToFinish`.
 
+**Month grid = one cell per stream.** The grid shows each game on exactly its
+`streamsToFinish` days (the `sessionByDay` markers, spread across the game's span at the real
+~`streamsPerWeek` cadence) — **not** every in-progress calendar day — so filled cells per game
+equal the predicted stream count, and non-streaming days are empty. `dayInfo` keys the play
+cell off `sessionByDay`; `playByDay` (the full span) is kept only for the bonus gap-fill's
+free-day test. Timeline bars stay continuous spans (Gantt).
+
 ---
 
 ## API (`_worker.js`)

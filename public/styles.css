@@ -253,7 +253,7 @@ input, select, textarea { font-family: inherit; }
   background-color: #11151f;
   background-image: repeating-linear-gradient(45deg, #8b97ab1f, #8b97ab1f 6px, #8b97ab00 6px, #8b97ab00 12px); }
 
-/* "now playing" tint per kind — a run of same-tinted days = how long it takes */
+/* play-day tint (kept for reference; the grid now tints only actual stream-session days) */
 .gc-cell.play-game,   .mg-cell.play-game   { background-color: rgba(169, 112, 255, 0.17); }
 .gc-cell.play-replay, .mg-cell.play-replay { background-color: rgba(59, 111, 224, 0.18); }
 .gc-cell.play-dlc,    .mg-cell.play-dlc    { background-color: rgba(52, 211, 153, 0.15); }

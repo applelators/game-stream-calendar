@@ -418,12 +418,10 @@ function dayInfo(day, ctx) {
   }
   const eve = ctx.eveByDay && ctx.eveByDay[k];
   if (eve && !(ctx.releaseDays && ctx.releaseDays[k])) return { launch: eve, releases };
-  const playId = ctx.playByDay[k];
-  if (playId) {
-    const play = ctx.gameById[playId];
-    const session = ctx.sessionByDay[k] || null; // { id, idx, total } on actual stream days
-    return { releases, play, session };
-  }
+  // Show one cell per actual stream session (a game appears on exactly its
+  // "streams to finish" days, at your real cadence), not every in-progress day.
+  const session = ctx.sessionByDay[k];
+  if (session) return { releases, play: ctx.gameById[session.id], session };
   // free day with no committed game → a bonus game can fill it (faded).
   const bonusId = ctx.bonusPlayByDay && ctx.bonusPlayByDay[k];
   if (bonusId) {
@@ -782,7 +780,7 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
                 {!info.vac && !info.launch && info.session && info.play && (
                   <div className="gc-ev" style={{ background: gameColor(info.play.id).solid }} onClick={() => onPick(info.play.id)}
                     title={`${info.play.title} — stream ${info.session.idx}/${info.session.total}`}>
-                    <b>{info.session.idx}/{info.session.total}</b>{info.session.idx === 1 ? ' ' + info.play.title : ''}</div>
+                    <b>{info.session.idx}/{info.session.total}</b> {info.play.title}</div>
                 )}
                 {info.bonusPlay && (
                   <div className="gc-ev bonus" style={{ borderColor: gameColor(info.bonusPlay.id).solid }}
