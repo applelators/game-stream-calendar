@@ -709,6 +709,9 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
               cells.push(
                 <div key={d} className={cls} style={cellStyle}>
                   <span className="dnum">{d}{info.releases.length ? <span className="relstar">★</span> : null}{dl ? <span className="mg-deadflag" title={`Finish before ${dl.title}`}>⚑</span> : null}</span>
+                  {!info.vac && !info.launch && info.session && info.play && (
+                    <span className="mg-strno" title={`Stream ${info.session.idx} of ${info.session.total}`}>{info.session.idx}/{info.session.total}</span>
+                  )}
                   {info.streamed && info.streamed.map((s, si) => (
                     <span className="mg-pill mg-done" key={si} title={`Streamed: ${s.name}`}>
                       {s.art ? <img className="mg-done-art" src={s.art} alt="" loading="lazy" /> : null}
@@ -726,7 +729,6 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
                       title={`${info.play.title}${info.session ? ` — stream ${info.session.idx}/${info.session.total}` : ''}`}>
                       {isImgIcon(info.play.icon) && <img className="mg-cellart" src={info.play.icon} alt="" loading="lazy" />}
                       <span className="mg-gt">{info.play.title}</span>
-                      {info.session && <span className="mg-gn">{info.session.idx}/{info.session.total}</span>}
                     </span>
                   )}
                   {info.bonusPlay && (
@@ -821,6 +823,9 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
             cells.push(
               <div key={d} className={cls} style={cellStyle}>
                 <span className="gc-dnum" title={relTitles || undefined}>{d}{info.releases.length ? <span className="gc-relstar">★</span> : null}{dl ? <span className="gc-deadflag" title={`Finish before ${dl.title}: ${dl.games.join(', ')}`}>⚑</span> : null}</span>
+                {!info.vac && !info.launch && info.session && info.play && (
+                  <span className="gc-strno" title={`Stream ${info.session.idx} of ${info.session.total}`}>{info.session.idx}/{info.session.total}</span>
+                )}
                 {info.streamed && info.streamed.map((s, si) => (
                   <div className="gc-done" key={si} title={`Streamed: ${s.name}`}>
                     {s.art ? <img className="gc-done-art" src={s.art} alt="" loading="lazy" /> : null}
@@ -836,7 +841,7 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
                   <div className="gc-ev" style={{ background: gameColor(info.play.id).solid }} onClick={() => onPick(info.play.id)}
                     title={`${info.play.title} — stream ${info.session.idx}/${info.session.total}`}>
                     {isImgIcon(info.play.icon) && <img className="gc-ev-art" src={info.play.icon} alt="" loading="lazy" />}
-                    <b>{info.session.idx}/{info.session.total}</b> {info.play.title}</div>
+                    {info.play.title}</div>
                 )}
                 {info.bonusPlay && (
                   <div className="gc-ev bonus" style={{ borderColor: gameColor(info.bonusPlay.id).solid }}
