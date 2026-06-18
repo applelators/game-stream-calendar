@@ -64,7 +64,7 @@ function GameBadge({ game, size = 20 }) {
   const px = size + 'px';
   const icon = game.icon;
   const isImg = icon && /^(https?:\/\/|\/|data:)/.test(icon);
-  if (isImg) return <img className="gbadge gbadge-img" src={icon} alt="" style={{ width: px, height: px }} />;
+  if (isImg) return <img className="gbadge gbadge-img" src={icon} alt="" loading="lazy" decoding="async" style={{ width: px, height: px }} />;
   const col = gameColor(game.id);
   return (
     <span className="gbadge" style={{ width: px, height: px, background: col.solid,
