@@ -789,7 +789,8 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
               <div key={d} className={cls} style={cellStyle}>
                 <span className="gc-dnum" title={relTitles || undefined}>{d}{info.releases.length ? <span className="gc-relstar">★</span> : null}{dl ? <span className="gc-deadflag" title={`Finish before ${dl.title}: ${dl.games.join(', ')}`}>⚑</span> : null}</span>
                 {!info.vac && !info.launch && info.session && info.play && (
-                  <span className="gc-strno" title={`Stream ${info.session.idx} of ${info.session.total}`}>{info.session.idx}/{info.session.total}</span>
+                  <span className="gc-strno" style={{ background: gameColor(info.play.id).solid, color: '#0c0c12' }}
+                    title={`Stream ${info.session.idx} of ${info.session.total}`}>{info.session.idx}/{info.session.total}</span>
                 )}
                 {info.streamed && info.streamed.map((s, si) => (
                   <div className="gc-done" key={si} title={`Streamed: ${s.name}`}>
@@ -803,12 +804,11 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
                     title={`Midnight launch — ${info.launch.title}`}>🌙</div>
                 )}
                 {!info.vac && !info.launch && info.session && info.play && (hasArt ? (
-                  <React.Fragment>
-                    <img className="gc-cellbg" src={info.play.icon} alt="" loading="lazy" />
-                    <div className="gc-evlabel" style={{ boxShadow: `inset 0 -3px 0 ${gameColor(info.play.id).solid}` }}
-                      onClick={() => onPick(info.play.id)} title={`${info.play.title} — stream ${info.session.idx}/${info.session.total}`}>
-                      {info.play.title}</div>
-                  </React.Fragment>
+                  <div className="gc-tile" onClick={() => onPick(info.play.id)}
+                    title={`${info.play.title} — stream ${info.session.idx}/${info.session.total}`}>
+                    <div className="gc-tileart"><img src={info.play.icon} alt="" loading="lazy" /></div>
+                    <div className="gc-tilename" style={{ background: gameColor(info.play.id).solid }}>{info.play.title}</div>
+                  </div>
                 ) : (
                   <div className="gc-ev" style={{ background: gameColor(info.play.id).solid }} onClick={() => onPick(info.play.id)}
                     title={`${info.play.title} — stream ${info.session.idx}/${info.session.total}`}>
