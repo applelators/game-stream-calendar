@@ -356,12 +356,12 @@ function streamPlan(games, pace, normVacs, today) {
     while (sumCeil(hps) > availDays && hps < 24 && guard++ < 400) hps += 0.1;
     const boostedStreams = sumCeil(hps);
     const fits = boostedStreams <= availDays;
-    const reqPerDay = Math.min(1, boostedStreams / availDays); // spread evenly across the window
+    const neededH = members.reduce((s, m) => s + m.hltb, 0);
     const ids = new Set();
     for (const m of members) { m.streams = Math.max(1, Math.ceil(m.hltb / hps)); ids.add(m.id); }
-    boostWindows.push({ start: winStart, deadline, ids, key, reqPerDay });
-    boosts[key] = { days: availDays, usualDays: Math.max(1, Math.round(availDays / 7 * spw)),
-      hps: Math.round(hps * 10) / 10, hpw: Math.round(reqPerDay * 7 * hps * 10) / 10, fits };
+    boostWindows.push({ start: winStart, deadline, ids, key });
+    boosts[key] = { days: boostedStreams, usualDays: Math.max(1, Math.round(availDays / 7 * spw)),
+      hps: Math.round(hps * 10) / 10, hpw: Math.round(neededH / (availDays / 7) * 10) / 10, fits };
   }
 
   let earliest = null;
@@ -374,18 +374,19 @@ function streamPlan(games, pace, normVacs, today) {
     if (inVacation(day, normVacs) || blockedEve(day)) { day = addDays(day, 1); continue; }
     const k = dkey(day);
     const forcedId = launchOnDay[k];
-    // active boost window today = earliest-deadline window with unfinished members;
-    // raise the day's stream rate to the boosted rate so the group finishes in time.
-    let boostWin = null, rate = perDay;
+    // active boost window today = earliest-deadline window with unfinished members.
+    // Inside it, stream every available day (consecutive, no gaps) until the group's
+    // done, so the catch-up reads cleanly.
+    let boostWin = null;
     for (const w of boostWindows) {
       if (day >= w.start && day < w.deadline && committed.some((p) => w.ids.has(p.id) && p.done < p.streams)) {
-        rate = Math.max(rate, w.reqPerDay);
         if (!boostWin || w.deadline < boostWin.deadline) boostWin = w;
       }
     }
     let isSlot = false;
     if (forcedId) isSlot = true;
-    else { acc += rate; if (acc >= 1) { acc -= 1; isSlot = true; } }
+    else if (boostWin) isSlot = true;
+    else { acc += perDay; if (acc >= 1) { acc -= 1; isSlot = true; } }
     if (!isSlot) { day = addDays(day, 1); continue; }
 
     let pick = null;
