@@ -320,7 +320,9 @@ function streamPlan(games, pace, normVacs, today) {
   const baseHps = (pace && pace.hoursPerStream) || 5;
   const spw = (pace && pace.hoursPerStream && pace.hoursPerWeek) ? pace.hoursPerWeek / pace.hoursPerStream : 2;
   const perDay = Math.max(0.01, spw / 7);
-  const { eveByDay, releaseDays } = launchEves(games);
+  // Eves/release-days from committed (non-bonus) games only, matching the grid's eve
+  // rendering — so a bonus game's release can't un-reserve a real launch eve.
+  const { eveByDay, releaseDays } = launchEves((games || []).filter((g) => !g.bonus));
   const blockedEve = (d) => { const k = dkey(d); return !!eveByDay[k] && !releaseDays[k]; };
   const launchOnDay = {};
   for (const p of committed) {
