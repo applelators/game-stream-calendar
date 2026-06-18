@@ -315,6 +315,16 @@ input, select, textarea { font-family: inherit; }
 .gc-deadnote.ok, .mg-deadnote.ok { color: var(--good); }
 .gc-deadnote b, .mg-deadnote b { color: var(--text); }
 .gc-deadnote.bonusnote, .mg-deadnote.bonusnote { color: var(--muted); }
+/* suggested catch-up schedule under an infeasible deadline */
+.gc-deadplan, .mg-deadplan { flex-basis: 100%; width: 100%; margin-top: 4px; padding: 8px 10px;
+  border-radius: var(--radius-sm); background: var(--panel-2); border: 1px solid var(--border); }
+.gc-deadplan .dp-h, .mg-deadplan .dp-h { font-size: 0.72rem; color: var(--muted); margin-bottom: 6px; }
+.gc-deadplan .dp-h b, .mg-deadplan .dp-h b { color: var(--text); }
+.dp-row { display: flex; align-items: center; gap: 8px; font-size: 0.74rem; padding: 2px 0; cursor: pointer; }
+.dp-row:hover { filter: brightness(1.15); }
+.dp-when { font-family: var(--mono); color: var(--faint); min-width: 92px; }
+.dp-dot { width: 8px; height: 8px; border-radius: 99px; flex: none; }
+.dp-game { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* bonus games — optional "if time allows" extras, set apart from the committed plan */
 .gc-bonus, .mg-bonus { display: flex; flex-wrap: wrap; align-items: center; gap: 6px;

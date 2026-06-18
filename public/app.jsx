@@ -422,6 +422,9 @@ function dayInfo(day, ctx) {
   // "streams to finish" days, at your real cadence), not every in-progress day.
   const session = ctx.sessionByDay[k];
   if (session) return { releases, play: ctx.gameById[session.id], session };
+  // in-progress (within a game's span) but not a stream day → faint connecting tint.
+  const spanId = ctx.playByDay[k];
+  if (spanId) return { releases, span: ctx.gameById[spanId] };
   // free day with no committed game → a bonus game can fill it (faded).
   const bonusId = ctx.bonusPlayByDay && ctx.bonusPlayByDay[k];
   if (bonusId) {
@@ -439,7 +442,6 @@ function DeadlineBracket({ br, onPick, mobile }) {
     : (br.precision === 'month' || br.precision === 'quarter' || br.precision === 'year')
       ? <span>⤿ finish by <b>end of {br.periodLabel}</b></span>
       : <span>⤿ finish by <b>{br.periodLabel}</b></span>;
-  const streamsWk = Math.max(1, Math.round(br.neededPerWeek / br.hps));
   return (
     <div className={`${pfx}-bracket`}>
       <span className={`${pfx}-bracket-h`}>{label}</span>
@@ -452,8 +454,21 @@ function DeadlineBracket({ br, onPick, mobile }) {
       ))}
       {!br.past && br.availDays > 0 && !br.feasible && (
         <div className={`${pfx}-deadnote warn`}>
-          ⚠ At ~{br.hpw}h/wk you likely won’t finish these <b>{br.neededHours}h</b> in time — aim for{' '}
-          <b>~{br.neededPerWeek.toFixed(1)}h/wk</b> (≈{streamsWk} stream{streamsWk === 1 ? '' : 's'}/wk of {br.hps}h).
+          ⚠ At ~{br.hpw}h/wk you likely won’t finish these <b>{br.neededHours}h</b> in time — you’ll need to
+          stream <b>more days</b>, <b>longer per stream</b>, or both.
+        </div>
+      )}
+      {!br.past && br.plan && br.plan.length > 0 && (
+        <div className={`${pfx}-deadplan`}>
+          <div className="dp-h">Suggested schedule — stream every remaining day, ≥<b>{Math.ceil(br.perDay * 10) / 10}h</b> each
+            ({br.availDays} days vs your usual ~{br.usualStreams}):</div>
+          {br.plan.map((s, i) => (
+            <div className="dp-row" key={i} onClick={() => onPick(s.id)}>
+              <span className="dp-when">{shortDate(s.start)}{s.start.getTime() !== s.end.getTime() ? `–${shortDate(s.end)}` : ''}</span>
+              <span className="dp-dot" style={{ background: gameColor(s.id).solid }} />
+              <span className="dp-game">{s.title}</span>
+            </div>
+          ))}
         </div>
       )}
       {!br.past && br.availDays > 0 && br.feasible && (
@@ -566,16 +581,42 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
       const fk = dayKey(flagDay);
       (dbd[fk] = dbd[fk] || { title: t ? t.title : 'deadline', games: [] }).games.push(...grp.map((x) => x.title));
       // Feasibility: from today to the deadline, all stream time on this group.
-      let availDays = 0;
-      for (let d = new Date(today); d < deadline; d = addDays(d, 1)) if (!inVacation(d, vacations)) availDays++;
+      const availDates = [];
+      for (let d = new Date(today); d < deadline; d = addDays(d, 1)) if (!inVacation(d, vacations)) availDates.push(new Date(d));
+      const availDays = availDates.length;
       const weeks = availDays / 7;
       const neededHours = grp.reduce((s, x) => s + (Number(x.hltbHours) || 0), 0);
       const feasible = availDays > 0 && weeks * hpw + 0.01 >= neededHours;
+      // Catch-up plan when it won't fit: stream EVERY remaining day at the minimum
+      // h/day that finishes everything, assigning games in file order; group into ranges.
+      let plan = null, perDay = 0, usualStreams = 0;
+      if (!feasible && availDays > 0) {
+        perDay = neededHours / availDays;
+        const remH = grp.map((g) => Number(g.hltbHours) || 0);
+        let gi2 = 0; const dayPrimary = [];
+        for (let i = 0; i < availDays; i++) {
+          let budget = perDay, best = null, bestH = 0;
+          while (budget > 0.001 && gi2 < grp.length) {
+            if (remH[gi2] <= 0.001) { gi2++; continue; }
+            const take = Math.min(budget, remH[gi2]);
+            if (take > bestH) { bestH = take; best = grp[gi2]; }
+            remH[gi2] -= take; budget -= take;
+          }
+          if (best) dayPrimary.push({ date: availDates[i], id: best.id, title: best.title });
+        }
+        plan = [];
+        for (const dp of dayPrimary) {
+          const last = plan[plan.length - 1];
+          if (last && last.id === dp.id) last.end = dp.date;
+          else plan.push({ id: dp.id, title: dp.title, start: dp.date, end: dp.date });
+        }
+        usualStreams = Math.max(1, Math.round(weeks * (hps ? hpw / hps : 0)));
+      }
       const dmk = `${flagDay.getUTCFullYear()}-${flagDay.getUTCMonth()}`;
       (dbm[dmk] = dbm[dmk] || []).push({
         key, deadline, games: grp, isGameRef: !!t, targetTitle: t ? t.title : null,
         precision: pr ? pr.precision : 'day', periodLabel: pr ? releaseLabel(pr) : null,
-        neededHours, availDays, weeks, hpw, hps, feasible,
+        neededHours, availDays, weeks, hpw, hps, feasible, plan, perDay, usualStreams,
         neededPerWeek: weeks > 0 ? neededHours / weeks : Infinity,
         past: deadline <= today,
       });
@@ -649,6 +690,7 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
               if (!info.vac && !info.streamed) {
                 if (info.launch) cellStyle = { backgroundColor: gameColor(info.launch.id).tint };
                 else if (info.play) cellStyle = { backgroundColor: gameColor(info.play.id).tint };
+                else if (info.span) cellStyle = { backgroundColor: gameColor(info.span.id).solid + '12' };
                 else if (info.bonusPlay) cellStyle = { backgroundColor: gameColor(info.bonusPlay.id).solid + '14' };
               }
               const dl = deadlineByDay[`${y}-${mon}-${d}`];
@@ -760,6 +802,7 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
             if (!info.vac && !info.streamed) {
               if (info.launch) cellStyle = { backgroundColor: gameColor(info.launch.id).tint };
               else if (info.play) cellStyle = { backgroundColor: gameColor(info.play.id).tint };
+              else if (info.span) cellStyle = { backgroundColor: gameColor(info.span.id).solid + '12' };
               else if (info.bonusPlay) cellStyle = { backgroundColor: gameColor(info.bonusPlay.id).solid + '14' };
             }
             const dl = deadlineByDay[`${y}-${mon}-${d}`];
