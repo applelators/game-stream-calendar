@@ -118,6 +118,7 @@ function gameFromFile(e, i) {
     release,
     kind: e.kind || 'game',
     backlog: !!e.backlog,   // catalog game scheduled at a planned start (not a new release)
+    bonus: !!e.bonus,       // optional "if there's time" game — excluded from the committed schedule
     hltbHours: Number(e.hltbHours) || 0,
     hltbBasis: e.basis || e.hltbBasis || 'estimate',
     hltbNote: e.hltbNote || '',

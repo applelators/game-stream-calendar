@@ -116,6 +116,11 @@ split game in the queue.
   month) with member chips + a **feasibility note**: it compares the group's remaining hours to
   available non-vacation weeks × current h/week and, when short, suggests the optimal cadence
   (h/wk + streams/wk); else shows ✓ on-track. The deadline day also gets a ⚑ flag.
+- **Bonus games** (`bonus: true` in games.json): optional "if there's time" extras. Excluded
+  from the committed sequential schedule everywhere (Month grid bands, `seqPositions`, timeline
+  queue) so they never push priorities. The Month grid lists them per month in a `BonusStrip`
+  (★ Bonus · if time allows) with a slack note from `bonusNoteFor(dbrackets)` — over-capacity →
+  warn, else "≈Nh slack". The timeline shows them as faded true-date bars (`.bar.bonus`).
 - **Auto-placed month games** (`settings.autoPlace`, array of game ids): a month/quarter
   ("no set day") game the user clicked its **"Planned this month"** chip for. `autoPlaceDays`
   spreads all placed games in a month evenly across that month's OPEN days (excluding

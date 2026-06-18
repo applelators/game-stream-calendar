@@ -175,7 +175,7 @@ function App() {
   }, []);
   // Realistic release-priority finish per game (for the detail card).
   const seqPositions = useMemo(
-    () => schedule(effGames.filter((g) => isPlaceable(g.release)), ep, 'sequential', normVacs),
+    () => schedule(effGames.filter((g) => isPlaceable(g.release) && !g.bonus), ep, 'sequential', normVacs),
     [effGames, ep, normVacs]
   );
 
@@ -235,14 +235,21 @@ function App() {
 function TimelineView({ games, pace, mode, vacations, onPick }) {
   const placeable = useMemo(() => games.filter((g) => isPlaceable(g.release)), [games]);
   const rail = useMemo(() => games.filter((g) => !isPlaceable(g.release)), [games]);
-  const positions = useMemo(() => schedule(placeable, pace, mode, vacations), [placeable, pace, mode, vacations]);
+  // Bonus games are excluded from the committed queue (so they never push priorities);
+  // they're shown as faded bars on their true date.
+  const prior = useMemo(() => placeable.filter((g) => !g.bonus), [placeable]);
+  const bonusGames = useMemo(() => placeable.filter((g) => g.bonus), [placeable]);
+  const positions = useMemo(() => schedule(prior, pace, mode, vacations), [prior, pace, mode, vacations]);
+  const bonusPositions = useMemo(() => schedule(bonusGames, pace, 'parallel', vacations), [bonusGames, pace, vacations]);
 
   const rows = useMemo(() => {
-    return placeable
-      .map((g) => ({ g, pos: positions[g.id] }))
+    return [
+      ...prior.map((g) => ({ g, pos: positions[g.id], bonus: false })),
+      ...bonusGames.map((g) => ({ g, pos: bonusPositions[g.id], bonus: true })),
+    ]
       .filter((r) => r.pos)
       .sort((a, b) => a.pos.start - b.pos.start);
-  }, [placeable, positions]);
+  }, [prior, bonusGames, positions, bonusPositions]);
 
   if (rows.length === 0 && rail.length === 0) {
     return <div className="tl-wrap"><div className="mg-empty">No games yet — add one to get started.</div></div>;
@@ -287,7 +294,7 @@ function TimelineView({ games, pace, mode, vacations, onPick }) {
               </div>
             </div>
 
-            {rows.map(({ g, pos }) => {
+            {rows.map(({ g, pos, bonus }) => {
               const segs = pos.segments && pos.segments.length ? pos.segments : [{ start: pos.start, end: pos.end }];
               const fuzzy = isFuzzy(g.release);
               const strk = streamsToFinish(g.hltbHours, pace);
@@ -296,12 +303,12 @@ function TimelineView({ games, pace, mode, vacations, onPick }) {
               const lastRight = xOf(segs[segs.length - 1].end);
               const labelInside = firstW > 90;
               return (
-                <div className="tl-row" key={g.id}>
+                <div className={`tl-row${bonus ? ' bonus' : ''}`} key={g.id}>
                   <div className="tl-label">
                     <GameBadge game={g} size={22} />
                     <span className="tl-label-txt">
                       <span className="nm">{g.title}</span>
-                      <span className="meta">{releaseLabel(g.release)}{g.kind !== 'game' ? ' · ' + KIND_LABEL[g.kind] : ''}</span>
+                      <span className="meta">{releaseLabel(g.release)}{g.kind !== 'game' ? ' · ' + KIND_LABEL[g.kind] : ''}{bonus ? ' · ★ bonus' : ''}</span>
                     </span>
                   </div>
                   <div className="tl-track" style={{ width: trackW }}>
@@ -327,7 +334,7 @@ function TimelineView({ games, pace, mode, vacations, onPick }) {
                       const l = xOf(s.start);
                       const w = Math.max(6, xOf(s.end) - l);
                       return (
-                        <div key={si} className={`bar k-${g.kind}${fuzzy ? ' fuzzy' : ''}${si > 0 ? ' cont' : ''}`}
+                        <div key={si} className={`bar k-${g.kind}${fuzzy ? ' fuzzy' : ''}${si > 0 ? ' cont' : ''}${bonus ? ' bonus' : ''}`}
                           style={{ left: l, width: w }} onClick={() => onPick(g.id)}
                           title={`${g.title} — ${releaseLabel(g.release)}${segs.length > 1 ? ` (part ${si + 1} of ${segs.length})` : ''}`}>
                           {si === 0 && labelInside && <span className="bt">{g.title}</span>}
@@ -451,6 +458,35 @@ function DeadlineBracket({ br, onPick, mobile }) {
   );
 }
 
+// Bonus games for a month — optional "stream if there's time" extras, shown apart
+// from the committed plan with a slack note read off that month's priorities.
+function BonusStrip({ games, note, tight, mobile, onPick }) {
+  const pfx = mobile ? 'mg' : 'gc';
+  return (
+    <div className={`${pfx}-bonus`}>
+      <span className={`${pfx}-bonus-h`}>★ Bonus · if time allows</span>
+      {games.map((g) => (
+        <button key={g.id} className={`${pfx}-planned-chip`} style={{ borderColor: gameColor(g.id).solid }}
+          onClick={() => onPick(g.id)} title={`${g.title} — bonus (stream only if you're ahead)`}>
+          {g.title}<small>{releaseLabel(g.release)}</small></button>
+      ))}
+      {note && <div className={`${pfx}-deadnote ${tight ? 'warn' : 'ok'}`}>{tight ? '⚠ ' : ''}{note}</div>}
+    </div>
+  );
+}
+
+// Bonus slack note for a month, read off that month's deadline brackets.
+function bonusNoteFor(dbrackets) {
+  if (!dbrackets || !dbrackets.length) return { note: 'Stream if you have spare time after your other games.', tight: false };
+  const total = dbrackets.reduce((s, b) => s + (b.weeks * b.hpw - b.neededHours), 0);
+  const tight = dbrackets.some((b) => !b.feasible) || total < 1;
+  return {
+    note: tight ? 'Over capacity this month — stream these only if you get ahead.'
+                : `≈${Math.round(total)}h of slack — fit these in if you stay on pace.`,
+    tight,
+  };
+}
+
 function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }) {
   const isMobile = useIsMobile();
 
@@ -473,12 +509,19 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
 
   // The realistic one-game-per-day plan (release-priority queue) drives the
   // calendar: each stream day maps to the game you'll actually be playing.
-  const { releasesByDay, playByDay, sessionByDay, gameById, plannedByMonth, deadlineByDay, deadlineBracketsByMonth, min, max } = useMemo(() => {
-    const pos = schedule(placeable, pace, 'sequential', vacations);
-    const rbd = {}, pbd = {}, gbi = {}, pbm = {}, dbd = {};
+  const { releasesByDay, playByDay, sessionByDay, gameById, plannedByMonth, bonusByMonth, deadlineByDay, deadlineBracketsByMonth, min, max } = useMemo(() => {
+    const prior = placeable.filter((g) => !g.bonus);   // committed schedule excludes bonus games
+    const pos = schedule(prior, pace, 'sequential', vacations);
+    const rbd = {}, pbd = {}, gbi = {}, pbm = {}, bbm = {}, dbd = {};
     let mn = null, mx = null;
     for (const g of placeable) {
       gbi[g.id] = g;
+      if (g.bonus) { // optional — listed in a bonus strip, never on the committed grid
+        const ab = anchorDate(g.release);
+        const mk = ab ? `${ab.getUTCFullYear()}-${ab.getUTCMonth()}` : null;
+        if (mk) (bbm[mk] = bbm[mk] || []).push(g);
+        continue;
+      }
       const a = anchorDate(g.release);
       if (a) { const k = dayKey(a); (rbd[k] = rbd[k] || []).push(g); }
       // Games with only a month/quarter window (no specific day) are listed under the
@@ -500,7 +543,7 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
     // Finish-before deadline groups → a bracket per month with a feasibility note.
     const dbm = {}; // displayMonthKey -> [bracket]
     const groupsByKey = {};
-    for (const g of placeable) {
+    for (const g of prior) {
       if (!g.finishBefore) continue;
       (groupsByKey[g.finishBefore] = groupsByKey[g.finishBefore] || []).push(g);
     }
@@ -532,8 +575,8 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
         past: deadline <= today,
       });
     }
-    const sbd = streamSessions(placeable, pace, pos, vacations);
-    return { releasesByDay: rbd, playByDay: pbd, sessionByDay: sbd, gameById: gbi, plannedByMonth: pbm, deadlineByDay: dbd, deadlineBracketsByMonth: dbm, min: mn, max: mx };
+    const sbd = streamSessions(prior, pace, pos, vacations);
+    return { releasesByDay: rbd, playByDay: pbd, sessionByDay: sbd, gameById: gbi, plannedByMonth: pbm, bonusByMonth: bbm, deadlineByDay: dbd, deadlineBracketsByMonth: dbm, min: mn, max: mx };
   }, [placeable, pace, vacations]);
 
   const eves = useMemo(() => launchEves(placeable), [placeable]);
@@ -605,6 +648,8 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
             }
             const loose = plannedByMonth[`${y}-${mon}`] || [];
             const dbrackets = deadlineBracketsByMonth[`${y}-${mon}`] || [];
+            const mbonus = bonusByMonth[`${y}-${mon}`] || [];
+            const mbn = bonusNoteFor(dbrackets);
             return (
               <div className="mg-card" key={i}>
                 <div className="mg-head">{MONTHS_LONG[mon]} {y}<span className="cnt">{monthCount} release{monthCount === 1 ? '' : 's'}</span></div>
@@ -623,6 +668,7 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
                     ))}
                   </div>
                 )}
+                {mbonus.length > 0 && <BonusStrip games={mbonus} note={mbn.note} tight={mbn.tight} mobile={true} onPick={onPick} />}
                 <div className="mg-dow">{DOW.map((d) => <span key={d}>{d}</span>)}</div>
                 <div className="mg-grid">{cells}</div>
               </div>
@@ -699,6 +745,8 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
           }
           const loose = plannedByMonth[`${y}-${mon}`] || [];
           const dbrackets = deadlineBracketsByMonth[`${y}-${mon}`] || [];
+          const gbonus = bonusByMonth[`${y}-${mon}`] || [];
+          const gbn = bonusNoteFor(dbrackets);
           return (
             <div className="gc-month" id={`gcm-${y}-${mon}`} key={idx}>
               <div className="gc-mhead">{MONTHS_LONG[mon]} {y}
@@ -721,6 +769,7 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
                   ))}
                 </div>
               )}
+              {gbonus.length > 0 && <BonusStrip games={gbonus} note={gbn.note} tight={gbn.tight} mobile={false} onPick={onPick} />}
               <div className="gc-grid">{cells}</div>
             </div>
           );

@@ -80,6 +80,7 @@ input, select, textarea { font-family: inherit; }
 .bar.k-replay { background: var(--accent-2); color: #eaf1ff; }
 .bar.k-dlc { background: var(--good); }
 .bar.k-event { background: var(--warn); }
+.bar.bonus { opacity: 0.42; background-image: repeating-linear-gradient(45deg, #ffffff22, #ffffff22 4px, transparent 4px, transparent 8px); }
 .bar.fuzzy { background-image: repeating-linear-gradient(45deg, #ffffff00, #ffffff00 6px, #00000022 6px, #00000022 12px); outline: 1px dashed #ffffff66; outline-offset: -2px; }
 .bar-out { position: absolute; top: 11px; font-size: 0.7rem; color: var(--muted); white-space: nowrap; font-family: var(--mono); }
 .bar.cont { opacity: 0.9; }   /* a resumed (continued) segment of a split game */
@@ -313,6 +314,15 @@ input, select, textarea { font-family: inherit; }
   border: 1px solid rgba(245, 177, 76, 0.35); }
 .gc-deadnote.ok, .mg-deadnote.ok { color: var(--good); }
 .gc-deadnote b, .mg-deadnote b { color: var(--text); }
+.gc-deadnote.bonusnote, .mg-deadnote.bonusnote { color: var(--muted); }
+
+/* bonus games — optional "if time allows" extras, set apart from the committed plan */
+.gc-bonus, .mg-bonus { display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  padding: 8px 16px; background: var(--panel); border-bottom: 1px solid var(--border);
+  border-left: 3px dashed var(--accent); }
+.mg-bonus { padding: 7px 12px; }
+.gc-bonus-h, .mg-bonus-h { font-size: 0.7rem; color: var(--accent); font-weight: 700;
+  font-family: var(--mono); margin-right: 2px; letter-spacing: 0.02em; }
 
 /* placed = a start day was auto-picked: solid border + tinted fill */
 .gc-planned-chip.placed, .mg-planned-chip.placed { border-style: solid; color: #0c0c12; }
