@@ -257,6 +257,19 @@ input, select, textarea { font-family: inherit; }
 .gc-cell.play-replay, .mg-cell.play-replay { background-color: rgba(59, 111, 224, 0.18); }
 .gc-cell.play-dlc,    .mg-cell.play-dlc    { background-color: rgba(52, 211, 153, 0.15); }
 .gc-cell.play-event,  .mg-cell.play-event  { background-color: rgba(245, 177, 76, 0.15); }
+/* already-streamed (actual Twitch history) — past days show what really happened */
+.gc-cell.streamed, .mg-cell.streamed { background-color: rgba(52, 211, 153, 0.08); }
+.gc-done { display: flex; align-items: center; gap: 6px; margin-top: 3px; }
+.gc-done-art { width: 22px; height: 29px; object-fit: cover; border-radius: 3px; flex: none; box-shadow: 0 1px 3px #0007; }
+.gc-done-nm { font-size: 0.72rem; font-weight: 600; color: var(--muted); line-height: 1.2;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gc-done-chk { color: var(--good); font-weight: 800; margin-right: 3px; }
+.mg-pill.mg-done { background: transparent; color: var(--muted); display: flex; align-items: center;
+  gap: 4px; padding: 1px 0; }
+.mg-done-art { width: 15px; height: 20px; object-fit: cover; border-radius: 2px; flex: none; }
+.mg-done-nm { font-size: 0.54rem; font-weight: 700; color: var(--muted); overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap; }
+
 .gc-relstar { color: var(--accent); font-size: 0.72rem; margin-left: 4px; }
 .mg-cell .relstar { color: var(--accent); font-size: 0.6rem; margin-left: 2px; }
 .gc-away { font-size: 0.72rem; color: var(--muted); font-weight: 700; }
@@ -266,6 +279,7 @@ input, select, textarea { font-family: inherit; }
   background: repeating-linear-gradient(45deg, #8b97ab40, #8b97ab40 3px, transparent 3px, transparent 6px); }
 .cal-legend .lg-planned { padding: 0 6px; border-radius: 99px; color: var(--muted);
   border: 1px dashed var(--border-solid); }
+.cal-legend .lg-done { color: var(--good); font-weight: 700; }
 
 /* "Planned this month" — month/quarter games with no set day, pinned to their month */
 .gc-planned, .mg-planned { display: flex; flex-wrap: wrap; align-items: center; gap: 6px;

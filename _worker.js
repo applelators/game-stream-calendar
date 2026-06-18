@@ -7,10 +7,11 @@
 //   (scheduled)             -> weekly cron refetches pace into KV
 //   everything else         -> static assets
 
-import { fetchPace, FALLBACK_PACE } from './pace.js';
+import { fetchPace, fetchStreams, FALLBACK_PACE } from './pace.js';
 
 const STATE_KEY = 'state';
 const PACE_KEY = 'pace';
+const STREAMS_KEY = 'streams';
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -28,6 +29,12 @@ async function refreshPace(env) {
   const pace = await fetchPace(env);
   await env.CALENDAR_KV.put(PACE_KEY, JSON.stringify(pace));
   return pace;
+}
+
+async function refreshStreams(env) {
+  const data = await fetchStreams(env);
+  await env.CALENDAR_KV.put(STREAMS_KEY, JSON.stringify(data));
+  return data;
 }
 
 export default {
@@ -78,6 +85,31 @@ export default {
         }
       }
 
+      // Recent completed streams (date + games + box art), for the "already
+      // streamed" overlay on past calendar days. Cached in KV; refreshed weekly.
+      if (pathname === '/api/streams' && request.method === 'GET') {
+        const cached = await env.CALENDAR_KV.get(STREAMS_KEY);
+        if (cached) {
+          return new Response(cached, {
+            headers: { ...CORS, 'Content-Type': 'application/json' },
+          });
+        }
+        // Cold cache — fetch once so the first visit still shows history.
+        try {
+          return json(await refreshStreams(env));
+        } catch (e) {
+          return json({ streams: [], fetchedAt: null, error: String(e.message || e) });
+        }
+      }
+
+      if (pathname === '/api/refresh-streams' && request.method === 'POST') {
+        try {
+          return json(await refreshStreams(env));
+        } catch (e) {
+          return json({ error: String(e.message || e) }, 502);
+        }
+      }
+
       return json({ error: 'not found' }, 404);
     }
 
@@ -88,5 +120,6 @@ export default {
   // Weekly cron trigger (see [triggers] crons in wrangler.toml).
   async scheduled(event, env, ctx) {
     ctx.waitUntil(refreshPace(env));
+    ctx.waitUntil(refreshStreams(env));
   },
 };

@@ -149,7 +149,14 @@ shows the live value + a manual override that wins when enabled.
 | `/api/state` | GET / PUT | read / overwrite the `{games, settings}` doc in KV |
 | `/api/pace` | GET | cached 90-day pace (`+ fetchedAt`); fallback if cold |
 | `/api/refresh-pace` | POST | refetch pace now, store, return it |
-| (scheduled) | cron | weekly pace refresh into KV |
+| `/api/streams` | GET | cached recent completed streams `{ streams:[{date,minutes,games:[{name,art}]}], fetchedAt }` (SullyGnome `gamesplayed` + box art); fetches once if cold |
+| `/api/refresh-streams` | POST | refetch stream history now, store, return it |
+| (scheduled) | cron | weekly pace **and** stream-history refresh into KV |
+
+**Already-streamed overlay:** the Month grid fetches `/api/streams` and, for any past day
+you actually streamed, shows the real game(s) with a ✓ and Twitch box art (`streamedByDay`,
+prioritised in `dayInfo` over the plan/vacation). `fetchStreams` (pace.js) normalises the
+SullyGnome streams table; box-art URLs are rewritten to a small size.
 
 ---
 

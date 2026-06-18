@@ -105,6 +105,7 @@ function App() {
   const [games, setGames] = useState([]);
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [pace, setPace] = useState(FALLBACK_PACE);
+  const [streams, setStreams] = useState([]);   // actual completed streams (Twitch history)
   const [loaded, setLoaded] = useState(false);
   const [detail, setDetail] = useState(null);      // game id
   const [showSettings, setShowSettings] = useState(false);
@@ -133,6 +134,10 @@ function App() {
         const pr = await fetch('/api/pace');
         if (pr.ok) { const p = await pr.json(); if (!cancelled && p) setPace(p); }
       } catch (e) { /* keep fallback */ }
+      try {
+        const sr = await fetch('/api/streams');
+        if (sr.ok) { const s = await sr.json(); if (!cancelled && s && Array.isArray(s.streams)) setStreams(s.streams); }
+      } catch (e) { /* no history overlay */ }
       if (!cancelled) setLoaded(true);
     })();
     return () => { cancelled = true; };
@@ -210,7 +215,7 @@ function App() {
 
       {settings.view === 'timeline'
         ? <TimelineView games={effGames} pace={ep} mode={settings.schedMode} vacations={normVacs} onPick={setDetail} />
-        : <MonthGridView games={effGames} pace={ep} vacations={normVacs} onPick={setDetail} onTogglePlan={togglePlan} />}
+        : <MonthGridView games={effGames} pace={ep} vacations={normVacs} streams={streams} onPick={setDetail} onTogglePlan={togglePlan} />}
 
       {detailGame && (
         <DetailCard game={detailGame} pace={ep} vacations={normVacs} queuedPos={seqPositions[detailGame.id]}
@@ -398,6 +403,9 @@ function dayInfo(day, ctx) {
   const k = dayKey(day);
   const prev = addDays(day, -1);
   const releases = ctx.releasesByDay[k] || [];
+  // Actual history wins: a day you already streamed shows what you really played.
+  const streamed = ctx.streamedByDay && ctx.streamedByDay[k];
+  if (streamed && streamed.length) return { streamed, releases };
   if (inVacation(day, ctx.vacations)) {
     return { vac: true, vacRunStart: !inVacation(prev, ctx.vacations), vacLabel: vacLabelFor(day, ctx.vacations), releases };
   }
@@ -425,9 +433,23 @@ function splitPlanned(list, byId) {
   return { brackets, loose };
 }
 
-function MonthGridView({ games, pace, vacations, onPick, onTogglePlan }) {
+function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }) {
   const isMobile = useIsMobile();
   const allById = useMemo(() => { const m = {}; for (const g of games) m[g.id] = g; return m; }, [games]);
+
+  // Actual streams already done (from @nabunan's Twitch history) keyed by calendar
+  // day, so past days show what really happened (✓) instead of the plan.
+  const streamedByDay = useMemo(() => {
+    const m = {};
+    for (const s of (streams || [])) {
+      const [y, mo, d] = String(s.date || '').split('-').map(Number);
+      if (!y || !mo || !d) continue;
+      const k = `${y}-${mo - 1}-${d}`;
+      const arr = m[k] = m[k] || [];
+      for (const g of (s.games || [])) if (g && g.name && !arr.some((x) => x.name === g.name)) arr.push(g);
+    }
+    return m;
+  }, [streams]);
 
   const placeable = useMemo(() => games.filter((g) => isPlaceable(g.release)), [games]);
   const rail = useMemo(() => games.filter((g) => !isPlaceable(g.release)), [games]);
@@ -475,7 +497,7 @@ function MonthGridView({ games, pace, vacations, onPick, onTogglePlan }) {
 
   const now = new Date();
   const tY = now.getFullYear(), tM = now.getMonth(), tD = now.getDate();
-  const ctx = { vacations, playByDay, sessionByDay, gameById, releasesByDay, deadlineByDay, eveByDay: eves.eveByDay, releaseDays: eves.releaseDays };
+  const ctx = { vacations, playByDay, sessionByDay, gameById, releasesByDay, deadlineByDay, streamedByDay, eveByDay: eves.eveByDay, releaseDays: eves.releaseDays };
 
   if (!min) {
     return (
@@ -494,7 +516,7 @@ function MonthGridView({ games, pace, vacations, onPick, onTogglePlan }) {
     while (m <= end) { months.push(m); m = new Date(Date.UTC(m.getUTCFullYear(), m.getUTCMonth() + 1, 1)); }
     return (
       <div>
-        <div className="cal-legend">Each game has its own colour; numbers = each stream (3/6) · 🌙 = launch · hatched = vacation · ★ = release · dashed chip = planned (tap to auto-pick a day) · ✓ chip = placed</div>
+        <div className="cal-legend">Each game has its own colour; numbers = each stream (3/6) · ✓ + box art = already streamed · 🌙 = launch · hatched = vacation · ★ = release · dashed chip = planned (tap to auto-pick a day) · ✓ chip = placed</div>
         <div className="mg-wrap">
           {months.map((mo, i) => {
             const y = mo.getUTCFullYear(), mon = mo.getUTCMonth();
@@ -508,13 +530,19 @@ function MonthGridView({ games, pace, vacations, onPick, onTogglePlan }) {
               const info = dayInfo(day, ctx);
               monthCount += info.releases.length;
               const isToday = y === tY && mon === tM && d === tD;
-              const cls = 'mg-cell' + (info.vac ? ' vac' : '') + (isToday ? ' today' : '');
-              const tintId = info.vac ? null : (info.launch ? info.launch.id : info.play ? info.play.id : null);
+              const cls = 'mg-cell' + (info.vac ? ' vac' : info.streamed ? ' streamed' : '') + (isToday ? ' today' : '');
+              const tintId = info.vac || info.streamed ? null : (info.launch ? info.launch.id : info.play ? info.play.id : null);
               const cellStyle = tintId ? { backgroundColor: gameColor(tintId).tint } : undefined;
               const dl = deadlineByDay[`${y}-${mon}-${d}`];
               cells.push(
                 <div key={d} className={cls} style={cellStyle}>
                   <span className="dnum">{d}{info.releases.length ? <span className="relstar">★</span> : null}{dl ? <span className="mg-deadflag" title={`Finish before ${dl.title}`}>⚑</span> : null}</span>
+                  {info.streamed && info.streamed.map((s, si) => (
+                    <span className="mg-pill mg-done" key={si} title={`Streamed: ${s.name}`}>
+                      {s.art ? <img className="mg-done-art" src={s.art} alt="" loading="lazy" /> : null}
+                      <span className="mg-done-nm">✓ {s.name}</span>
+                    </span>
+                  ))}
                   {info.vac && info.vacRunStart && <span className="mg-pill nowvac" title={info.vacLabel}>✈ {info.vacLabel}</span>}
                   {info.launch && (
                     <span className="mg-pill" style={{ background: gameColor(info.launch.id).solid }}
@@ -593,7 +621,7 @@ function MonthGridView({ games, pace, vacations, onPick, onTogglePlan }) {
         <button className="gc-today" onClick={scrollToToday}>Jump to today</button>
         <div className="gc-cnt">{totalCount} release{totalCount === 1 ? '' : 's'} · scroll for more months ↓</div>
       </div>
-      <div className="cal-legend">Each game has its own colour, so a run of one colour is one game; numbers mark each stream (e.g. <b>3/6</b> = 3rd of 6) · 🌙 = midnight launch (eve reserved) · <span className="lg-vac">hatched</span> = vacation · ★ = release day · <span className="lg-planned">dashed chip</span> = planned for the month — click to auto-pick a start day · ✓ chip = placed</div>
+      <div className="cal-legend">Each game has its own colour, so a run of one colour is one game; numbers mark each stream (e.g. <b>3/6</b> = 3rd of 6) · <span className="lg-done">✓ + box art</span> = already streamed (real Twitch history) · 🌙 = midnight launch (eve reserved) · <span className="lg-vac">hatched</span> = vacation · ★ = release day · <span className="lg-planned">dashed chip</span> = planned for the month — click to auto-pick a start day · ✓ chip = placed</div>
       {/* weekday header stays pinned while you scroll through every month */}
       <div className="gc-weekbar">{DOW_FULL.map((d) => <span key={d}>{d}</span>)}</div>
       <div className="gc-stack">
@@ -609,14 +637,20 @@ function MonthGridView({ games, pace, vacations, onPick, onTogglePlan }) {
             const info = dayInfo(day, ctx);
             monthCount += info.releases.length;
             const isToday = y === tY && mon === tM && d === tD;
-            const cls = 'gc-cell' + (info.vac ? ' vac' : '') + (isToday ? ' today' : '');
+            const cls = 'gc-cell' + (info.vac ? ' vac' : info.streamed ? ' streamed' : '') + (isToday ? ' today' : '');
             const relTitles = info.releases.map((r) => r.title).join(', ');
-            const tintId = info.vac ? null : (info.launch ? info.launch.id : info.play ? info.play.id : null);
+            const tintId = info.vac || info.streamed ? null : (info.launch ? info.launch.id : info.play ? info.play.id : null);
             const cellStyle = tintId ? { backgroundColor: gameColor(tintId).tint } : undefined;
             const dl = deadlineByDay[`${y}-${mon}-${d}`];
             cells.push(
               <div key={d} className={cls} style={cellStyle}>
                 <span className="gc-dnum" title={relTitles || undefined}>{d}{info.releases.length ? <span className="gc-relstar">★</span> : null}{dl ? <span className="gc-deadflag" title={`Finish before ${dl.title}: ${dl.games.join(', ')}`}>⚑</span> : null}</span>
+                {info.streamed && info.streamed.map((s, si) => (
+                  <div className="gc-done" key={si} title={`Streamed: ${s.name}`}>
+                    {s.art ? <img className="gc-done-art" src={s.art} alt="" loading="lazy" /> : null}
+                    <span className="gc-done-nm"><span className="gc-done-chk">✓</span>{s.name}</span>
+                  </div>
+                ))}
                 {info.vac && info.vacRunStart && <div className="gc-away">✈ {info.vacLabel}</div>}
                 {info.launch && (
                   <div className="gc-ev" style={{ background: gameColor(info.launch.id).solid }} onClick={() => onPick(info.launch.id)}

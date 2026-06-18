@@ -51,6 +51,49 @@ export function computePace(rows, windowDays = WINDOW_DAYS) {
   };
 }
 
+// Fetch the channel's recent completed streams, normalized for the calendar:
+//   { streams: [ { date:'YYYY-MM-DD', minutes, games:[{name, art}] } ], fetchedAt }
+// `gamesplayed` is comma-separated "Name|Slug|boxartUrl" chunks; we keep the name
+// and a small box-art URL per game. Never throws — returns an empty list on failure.
+export async function fetchStreams(env, days = 45) {
+  const channelId = (env && env.SULLYGNOME_CHANNEL_ID) || DEFAULT_SG_CHANNEL_ID;
+  const login = (env && env.TWITCH_CHANNEL) || 'nabunan';
+  const url =
+    `https://sullygnome.com/api/tables/channeltables/streams/${days}/` +
+    `${channelId}/%20/1/1/desc/0/100`;
+  try {
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (compatible; game-stream-calendar/1.0; +stream-history)',
+        Referer: `https://sullygnome.com/channel/${login}/${days}`,
+        Accept: 'application/json, text/javascript, */*; q=0.01',
+      },
+    });
+    if (!res.ok) throw new Error(`sullygnome HTTP ${res.status}`);
+    const j = await res.json();
+    const rows = Array.isArray(j.data) ? j.data : [];
+    const streams = rows
+      .map((r) => {
+        const date = String(r.startDateTime || '').slice(0, 10);
+        const games = String(r.gamesplayed || '')
+          .split(',')
+          .map((chunk) => {
+            const p = chunk.split('|');
+            if (!p[0]) return null;
+            const art = (p[2] || '').replace(/-\d+x\d+\.jpg.*$/, '-72x96.jpg');
+            return { name: p[0], art };
+          })
+          .filter(Boolean);
+        return { date, minutes: Number(r.length) || 0, games };
+      })
+      .filter((s) => s.date);
+    return { streams, fetchedAt: new Date().toISOString(), source: 'sullygnome' };
+  } catch (err) {
+    return { streams: [], fetchedAt: new Date().toISOString(), error: String(err && err.message ? err.message : err) };
+  }
+}
+
 // Fetch + compute. Never throws — returns FALLBACK_PACE on any failure so the
 // caller (scheduled handler / API route) can always write something to KV.
 export async function fetchPace(env) {
