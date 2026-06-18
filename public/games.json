@@ -134,7 +134,8 @@
       "earlyAccess": "Free demo available.",
       "notes": "Velan Studios remake of Star Fox 64.",
       "icon": "https://cdn.dekudeals.com/images/6bb970fe5eeef1abdec039d8f9353aaa7ef654c2/w500.jpg",
-      "iconColor": "#ee914f"
+      "iconColor": "#ee914f",
+      "binge": true
     },
     {
       "title": "Pokémon Omega Ruby",
@@ -172,7 +173,8 @@
       "notes": "First new Rhythm Heaven in over a decade.",
       "icon": "https://cdn.dekudeals.com/images/94f55390aaa495348d175d1024a57288f9e5b545/w500.jpg",
       "iconColor": "#eede4f",
-      "finishBefore": "2026-07"
+      "finishBefore": "2026-07",
+      "binge": true
     },
     {
       "title": "Splatoon Raiders",
@@ -194,7 +196,8 @@
       "notes": "Single-player-focused Splatoon spin-off.",
       "icon": "https://cdn.dekudeals.com/images/7a30dd9a431ec4c530654e9cccbdb224ccff497a/w500.jpg",
       "iconColor": "#cade5e",
-      "finishBefore": "2026-08"
+      "finishBefore": "2026-08",
+      "binge": true
     },
     {
       "title": "Splatoon 2: Octo Expansion",
@@ -212,7 +215,8 @@
       "earlyAccess": "",
       "notes": "First playthrough; originally released Jun 2018.",
       "icon": "https://cdn.dekudeals.com/images/e8f7cfe5e1786410d6ead1e241deace6ee33b321/w500.jpg",
-      "iconColor": "#5d60e0"
+      "iconColor": "#5d60e0",
+      "binge": true
     },
     {
       "title": "Splatoon 3",
@@ -230,7 +234,8 @@
       "earlyAccess": "",
       "notes": "First playthrough; originally released Sep 2022.",
       "icon": "https://cdn.dekudeals.com/images/30946c8b3b47637626805e12f242bb71b4cd74d5/w500.jpg",
-      "iconColor": "#eb51b8"
+      "iconColor": "#eb51b8",
+      "binge": true
     },
     {
       "title": "Splatoon 3: Side Order",
@@ -248,7 +253,8 @@
       "earlyAccess": "",
       "notes": "First playthrough; originally released Feb 2024.",
       "icon": "https://cdn.dekudeals.com/images/c178eb9e18768f4b5e2b506c998811630b114b88/w500.jpg",
-      "iconColor": "#90ee4f"
+      "iconColor": "#90ee4f",
+      "binge": true
     },
     {
       "title": "Halo: Campaign Evolved",
@@ -440,7 +446,8 @@
       "notes": "PS5 exclusive, Insomniac Games.",
       "icon": "https://cdn.dekudeals.com/images/a0a9511514e93617286cd0ae9d9e8369417b925e/w500.jpg",
       "iconColor": "#eabf52",
-      "finishBefore": "2026-09"
+      "finishBefore": "2026-09",
+      "binge": true
     },
     {
       "title": "Fire Emblem: Fortune's Weave",
@@ -470,7 +477,8 @@
       "notes": "Switch 2 exclusive.",
       "icon": "https://cdn.dekudeals.com/images/946c11337a71895a9def9a330c604c7c602d98ca/w500.jpg",
       "iconColor": "#cf776e",
-      "finishBefore": "2026-10"
+      "finishBefore": "2026-10",
+      "binge": true
     },
     {
       "title": "Pokémon Platinum",
@@ -526,7 +534,8 @@
         }
       ],
       "earlyAccess": "",
-      "notes": "Wuhu Island; sequel to Nintendo Switch Sports."
+      "notes": "Wuhu Island; sequel to Nintendo Switch Sports.",
+      "binge": true
     },
     {
       "title": "Grand Theft Auto VI",
@@ -553,7 +562,8 @@
       "notes": "Editions/pricing not fully confirmed.",
       "icon": "https://cdn.dekudeals.com/images/120b493fd548a41f292e63d6e74ad78b194b3cb2/w500.jpg",
       "iconColor": "#6e79cf",
-      "finishBefore": "2026-12"
+      "finishBefore": "2026-12",
+      "binge": true
     },
     {
       "title": "Xenoblade Chronicles 3 — Nintendo Switch 2 Edition",
@@ -590,7 +600,8 @@
         }
       ],
       "earlyAccess": "",
-      "notes": "Announced for later 2026, no firm date yet."
+      "notes": "Announced for later 2026, no firm date yet.",
+      "binge": true
     },
     {
       "title": "The Wolf Among Us Remastered",
@@ -630,7 +641,8 @@
       ],
       "editions": [],
       "earlyAccess": "",
-      "notes": "Standalone narrative spin-off; no firm date."
+      "notes": "Standalone narrative spin-off; no firm date.",
+      "binge": true
     },
     {
       "title": "The Duskbloods",
