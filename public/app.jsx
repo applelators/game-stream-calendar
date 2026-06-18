@@ -60,11 +60,11 @@ function gameInitials(title) {
 // Per-game visual: an <img> if `icon` is an image URL/path, the emoji if `icon` is
 // short text, else a colour-coded monogram badge. One asset per game, used in the
 // detail card, timeline labels, and chips.
+function isImgIcon(icon) { return !!icon && /^(https?:\/\/|\/|data:)/.test(icon); }
 function GameBadge({ game, size = 20 }) {
   const px = size + 'px';
   const icon = game.icon;
-  const isImg = icon && /^(https?:\/\/|\/|data:)/.test(icon);
-  if (isImg) return <img className="gbadge gbadge-img" src={icon} alt="" loading="lazy" decoding="async" style={{ width: px, height: px }} />;
+  if (isImgIcon(icon)) return <img className="gbadge gbadge-img" src={icon} alt="" loading="lazy" decoding="async" style={{ width: px, height: px }} />;
   const col = gameColor(game.id);
   return (
     <span className="gbadge" style={{ width: px, height: px, background: col.solid,
@@ -713,6 +713,7 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
                     <span className="mg-pill mg-game" style={{ background: gameColor(info.play.id).solid }}
                       onClick={() => onPick(info.play.id)}
                       title={`${info.play.title}${info.session ? ` — stream ${info.session.idx}/${info.session.total}` : ''}`}>
+                      {isImgIcon(info.play.icon) && <img className="mg-cellart" src={info.play.icon} alt="" loading="lazy" />}
                       <span className="mg-gt">{info.play.title}</span>
                       {info.session && <span className="mg-gn">{info.session.idx}/{info.session.total}</span>}
                     </span>

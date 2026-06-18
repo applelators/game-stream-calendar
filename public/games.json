@@ -339,6 +339,7 @@
       "title": "Final Fantasy XIV",
       "date": "2026-08",
       "kind": "game",
+      "bonus": true,
       "hltbHours": 40,
       "basis": "estimate",
       "hltbNote": "MMO — no fixed length; estimate for the content you plan to stream.",
