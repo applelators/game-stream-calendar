@@ -700,7 +700,7 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
               const cls = 'mg-cell' + (info.vac ? ' vac' : info.streamed ? ' streamed' : '') + (isToday ? ' today' : '');
               let cellStyle;
               if (!info.vac && !info.streamed) {
-                if (info.launch) cellStyle = { backgroundColor: gameColor(info.launch.id).tint };
+                if (info.launch) cellStyle = { backgroundColor: gameColor(info.launch.id).solid + '12' };
                 else if (info.play) cellStyle = { backgroundColor: gameColor(info.play.id).tint };
                 else if (info.span) cellStyle = { backgroundColor: gameColor(info.span.id).solid + '12' };
                 else if (info.bonusPlay) cellStyle = { backgroundColor: gameColor(info.bonusPlay.id).solid + '14' };
@@ -717,9 +717,8 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
                   ))}
                   {info.vac && info.vacRunStart && <span className="mg-pill nowvac" title={info.vacLabel}>✈ {info.vacLabel}</span>}
                   {info.launch && (
-                    <span className="mg-pill" style={{ background: gameColor(info.launch.id).solid }}
-                      onClick={() => onPick(info.launch.id)} title={`Midnight launch: ${info.launch.title}`}>
-                      🌙 {info.launch.title}</span>
+                    <span className="mg-pill mg-launch" onClick={() => onPick(info.launch.id)}
+                      title={`Midnight launch — ${info.launch.title}`}>🌙</span>
                   )}
                   {!info.vac && !info.launch && info.play && (
                     <span className="mg-pill mg-game" style={{ background: gameColor(info.play.id).solid }}
@@ -813,7 +812,7 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
             const relTitles = info.releases.map((r) => r.title).join(', ');
             let cellStyle;
             if (!info.vac && !info.streamed) {
-              if (info.launch) cellStyle = { backgroundColor: gameColor(info.launch.id).tint };
+              if (info.launch) cellStyle = { backgroundColor: gameColor(info.launch.id).solid + '12' };
               else if (info.play) cellStyle = { backgroundColor: gameColor(info.play.id).tint };
               else if (info.span) cellStyle = { backgroundColor: gameColor(info.span.id).solid + '12' };
               else if (info.bonusPlay) cellStyle = { backgroundColor: gameColor(info.bonusPlay.id).solid + '14' };
@@ -830,8 +829,8 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
                 ))}
                 {info.vac && info.vacRunStart && <div className="gc-away">✈ {info.vacLabel}</div>}
                 {info.launch && (
-                  <div className="gc-ev" style={{ background: gameColor(info.launch.id).solid }} onClick={() => onPick(info.launch.id)}
-                    title={`Midnight launch: ${info.launch.title}`}>🌙 {info.launch.title}</div>
+                  <div className="gc-ev gc-launch" onClick={() => onPick(info.launch.id)}
+                    title={`Midnight launch — ${info.launch.title}`}>🌙</div>
                 )}
                 {!info.vac && !info.launch && info.session && info.play && (
                   <div className="gc-ev" style={{ background: gameColor(info.play.id).solid }} onClick={() => onPick(info.play.id)}

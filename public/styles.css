@@ -140,6 +140,11 @@ input, select, textarea { font-family: inherit; }
 .gc-ev:hover { filter: brightness(1.09); }
 .gc-ev-art { display: inline-block; width: 14px; height: 14px; border-radius: 2px; object-fit: cover;
   vertical-align: -3px; margin-right: 3px; box-shadow: 0 1px 2px #0006; }
+/* midnight-launch eve: subtle moon only (no repeated title) */
+.gc-ev.gc-launch { background: transparent; color: var(--muted); padding: 0 2px; font-size: 0.8rem;
+  line-height: 1; align-self: flex-start; opacity: 0.8; }
+.gc-ev.gc-launch:hover { filter: none; opacity: 1; }
+.mg-pill.mg-launch { background: transparent; padding: 0; font-size: 0.72rem; line-height: 1; opacity: 0.8; }
 .gc-ev.k-game { background: var(--accent); }
 .gc-ev.k-replay { background: var(--accent-2); color: #eaf1ff; }
 .gc-ev.k-dlc { background: var(--good); }
