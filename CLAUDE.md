@@ -151,6 +151,12 @@ shows the live value + a manual override that wins when enabled.
 **Formulas (calc.js):** `streamsToFinish = ceil(hltbHours / hoursPerStream)`;
 `weeksToFinish = hltbHours / hoursPerWeek`; bar length = days of `weeksToFinish`.
 
+**Per-game band colour:** `gameColor(id)` returns a cover-derived colour for games whose
+`iconColor` (hex, from cover art) is registered in the module-level `ICON_COLORS` map (App
+populates it from `effGames` each render, before children render), else a palette colour hashed
+from the id. So cover games' month-grid bands/tints/chips complement their art; others stay on
+the palette. Timeline bars remain kind-coloured.
+
 **Month grid = one cell per stream.** The grid shows each game on exactly its
 `streamsToFinish` days (the `sessionByDay` markers, spread across the game's span at the real
 ~`streamsPerWeek` cadence) — **not** every in-progress calendar day — so filled cells per game

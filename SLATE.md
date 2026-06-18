@@ -62,6 +62,7 @@ Also accepts `"August 2026"`, `"Nov 2027"`, `"Jun 9, 2026"`. Anything unrecogniz
 | `earlyAccess` | pre-order / early-access bonus text |
 | `notes` | free text shown in the detail card |
 | `icon` | optional visual: an **emoji** (`"🦑"`) or an **image URL/path** (`"https://…/art.jpg"` or `"/art/splat3.png"`). Defaults to a colour-coded **monogram** badge from the title. |
+| `iconColor` | optional hex (e.g. `"#ee914f"`) — the calendar **band colour** for this game, normally derived from its cover art so the band complements it. Omit to use the auto palette colour. |
 
 ## Midnight launches
 

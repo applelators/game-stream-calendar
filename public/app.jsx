@@ -37,7 +37,13 @@ const GAME_PALETTE = [
   '#f7768e', '#ff9e64', '#e0af68', '#9ece6a', '#73daca', '#7dcfff', '#7aa2f7', '#bb9af7',
   '#f7c8e0', '#e6db74', '#fca7ea', '#a6e22e', '#fd971f', '#66d9ef', '#c3e88d', '#ff757f',
 ];
+// Games with cover art register a band colour derived from the art (games.json
+// `iconColor`), so the band complements the cover; everything else falls back to
+// the curated palette hashed from the id.
+const ICON_COLORS = {};
 function gameColor(id) {
+  const ov = ICON_COLORS[id];
+  if (ov) return { solid: ov, tint: ov + '2e' };
   let h = 0;
   const s = id || '';
   for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
@@ -167,6 +173,8 @@ function App() {
   // the user's loose auto-placements.
   const beforeMap = useMemo(() => finishBeforeDays(games, ep, normVacs), [games, ep, normVacs]);
   const effGames = useMemo(() => withAutoPlacement(games, { ...autoMap, ...beforeMap }), [games, autoMap, beforeMap]);
+  // Register cover-derived band colours before any child renders/uses gameColor.
+  effGames.forEach((g) => { if (g.iconColor) ICON_COLORS[g.id] = g.iconColor; });
   const togglePlan = useCallback((id) => {
     setSettings((s) => {
       const cur = s.autoPlace || [];
