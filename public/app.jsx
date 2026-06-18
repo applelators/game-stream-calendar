@@ -579,7 +579,8 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
     return { releasesByDay: rbd, playByDay: pbd, sessionByDay: sbd, gameById: gbi, plannedByMonth: pbm, bonusByMonth: bbm, deadlineByDay: dbd, deadlineBracketsByMonth: dbm, min: mn, max: mx };
   }, [placeable, pace, vacations]);
 
-  const eves = useMemo(() => launchEves(placeable), [placeable]);
+  // Bonus games don't reserve midnight-launch eves (they're not committed).
+  const eves = useMemo(() => launchEves(placeable.filter((g) => !g.bonus)), [placeable]);
 
   const now = new Date();
   const tY = now.getFullYear(), tM = now.getMonth(), tD = now.getDate();
