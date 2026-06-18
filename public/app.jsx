@@ -774,7 +774,8 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
             const info = dayInfo(day, ctx);
             monthCount += info.releases.length;
             const isToday = y === tY && mon === tM && d === tD;
-            const cls = 'gc-cell' + (info.vac ? ' vac' : info.streamed ? ' streamed' : '') + (isToday ? ' today' : '');
+            const hasArt = !info.vac && !info.launch && info.session && info.play && isImgIcon(info.play.icon);
+            const cls = 'gc-cell' + (info.vac ? ' vac' : info.streamed ? ' streamed' : '') + (hasArt ? ' hasart' : '') + (isToday ? ' today' : '');
             const relTitles = info.releases.map((r) => r.title).join(', ');
             let cellStyle;
             if (!info.vac && !info.streamed) {
@@ -801,12 +802,18 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
                   <div className="gc-ev gc-launch" onClick={() => onPick(info.launch.id)}
                     title={`Midnight launch — ${info.launch.title}`}>🌙</div>
                 )}
-                {!info.vac && !info.launch && info.session && info.play && (
+                {!info.vac && !info.launch && info.session && info.play && (hasArt ? (
+                  <React.Fragment>
+                    <img className="gc-cellbg" src={info.play.icon} alt="" loading="lazy" />
+                    <div className="gc-evlabel" style={{ boxShadow: `inset 0 -3px 0 ${gameColor(info.play.id).solid}` }}
+                      onClick={() => onPick(info.play.id)} title={`${info.play.title} — stream ${info.session.idx}/${info.session.total}`}>
+                      {info.play.title}</div>
+                  </React.Fragment>
+                ) : (
                   <div className="gc-ev" style={{ background: gameColor(info.play.id).solid }} onClick={() => onPick(info.play.id)}
                     title={`${info.play.title} — stream ${info.session.idx}/${info.session.total}`}>
-                    {isImgIcon(info.play.icon) && <img className="gc-ev-art" src={info.play.icon} alt="" loading="lazy" />}
                     {info.play.title}</div>
-                )}
+                ))}
                 {info.bonusPlay && (
                   <div className="gc-ev bonus" style={{ borderColor: gameColor(info.bonusPlay.id).solid }}
                     onClick={() => onPick(info.bonusPlay.id)} title={`${info.bonusPlay.title} — bonus (free time)`}>
