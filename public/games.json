@@ -524,11 +524,12 @@
         }
       ],
       "earlyAccess": "",
-      "notes": "Game 1 of 7 in KINGDOM HEARTS Collection [I~III] ($79.99 bundle: HD 1.5+2.5 ReMIX, 2.8, KH3 + ReMind)."
+      "notes": "Game 1 of 11 — KINGDOM HEARTS series marathon ($79.99 bundle: HD 1.5+2.5 ReMIX, 2.8, KH3 + ReMind). Play in order; finish before the next.",
+      "finishBefore": "kingdom-hearts-re-chain-of-memories"
     },
     {
       "title": "Kingdom Hearts Re:Chain of Memories",
-      "date": "2026-10",
+      "date": "2026-12",
       "kind": "game",
       "backlog": true,
       "hltbHours": 31,
@@ -541,11 +542,12 @@
       ],
       "editions": [],
       "earlyAccess": "",
-      "notes": "Game 2 of 7 in KINGDOM HEARTS Collection [I~III] (bundled)."
+      "notes": "Game 2 of 11 — KINGDOM HEARTS marathon (bundled).",
+      "finishBefore": "kingdom-hearts-ii-final-mix"
     },
     {
       "title": "Kingdom Hearts II Final Mix",
-      "date": "2026-11",
+      "date": "2027-01",
       "kind": "game",
       "backlog": true,
       "hltbHours": 48,
@@ -558,11 +560,30 @@
       ],
       "editions": [],
       "earlyAccess": "",
-      "notes": "Game 3 of 7 in KINGDOM HEARTS Collection [I~III] (bundled)."
+      "notes": "Game 3 of 11 — KINGDOM HEARTS marathon (bundled).",
+      "finishBefore": "kingdom-hearts-358-2-days"
+    },
+    {
+      "title": "Kingdom Hearts 358/2 Days",
+      "date": "2027-03",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 3,
+      "basis": "estimate",
+      "hltbNote": "Cinematic (HD movie version, no gameplay) — ~3h runtime to watch on stream.",
+      "platforms": [
+        "Switch 2",
+        "PS5",
+        "Xbox Series"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "Game 4 of 11 — KINGDOM HEARTS marathon (cinematic, bundled in 1.5+2.5 ReMIX).",
+      "finishBefore": "kingdom-hearts-birth-by-sleep-final-mix"
     },
     {
       "title": "Kingdom Hearts Birth by Sleep Final Mix",
-      "date": "2026-12",
+      "date": "2027-04",
       "kind": "game",
       "backlog": true,
       "hltbHours": 43,
@@ -575,11 +596,30 @@
       ],
       "editions": [],
       "earlyAccess": "",
-      "notes": "Game 4 of 7 in KINGDOM HEARTS Collection [I~III] (bundled)."
+      "notes": "Game 5 of 11 — KINGDOM HEARTS marathon (bundled).",
+      "finishBefore": "kingdom-hearts-re-coded"
+    },
+    {
+      "title": "Kingdom Hearts Re:coded",
+      "date": "2027-06",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 3,
+      "basis": "estimate",
+      "hltbNote": "Cinematic (HD movie version, no gameplay) — ~3h runtime to watch on stream.",
+      "platforms": [
+        "Switch 2",
+        "PS5",
+        "Xbox Series"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "Game 6 of 11 — KINGDOM HEARTS marathon (cinematic, bundled in 1.5+2.5 ReMIX).",
+      "finishBefore": "kingdom-hearts-dream-drop-distance-hd"
     },
     {
       "title": "Kingdom Hearts Dream Drop Distance HD",
-      "date": "2027-01",
+      "date": "2027-07",
       "kind": "game",
       "backlog": true,
       "hltbHours": 34,
@@ -592,11 +632,30 @@
       ],
       "editions": [],
       "earlyAccess": "",
-      "notes": "Game 5 of 7 in KINGDOM HEARTS Collection [I~III] (bundled)."
+      "notes": "Game 7 of 11 — KINGDOM HEARTS marathon (bundled in 2.8).",
+      "finishBefore": "kingdom-hearts-back-cover"
+    },
+    {
+      "title": "Kingdom Hearts χ Back Cover",
+      "date": "2027-08",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 1,
+      "basis": "estimate",
+      "hltbNote": "Cinematic (movie, no gameplay) — ~1h runtime to watch on stream.",
+      "platforms": [
+        "Switch 2",
+        "PS5",
+        "Xbox Series"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "Game 8 of 11 — KINGDOM HEARTS marathon (cinematic, bundled in 2.8).",
+      "finishBefore": "kingdom-hearts-0-2-a-fragmentary-passage"
     },
     {
       "title": "Kingdom Hearts 0.2 -A Fragmentary Passage-",
-      "date": "2027-01",
+      "date": "2027-09",
       "kind": "game",
       "backlog": true,
       "hltbHours": 5,
@@ -609,11 +668,12 @@
       ],
       "editions": [],
       "earlyAccess": "",
-      "notes": "Game 6 of 7 in KINGDOM HEARTS Collection [I~III] (bundled; part of 2.8)."
+      "notes": "Game 9 of 11 — KINGDOM HEARTS marathon (bundled in 2.8).",
+      "finishBefore": "kingdom-hearts-iii-remind"
     },
     {
       "title": "Kingdom Hearts III + ReMind",
-      "date": "2027-02",
+      "date": "2027-10",
       "kind": "game",
       "backlog": true,
       "hltbHours": 52,
@@ -626,7 +686,31 @@
       ],
       "editions": [],
       "earlyAccess": "",
-      "notes": "Game 7 of 7 in KINGDOM HEARTS Collection [I~III] (bundled)."
+      "notes": "Game 10 of 11 — KINGDOM HEARTS marathon (bundled).",
+      "finishBefore": "kingdom-hearts-melody-of-memory"
+    },
+    {
+      "title": "Kingdom Hearts Melody of Memory",
+      "date": "2027-12",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 13,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (rhythm game, clear all tracks). HLTB: Main ~8h / M+E ~13h / 100% ~30h.",
+      "platforms": [
+        "Switch",
+        "PS4",
+        "Xbox One"
+      ],
+      "editions": [
+        {
+          "name": "Standard",
+          "price": 59.99
+        }
+      ],
+      "earlyAccess": "",
+      "notes": "Game 11 of 11 — KINGDOM HEARTS marathon (owned separately, not in the collection). Finish by end of 2027.",
+      "finishBefore": "2027-12"
     },
     {
       "title": "Switch Sports Resort",
