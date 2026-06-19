@@ -542,12 +542,12 @@
       "iconColor": "#dd8d60"
     },
     {
-      "title": "Kingdom Hearts Final Mix (I)",
+      "title": "Kingdom Hearts Final Mix (I) — Pt. 1",
       "date": "2026-10-08",
       "kind": "game",
-      "hltbHours": 42,
+      "hltbHours": 21,
       "basis": "calibrated",
-      "hltbNote": "Calibrated → Main+Extra (JRPG side content). HLTB: Main ~29h / M+E ~42h / 100% ~62h.",
+      "hltbNote": "Calibrated → Main+Extra. KH Final Mix Pt 1 of 2 (M+E ~42h). HLTB: Main ~29h / M+E ~42h / 100% ~62h.",
       "platforms": [
         "Switch 2",
         "PS5",
@@ -560,8 +560,26 @@
         }
       ],
       "earlyAccess": "",
-      "notes": "Game 1 of 11 — KINGDOM HEARTS series marathon ($79.99 bundle: HD 1.5+2.5 ReMIX, 2.8, KH3 + ReMind). Play in order; finish before the next.",
-      "finishBefore": "kingdom-hearts-re-chain-of-memories"
+      "notes": "Game 1 of 11 — KINGDOM HEARTS marathon ($79.99 bundle: HD 1.5+2.5 ReMIX, 2.8, KH3 + ReMind). Play in order; finish each before the next.",
+      "finishBefore": "2026-10"
+    },
+    {
+      "title": "Kingdom Hearts Final Mix (I) — Pt. 2",
+      "date": "2026-11",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 21,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra. KH Final Mix Pt 2 of 2 (M+E ~42h).",
+      "platforms": [
+        "Switch 2",
+        "PS5",
+        "Xbox Series"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "Game 1 of 11 — KINGDOM HEARTS marathon (bundled).",
+      "finishBefore": "2026-11"
     },
     {
       "title": "Kingdom Hearts Re:Chain of Memories",
@@ -570,7 +588,7 @@
       "backlog": true,
       "hltbHours": 31,
       "basis": "calibrated",
-      "hltbNote": "Calibrated → Main+Extra (Sora + Riku stories). HLTB: Main ~24h / M+E ~31h / 100% ~42h.",
+      "hltbNote": "Calibrated → Main+Extra (Sora + Riku). HLTB: Main ~24h / M+E ~31h / 100% ~42h.",
       "platforms": [
         "Switch 2",
         "PS5",
@@ -579,16 +597,16 @@
       "editions": [],
       "earlyAccess": "",
       "notes": "Game 2 of 11 — KINGDOM HEARTS marathon (bundled).",
-      "finishBefore": "kingdom-hearts-ii-final-mix"
+      "finishBefore": "2026-12"
     },
     {
-      "title": "Kingdom Hearts II Final Mix",
+      "title": "Kingdom Hearts II Final Mix — Pt. 1",
       "date": "2027-01",
       "kind": "game",
       "backlog": true,
-      "hltbHours": 48,
+      "hltbHours": 24,
       "basis": "calibrated",
-      "hltbNote": "Calibrated → Main+Extra (JRPG side content). HLTB: Main ~35h / M+E ~48h / 100% ~67h.",
+      "hltbNote": "Calibrated → Main+Extra. KH II Pt 1 of 2 (M+E ~48h). HLTB: Main ~35h / M+E ~48h / 100% ~67h.",
       "platforms": [
         "Switch 2",
         "PS5",
@@ -597,7 +615,25 @@
       "editions": [],
       "earlyAccess": "",
       "notes": "Game 3 of 11 — KINGDOM HEARTS marathon (bundled).",
-      "finishBefore": "kingdom-hearts-358-2-days"
+      "finishBefore": "2027-01"
+    },
+    {
+      "title": "Kingdom Hearts II Final Mix — Pt. 2",
+      "date": "2027-02",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 24,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra. KH II Pt 2 of 2 (M+E ~48h).",
+      "platforms": [
+        "Switch 2",
+        "PS5",
+        "Xbox Series"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "Game 3 of 11 — KINGDOM HEARTS marathon (bundled).",
+      "finishBefore": "2027-02"
     },
     {
       "title": "Kingdom Hearts 358/2 Days",
@@ -606,7 +642,7 @@
       "backlog": true,
       "hltbHours": 3,
       "basis": "estimate",
-      "hltbNote": "Cinematic (HD movie version, no gameplay) — ~3h runtime to watch on stream.",
+      "hltbNote": "Cinematic (HD movie, no gameplay) — ~3h runtime to watch.",
       "platforms": [
         "Switch 2",
         "PS5",
@@ -615,16 +651,16 @@
       "editions": [],
       "earlyAccess": "",
       "notes": "Game 4 of 11 — KINGDOM HEARTS marathon (cinematic, bundled in 1.5+2.5 ReMIX).",
-      "finishBefore": "kingdom-hearts-birth-by-sleep-final-mix"
+      "finishBefore": "2027-03"
     },
     {
-      "title": "Kingdom Hearts Birth by Sleep Final Mix",
-      "date": "2027-04",
+      "title": "Kingdom Hearts Birth by Sleep Final Mix — Pt. 1",
+      "date": "2027-03",
       "kind": "game",
       "backlog": true,
-      "hltbHours": 43,
+      "hltbHours": 22,
       "basis": "calibrated",
-      "hltbNote": "Calibrated → Main+Extra (three scenarios). HLTB: Main ~27h / M+E ~43h / 100% ~62h.",
+      "hltbNote": "Calibrated → Main+Extra. BBS Pt 1 of 2 (M+E ~43h). HLTB: Main ~27h / M+E ~43h / 100% ~62h.",
       "platforms": [
         "Switch 2",
         "PS5",
@@ -633,16 +669,34 @@
       "editions": [],
       "earlyAccess": "",
       "notes": "Game 5 of 11 — KINGDOM HEARTS marathon (bundled).",
-      "finishBefore": "kingdom-hearts-re-coded"
+      "finishBefore": "2027-03"
+    },
+    {
+      "title": "Kingdom Hearts Birth by Sleep Final Mix — Pt. 2",
+      "date": "2027-04",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 21,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra. BBS Pt 2 of 2 (M+E ~43h).",
+      "platforms": [
+        "Switch 2",
+        "PS5",
+        "Xbox Series"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "Game 5 of 11 — KINGDOM HEARTS marathon (bundled).",
+      "finishBefore": "2027-04"
     },
     {
       "title": "Kingdom Hearts Re:coded",
-      "date": "2027-06",
+      "date": "2027-05",
       "kind": "game",
       "backlog": true,
       "hltbHours": 3,
       "basis": "estimate",
-      "hltbNote": "Cinematic (HD movie version, no gameplay) — ~3h runtime to watch on stream.",
+      "hltbNote": "Cinematic (HD movie, no gameplay) — ~3h runtime to watch.",
       "platforms": [
         "Switch 2",
         "PS5",
@@ -651,16 +705,16 @@
       "editions": [],
       "earlyAccess": "",
       "notes": "Game 6 of 11 — KINGDOM HEARTS marathon (cinematic, bundled in 1.5+2.5 ReMIX).",
-      "finishBefore": "kingdom-hearts-dream-drop-distance-hd"
+      "finishBefore": "2027-05"
     },
     {
-      "title": "Kingdom Hearts Dream Drop Distance HD",
-      "date": "2027-07",
+      "title": "Kingdom Hearts Dream Drop Distance HD — Pt. 1",
+      "date": "2027-05",
       "kind": "game",
       "backlog": true,
-      "hltbHours": 34,
+      "hltbHours": 17,
       "basis": "calibrated",
-      "hltbNote": "Calibrated → Main+Extra (Sora + Riku drop system). HLTB: Main ~26h / M+E ~34h / 100% ~45h.",
+      "hltbNote": "Calibrated → Main+Extra. DDD Pt 1 of 2 (M+E ~34h). HLTB: Main ~26h / M+E ~34h / 100% ~45h.",
       "platforms": [
         "Switch 2",
         "PS5",
@@ -669,16 +723,34 @@
       "editions": [],
       "earlyAccess": "",
       "notes": "Game 7 of 11 — KINGDOM HEARTS marathon (bundled in 2.8).",
-      "finishBefore": "kingdom-hearts-back-cover"
+      "finishBefore": "2027-05"
+    },
+    {
+      "title": "Kingdom Hearts Dream Drop Distance HD — Pt. 2",
+      "date": "2027-06",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 17,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra. DDD Pt 2 of 2 (M+E ~34h).",
+      "platforms": [
+        "Switch 2",
+        "PS5",
+        "Xbox Series"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "Game 7 of 11 — KINGDOM HEARTS marathon (bundled in 2.8).",
+      "finishBefore": "2027-06"
     },
     {
       "title": "Kingdom Hearts χ Back Cover",
-      "date": "2027-08",
+      "date": "2027-07",
       "kind": "game",
       "backlog": true,
       "hltbHours": 1,
       "basis": "estimate",
-      "hltbNote": "Cinematic (movie, no gameplay) — ~1h runtime to watch on stream.",
+      "hltbNote": "Cinematic (movie, no gameplay) — ~1h runtime to watch.",
       "platforms": [
         "Switch 2",
         "PS5",
@@ -687,16 +759,16 @@
       "editions": [],
       "earlyAccess": "",
       "notes": "Game 8 of 11 — KINGDOM HEARTS marathon (cinematic, bundled in 2.8).",
-      "finishBefore": "kingdom-hearts-0-2-a-fragmentary-passage"
+      "finishBefore": "2027-07"
     },
     {
       "title": "Kingdom Hearts 0.2 -A Fragmentary Passage-",
-      "date": "2027-09",
+      "date": "2027-07",
       "kind": "game",
       "backlog": true,
       "hltbHours": 5,
       "basis": "calibrated",
-      "hltbNote": "Calibrated → Main+Extra (short prologue chapter). HLTB: Main ~3h / M+E ~5h / 100% ~9h.",
+      "hltbNote": "Calibrated → Main+Extra (short prologue). HLTB: Main ~3h / M+E ~5h / 100% ~9h.",
       "platforms": [
         "Switch 2",
         "PS5",
@@ -705,16 +777,16 @@
       "editions": [],
       "earlyAccess": "",
       "notes": "Game 9 of 11 — KINGDOM HEARTS marathon (bundled in 2.8).",
-      "finishBefore": "kingdom-hearts-iii-remind"
+      "finishBefore": "2027-07"
     },
     {
-      "title": "Kingdom Hearts III + ReMind",
-      "date": "2027-10",
+      "title": "Kingdom Hearts III + ReMind — Pt. 1",
+      "date": "2027-08",
       "kind": "game",
       "backlog": true,
-      "hltbHours": 52,
+      "hltbHours": 26,
       "basis": "calibrated",
-      "hltbNote": "Calibrated → Main+Extra (base + ReMind DLC). HLTB: Main ~32h / M+E ~52h / 100% ~78h.",
+      "hltbNote": "Calibrated → Main+Extra. KH III + ReMind Pt 1 of 2 (M+E ~52h). HLTB: Main ~32h / M+E ~52h / 100% ~78h.",
       "platforms": [
         "Switch 2",
         "PS5",
@@ -723,7 +795,25 @@
       "editions": [],
       "earlyAccess": "",
       "notes": "Game 10 of 11 — KINGDOM HEARTS marathon (bundled).",
-      "finishBefore": "kingdom-hearts-melody-of-memory"
+      "finishBefore": "2027-08"
+    },
+    {
+      "title": "Kingdom Hearts III + ReMind — Pt. 2",
+      "date": "2027-09",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 26,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra. KH III + ReMind Pt 2 of 2 (M+E ~52h).",
+      "platforms": [
+        "Switch 2",
+        "PS5",
+        "Xbox Series"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "Game 10 of 11 — KINGDOM HEARTS marathon (bundled).",
+      "finishBefore": "2027-09"
     },
     {
       "title": "Kingdom Hearts Melody of Memory",
@@ -732,7 +822,7 @@
       "backlog": true,
       "hltbHours": 13,
       "basis": "calibrated",
-      "hltbNote": "Calibrated → Main+Extra (rhythm game, clear all tracks). HLTB: Main ~8h / M+E ~13h / 100% ~30h.",
+      "hltbNote": "Calibrated → Main+Extra (rhythm, clear all tracks). HLTB: Main ~8h / M+E ~13h / 100% ~30h.",
       "platforms": [
         "Switch",
         "PS4",
@@ -1098,28 +1188,270 @@
       "iconColor": "#ec9c50"
     },
     {
-      "title": "Final Fantasy VII Revelation",
-      "date": "Spring 2027",
+      "title": "Final Fantasy VII Remake Intergrade — Pt. 1",
+      "date": "2026-07",
       "kind": "game",
-      "hltbHours": 70,
+      "backlog": true,
+      "hltbHours": 15,
       "basis": "calibrated",
-      "hltbNote": "Calibrated → Main+Extra (JRPG side content). From FF7 Remake (~33h) & Rebirth (~70h main); M+E est. Was 55h.",
+      "hltbNote": "Calibrated → Main+Extra (~44h total). HLTB: Main ~33h / M+E ~49h / 100% ~82h.",
+      "platforms": [
+        "PS5",
+        "PC"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "FFVII saga 1 of 4 — play in order, finish each before the next. Pt 1 of 3.",
+      "icon": "https://cdn.dekudeals.com/images/021d61f43b2a9ae995539745052b73bc9c0e127f/w500.jpg",
+      "iconColor": "#a964d8",
+      "finishBefore": "2026-07"
+    },
+    {
+      "title": "Final Fantasy VII Remake Intergrade — Pt. 2",
+      "date": "2026-08",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 15,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (~44h total).",
+      "platforms": [
+        "PS5",
+        "PC"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "FFVII saga 1 of 4. Pt 2 of 3.",
+      "icon": "https://cdn.dekudeals.com/images/021d61f43b2a9ae995539745052b73bc9c0e127f/w500.jpg",
+      "iconColor": "#a964d8",
+      "finishBefore": "2026-08"
+    },
+    {
+      "title": "Final Fantasy VII Remake Intergrade — Pt. 3",
+      "date": "2026-09",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 14,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (~44h total; incl. Yuffie episode).",
+      "platforms": [
+        "PS5",
+        "PC"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "FFVII saga 1 of 4. Pt 3 of 3.",
+      "icon": "https://cdn.dekudeals.com/images/021d61f43b2a9ae995539745052b73bc9c0e127f/w500.jpg",
+      "iconColor": "#a964d8",
+      "finishBefore": "2026-09"
+    },
+    {
+      "title": "Crisis Core: Final Fantasy VII Reunion",
+      "date": "2026-10",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 18,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra. HLTB: Main ~14h / M+E ~18h / 100% ~28h.",
+      "platforms": [
+        "PS5",
+        "Switch",
+        "PC",
+        "Xbox Series"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "FFVII saga 2 of 4 — single month.",
+      "icon": "https://cdn.dekudeals.com/images/9ea134a0656dce08d503a1f4e50bca31ae340307/w500.jpg",
+      "iconColor": "#63bad9",
+      "finishBefore": "2026-10"
+    },
+    {
+      "title": "Final Fantasy VII Rebirth — Pt. 1",
+      "date": "2026-11",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 19,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (~95h total). HLTB: Main ~70h / M+E ~100h / 100% ~150h.",
+      "platforms": [
+        "PS5",
+        "Switch 2",
+        "Xbox Series",
+        "PC"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "FFVII saga 3 of 4 — spread Nov '26 → Mar '27 (5 parts). Pt 1 of 5.",
+      "icon": "https://cdn.dekudeals.com/images/1c13f2cbb7a62c0d11ff5d0e5adb9cebc0b8ee9b/w500.jpg",
+      "iconColor": "#de825e",
+      "finishBefore": "2026-11"
+    },
+    {
+      "title": "Final Fantasy VII Rebirth — Pt. 2",
+      "date": "2026-12",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 19,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (~95h total).",
+      "platforms": [
+        "PS5",
+        "Switch 2",
+        "Xbox Series",
+        "PC"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "FFVII saga 3 of 4. Pt 2 of 5.",
+      "icon": "https://cdn.dekudeals.com/images/1c13f2cbb7a62c0d11ff5d0e5adb9cebc0b8ee9b/w500.jpg",
+      "iconColor": "#de825e",
+      "finishBefore": "2026-12"
+    },
+    {
+      "title": "Final Fantasy VII Rebirth — Pt. 3",
+      "date": "2027-01",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 19,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (~95h total).",
+      "platforms": [
+        "PS5",
+        "Switch 2",
+        "Xbox Series",
+        "PC"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "FFVII saga 3 of 4. Pt 3 of 5.",
+      "icon": "https://cdn.dekudeals.com/images/1c13f2cbb7a62c0d11ff5d0e5adb9cebc0b8ee9b/w500.jpg",
+      "iconColor": "#de825e",
+      "finishBefore": "2027-01"
+    },
+    {
+      "title": "Final Fantasy VII Rebirth — Pt. 4",
+      "date": "2027-02",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 19,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (~95h total).",
+      "platforms": [
+        "PS5",
+        "Switch 2",
+        "Xbox Series",
+        "PC"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "FFVII saga 3 of 4. Pt 4 of 5.",
+      "icon": "https://cdn.dekudeals.com/images/1c13f2cbb7a62c0d11ff5d0e5adb9cebc0b8ee9b/w500.jpg",
+      "iconColor": "#de825e",
+      "finishBefore": "2027-02"
+    },
+    {
+      "title": "Final Fantasy VII Rebirth — Pt. 5",
+      "date": "2027-03",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 19,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (~95h total).",
+      "platforms": [
+        "PS5",
+        "Switch 2",
+        "Xbox Series",
+        "PC"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "FFVII saga 3 of 4. Pt 5 of 5 — finishes by end of March 2027, before Revelation.",
+      "icon": "https://cdn.dekudeals.com/images/1c13f2cbb7a62c0d11ff5d0e5adb9cebc0b8ee9b/w500.jpg",
+      "iconColor": "#de825e",
+      "finishBefore": "2027-03"
+    },
+    {
+      "title": "Final Fantasy VII Revelation — Pt. 1",
+      "date": "2027-04",
+      "kind": "game",
+      "hltbHours": 18,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (~70h total, estimate). Final part of the FF7 remake trilogy.",
       "platforms": [
         "Switch 2",
         "PS5",
         "Xbox Series",
         "PC"
       ],
-      "editions": [
-        {
-          "name": "Standard (est.)",
-          "price": 69.99
-        }
-      ],
+      "editions": [],
       "earlyAccess": "",
-      "notes": "Final part of the FF7 remake trilogy.",
+      "notes": "FFVII saga 4 of 4 — Spring 2027 release, spread Apr → Jul (4 parts). Pt 1 of 4.",
       "icon": "https://cdn2.steamgriddb.com/thumb/b36f15b6a95add0eabe7d206aa858c21.jpg",
-      "iconColor": "#706ecf"
+      "iconColor": "#706ecf",
+      "finishBefore": "2027-04"
+    },
+    {
+      "title": "Final Fantasy VII Revelation — Pt. 2",
+      "date": "2027-05",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 18,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (~70h total, estimate).",
+      "platforms": [
+        "Switch 2",
+        "PS5",
+        "Xbox Series",
+        "PC"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "FFVII saga 4 of 4. Pt 2 of 4.",
+      "icon": "https://cdn2.steamgriddb.com/thumb/b36f15b6a95add0eabe7d206aa858c21.jpg",
+      "iconColor": "#706ecf",
+      "finishBefore": "2027-05"
+    },
+    {
+      "title": "Final Fantasy VII Revelation — Pt. 3",
+      "date": "2027-06",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 17,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (~70h total, estimate).",
+      "platforms": [
+        "Switch 2",
+        "PS5",
+        "Xbox Series",
+        "PC"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "FFVII saga 4 of 4. Pt 3 of 4.",
+      "icon": "https://cdn2.steamgriddb.com/thumb/b36f15b6a95add0eabe7d206aa858c21.jpg",
+      "iconColor": "#706ecf",
+      "finishBefore": "2027-06"
+    },
+    {
+      "title": "Final Fantasy VII Revelation — Pt. 4",
+      "date": "2027-07",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 17,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (~70h total, estimate).",
+      "platforms": [
+        "Switch 2",
+        "PS5",
+        "Xbox Series",
+        "PC"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "FFVII saga 4 of 4. Pt 4 of 4.",
+      "icon": "https://cdn2.steamgriddb.com/thumb/b36f15b6a95add0eabe7d206aa858c21.jpg",
+      "iconColor": "#706ecf",
+      "finishBefore": "2027-07"
     },
     {
       "title": "Pokémon Sword",
@@ -1280,67 +1612,6 @@
       "editions": [],
       "earlyAccess": "",
       "notes": "No firm date; reported coming to Switch 2."
-    },
-    {
-      "title": "Final Fantasy VII Remake Intergrade",
-      "date": "TBD",
-      "dateLabel": "Backlog (TBD)",
-      "kind": "game",
-      "backlog": true,
-      "hltbHours": 44,
-      "basis": "calibrated",
-      "hltbNote": "Calibrated → Main+Extra (JRPG + Yuffie episode). ~33h main. Was 33h.",
-      "platforms": [
-        "PS5",
-        "PC"
-      ],
-      "editions": [],
-      "earlyAccess": "",
-      "notes": "First playthrough; originally released Jun 2021. Unscheduled.",
-      "icon": "https://cdn.dekudeals.com/images/021d61f43b2a9ae995539745052b73bc9c0e127f/w500.jpg",
-      "iconColor": "#a964d8"
-    },
-    {
-      "title": "Crisis Core: Final Fantasy VII Reunion",
-      "date": "TBD",
-      "dateLabel": "Backlog (TBD)",
-      "kind": "game",
-      "backlog": true,
-      "hltbHours": 18,
-      "basis": "calibrated",
-      "hltbNote": "Calibrated → Main+Extra (missions side content). ~14h main. Was 14h.",
-      "platforms": [
-        "PS5",
-        "Switch",
-        "PC",
-        "Xbox Series"
-      ],
-      "editions": [],
-      "earlyAccess": "",
-      "notes": "First playthrough; originally released Dec 2022. Unscheduled.",
-      "icon": "https://cdn.dekudeals.com/images/9ea134a0656dce08d503a1f4e50bca31ae340307/w500.jpg",
-      "iconColor": "#63bad9"
-    },
-    {
-      "title": "Final Fantasy VII Rebirth",
-      "date": "TBD",
-      "dateLabel": "Backlog (TBD)",
-      "kind": "game",
-      "backlog": true,
-      "hltbHours": 95,
-      "basis": "calibrated",
-      "hltbNote": "Calibrated → Main+Extra (~95h; huge open-world JRPG — confirmed by you). Was 70h (main).",
-      "platforms": [
-        "PS5",
-        "Switch 2",
-        "Xbox Series",
-        "PC"
-      ],
-      "editions": [],
-      "earlyAccess": "",
-      "notes": "First playthrough; originally released Feb 2024. Unscheduled.",
-      "icon": "https://cdn.dekudeals.com/images/1c13f2cbb7a62c0d11ff5d0e5adb9cebc0b8ee9b/w500.jpg",
-      "iconColor": "#de825e"
     }
   ]
 }
