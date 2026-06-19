@@ -1,5 +1,5 @@
 {
-  "_README": "Stream Slate — game list. Edit this file and push to update the calendar. date: \"YYYY-MM-DD\" (day), \"YYYY-MM\" (month), \"YYYY-Q3\"/\"Holiday 2026\"/\"Spring 2027\" (quarter), \"YYYY\" (year -> rail), \"TBD\" (rail). dateLabel: optional display override. endDate: event window end. kind: game|dlc|event. basis: self|remake-original|series-avg|estimate. See SLATE.md.",
+  "_README": "Stream Slate — game list. Edit this file and push to update the calendar. date: \"YYYY-MM-DD\" (day), \"YYYY-MM\" (month), \"YYYY-Q3\"/\"Holiday 2026\"/\"Spring 2027\" (quarter), \"YYYY\" (year -> rail), \"TBD\" (rail). dateLabel: optional display override. endDate: event window end. kind: game|dlc|event. basis: self|remake-original|series-avg|estimate|calibrated. hltbHours calibrated to @nabunan's real stream completion times (Jun 2026): default = HLTB Main+Extra; 100% only for short/FPS/arcade/cheap-completion games; long RPGs/collectathons stay Main+Extra (never full 100%). See SLATE.md.",
   "games": [
     {
       "title": "DK Challenge",
@@ -21,9 +21,9 @@
       "kind": "game",
       "backlog": false,
       "finishBefore": "2026-06",
-      "hltbHours": 27,
-      "basis": "self",
-      "hltbNote": "Part 1 of 2 — split across June & July. First playthrough.",
+      "hltbHours": 37,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (you sidequest RPGs; cf. FireRed). Pt 1 of 2 of XC1 DE (M+E ~75h total). Was 27h (main).",
       "platforms": [
         "Switch 2"
       ],
@@ -38,9 +38,9 @@
       "date": "2026-07",
       "kind": "game",
       "backlog": true,
-      "hltbHours": 28,
-      "basis": "self",
-      "hltbNote": "Part 2 of 2 — continued in July.",
+      "hltbHours": 38,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra. Pt 2 of 2 of XC1 DE (M+E ~75h total). Was 28h (main).",
       "platforms": [
         "Switch 2"
       ],
@@ -57,9 +57,9 @@
       "kind": "game",
       "backlog": true,
       "finishBefore": "2026-06",
-      "hltbHours": 18,
-      "basis": "self",
-      "hltbNote": "Remaining (~half already beaten on stream).",
+      "hltbHours": 24,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (all Pokémon = M+E per your rule). Remaining ~half of M+E (~45h). Was 18h.",
       "platforms": [
         "Nintendo DS"
       ],
@@ -77,7 +77,7 @@
       "bonus": true,
       "hltbHours": 9,
       "basis": "series-avg",
-      "hltbNote": "~Two Deltarune chapters (~4–5h each).",
+      "hltbNote": "Bonus/story — no completion grind; ~M+E already. ~Two Deltarune chapters (~4–5h each).",
       "platforms": [
         "Switch",
         "Switch 2",
@@ -98,7 +98,7 @@
       "bonus": true,
       "hltbHours": 4,
       "basis": "series-avg",
-      "hltbNote": "Avg of Deltarune Chapters 1–4 (~3–4h each).",
+      "hltbNote": "Bonus/story — no completion grind. Avg of Deltarune Chapters 1–4 (~3–4h each).",
       "platforms": [
         "Switch",
         "Switch 2",
@@ -122,9 +122,9 @@
       "date": "2026-06-25",
       "kind": "game",
       "finishBefore": "2026-06",
-      "hltbHours": 6,
-      "basis": "remake-original",
-      "hltbNote": "Based on Star Fox 64 main (~5h) + new prologue.",
+      "hltbHours": 9,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → 100% (short, arcade, replayable branches — cheap completion tax). Star Fox 64 100% ~9h. Was 6h.",
       "platforms": [
         "Switch 2"
       ],
@@ -145,9 +145,9 @@
       "date": "2026-07",
       "kind": "game",
       "backlog": true,
-      "hltbHours": 26,
-      "basis": "self",
-      "hltbNote": "Main story (~26h).",
+      "hltbHours": 36,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (all Pokémon = M+E). Was 26h (main).",
       "platforms": [
         "Nintendo 3DS"
       ],
@@ -163,8 +163,8 @@
       "date": "2026-07-02",
       "kind": "game",
       "hltbHours": 12,
-      "basis": "series-avg",
-      "hltbNote": "Based on Rhythm Heaven Megamix completion (~10–12h).",
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (clear all stages, not perfect-everything). ~Rhythm Heaven Megamix completion (~10–12h).",
       "platforms": [
         "Switch"
       ],
@@ -185,9 +185,9 @@
       "title": "Splatoon Raiders",
       "date": "2026-07-23",
       "kind": "game",
-      "hltbHours": 12,
-      "basis": "series-avg",
-      "hltbNote": "Est. from Splatoon campaigns (~8h), scaled up.",
+      "hltbHours": 13,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (estimate). From Splatoon campaigns (~8h), scaled up. Was 12h.",
       "platforms": [
         "Switch 2"
       ],
@@ -210,9 +210,9 @@
       "kind": "dlc",
       "backlog": true,
       "finishBefore": "splatoon-raiders",
-      "hltbHours": 6,
-      "basis": "self",
-      "hltbNote": "Single-player Octo Expansion (~6h).",
+      "hltbHours": 8,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (clear all stations; skip 100% the toughest dev-test grind). 100% ~13h. Was 6h.",
       "platforms": [
         "Switch"
       ],
@@ -229,9 +229,9 @@
       "kind": "game",
       "backlog": true,
       "finishBefore": "splatoon-raiders",
-      "hltbHours": 9,
-      "basis": "self",
-      "hltbNote": "Story mode: Return of the Mammalians (~9h).",
+      "hltbHours": 11,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra. Story mode: Return of the Mammalians (~9h main). Was 9h.",
       "platforms": [
         "Switch"
       ],
@@ -248,9 +248,9 @@
       "kind": "dlc",
       "backlog": true,
       "finishBefore": "splatoon-raiders",
-      "hltbHours": 7,
-      "basis": "self",
-      "hltbNote": "Side Order roguelike DLC (~7h).",
+      "hltbHours": 9,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (clear all palettes; skip full 100%). 100% ~12h. Was 7h.",
       "platforms": [
         "Switch"
       ],
@@ -265,9 +265,9 @@
       "title": "Halo: Campaign Evolved",
       "date": "2026-07-28",
       "kind": "game",
-      "hltbHours": 11,
-      "basis": "remake-original",
-      "hltbNote": "Based on Halo: Combat Evolved campaign (~10h) + added content.",
+      "hltbHours": 12,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → 100% (FPS campaign — you 100%'d ODST). Halo CE 100% ~11–12h + added content. Was 11h.",
       "platforms": [
         "PS5",
         "Xbox Series",
@@ -298,9 +298,9 @@
       "date": "2026-09",
       "kind": "game",
       "backlog": true,
-      "hltbHours": 31,
-      "basis": "self",
-      "hltbNote": "Part 1 of 2 — split across August & September. First playthrough.",
+      "hltbHours": 43,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (long JRPG; you sidequest). Pt 1 of 2 of XC2 (M+E ~90h total). Was 31h (main).",
       "platforms": [
         "Switch 2"
       ],
@@ -316,9 +316,9 @@
       "date": "2026-10",
       "kind": "game",
       "backlog": true,
-      "hltbHours": 31,
-      "basis": "self",
-      "hltbNote": "Part 2 of 2 — continued in September.",
+      "hltbHours": 43,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra. Pt 2 of 2 of XC2 (M+E ~90h total). Was 31h (main).",
       "platforms": [
         "Switch 2"
       ],
@@ -334,9 +334,9 @@
       "date": "2026-08",
       "kind": "game",
       "backlog": true,
-      "hltbHours": 35,
-      "basis": "self",
-      "hltbNote": "Main story (~35h).",
+      "hltbHours": 45,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (SRPG — paralogues/skirmishes). Was 35h (main).",
       "platforms": [
         "Switch"
       ],
@@ -353,7 +353,7 @@
       "kind": "dlc",
       "hltbHours": 15,
       "basis": "estimate",
-      "hltbNote": "Estimate for a sizeable Pokémon expansion.",
+      "hltbNote": "Estimate for a sizeable Pokémon expansion (unreleased — no HLTB yet).",
       "platforms": [
         "Switch 2"
       ],
@@ -376,7 +376,7 @@
       "bonus": true,
       "hltbHours": 40,
       "basis": "estimate",
-      "hltbNote": "MMO — no fixed length; estimate for the content you plan to stream.",
+      "hltbNote": "Bonus/MMO — no fixed length; estimate for the content you plan to stream (calibration N/A).",
       "platforms": [
         "PS5",
         "PC",
@@ -393,9 +393,9 @@
       "date": "2026-09",
       "kind": "game",
       "backlog": true,
-      "hltbHours": 18,
-      "basis": "self",
-      "hltbNote": "Main story (~18h).",
+      "hltbHours": 25,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (all Pokémon = M+E; some post-game). Was 18h (main).",
       "platforms": [
         "Switch"
       ],
@@ -410,9 +410,9 @@
       "title": "Orbitals",
       "date": "2026-09-03",
       "kind": "game",
-      "hltbHours": 10,
+      "hltbHours": 12,
       "basis": "estimate",
-      "hltbNote": "New IP — rough estimate for a co-op adventure.",
+      "hltbNote": "Calibrated → Main+Extra (estimate; new IP, no HLTB yet). Was 10h.",
       "platforms": [
         "Switch 2"
       ],
@@ -433,9 +433,9 @@
       "title": "Marvel's Wolverine",
       "date": "2026-09-15",
       "kind": "game",
-      "hltbHours": 18,
-      "basis": "series-avg",
-      "hltbNote": "Based on Insomniac's Marvel's Spider-Man games (~17h main).",
+      "hltbHours": 24,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (Insomniac action-adventure; side content). Spider-Man games ~17h main, ~24h M+E. Was 18h.",
       "platforms": [
         "PS5"
       ],
@@ -460,9 +460,9 @@
       "title": "Fire Emblem: Fortune's Weave",
       "date": "2026-09-17",
       "kind": "game",
-      "hltbHours": 45,
-      "basis": "series-avg",
-      "hltbNote": "Between Engage (~35h) and Three Houses (~50h/route).",
+      "hltbHours": 55,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (SRPG, estimate). Between Engage (~35h) & Three Houses (~50h/route), +extras. Was 45h.",
       "platforms": [
         "Switch 2"
       ],
@@ -492,9 +492,9 @@
       "date": "2026-10",
       "kind": "game",
       "backlog": true,
-      "hltbHours": 32,
-      "basis": "self",
-      "hltbNote": "Main story (~32h).",
+      "hltbHours": 45,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (all Pokémon = M+E). Was 32h (main).",
       "platforms": [
         "Nintendo DS"
       ],
@@ -511,7 +511,7 @@
       "kind": "game",
       "hltbHours": 90,
       "basis": "series-avg",
-      "hltbNote": "Headline trilogy main stories combined (KH1 ~25h, KH2 ~33h, KH3 ~30h).",
+      "hltbNote": "JUDGMENT CALL — left at 90h (three main stories: KH1 ~25h, KH2 ~33h, KH3 ~30h). Full M+E across all three would be ~140h; flag if you want that.",
       "platforms": [
         "Switch 2",
         "PS5",
@@ -530,9 +530,9 @@
       "title": "Switch Sports Resort",
       "date": "2026-10-22",
       "kind": "game",
-      "hltbHours": 6,
-      "basis": "estimate",
-      "hltbNote": "Party game — rough 'do all the sports' estimate.",
+      "hltbHours": 8,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → 100% (party game — 'do all the sports', cheap completion). Was 6h.",
       "platforms": [
         "Switch 2"
       ],
@@ -550,9 +550,9 @@
       "title": "Grand Theft Auto VI",
       "date": "2026-11-19",
       "kind": "game",
-      "hltbHours": 40,
-      "basis": "series-avg",
-      "hltbNote": "Estimate from GTA V story (~31h), scaled up.",
+      "hltbHours": 50,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (huge open world — you won't 100%). GTA V M+E ~48h, scaled up. Was 40h.",
       "platforms": [
         "PS5",
         "Xbox Series"
@@ -578,9 +578,9 @@
       "title": "Xenoblade Chronicles 3 — Nintendo Switch 2 Edition",
       "date": "2026-12-03",
       "kind": "game",
-      "hltbHours": 62,
-      "basis": "self",
-      "hltbNote": "Main story (~62h).",
+      "hltbHours": 87,
+      "basis": "calibrated",
+      "hltbNote": "JUDGMENT CALL — calibrated → Main+Extra (~87h; long JRPG sidequesting). Was 62h (main). Biggest single time sink; flag if you'd rather main-only.",
       "platforms": [
         "Switch 2"
       ],
@@ -596,9 +596,9 @@
       "date": "2026",
       "dateLabel": "2026 (date TBA)",
       "kind": "game",
-      "hltbHours": 27,
-      "basis": "remake-original",
-      "hltbNote": "Based on Ocarina of Time main (~27h).",
+      "hltbHours": 31,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (Zelda — you landed M+E on Link's Awakening). OoT M+E ~31h. Was 27h (main).",
       "platforms": [
         "Switch 2"
       ],
@@ -619,8 +619,8 @@
       "date": "Holiday 2026",
       "kind": "game",
       "hltbHours": 8,
-      "basis": "remake-original",
-      "hltbNote": "Based on the original The Wolf Among Us (~8h).",
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → 100% (linear narrative — one playthrough ≈ complete). Original ~8h. Unchanged.",
       "platforms": [
         "PC",
         "PS5",
@@ -643,8 +643,8 @@
       "dateLabel": "2026 (date TBA)",
       "kind": "game",
       "hltbHours": 5,
-      "basis": "estimate",
-      "hltbNote": "Estimate for a standalone narrative experience.",
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → 100% (short narrative — cheap completion). Estimate ~5h. Unchanged.",
       "platforms": [
         "PC",
         "Switch",
@@ -662,7 +662,7 @@
       "kind": "game",
       "hltbHours": 30,
       "basis": "estimate",
-      "hltbNote": "FromSoftware multiplayer — no campaign length; rough estimate.",
+      "hltbNote": "Multiplayer FromSoftware — no campaign length; calibration N/A. Rough estimate.",
       "platforms": [
         "Switch 2"
       ],
@@ -675,9 +675,9 @@
       "date": "2027-01",
       "kind": "game",
       "backlog": true,
-      "hltbHours": 23,
-      "basis": "self",
-      "hltbNote": "Main story (~45–50h).",
+      "hltbHours": 50,
+      "basis": "calibrated",
+      "hltbNote": "JUDGMENT CALL — old value (23h) didn't match its own note (main ~45–50h); fixed. Calibrated → Main+Extra (~50h; JRPG social links). Flag if 23h was intentional (e.g. partial run).",
       "platforms": [
         "PS5",
         "Xbox Series",
@@ -695,9 +695,9 @@
       "title": "Stranger Than Heaven",
       "date": "2027-01-15",
       "kind": "game",
-      "hltbHours": 40,
-      "basis": "series-avg",
-      "hltbNote": "Based on RGG / Like a Dragon main stories (~35–45h).",
+      "hltbHours": 52,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (RGG/Like a Dragon — lots of substories/side content). ~35–45h main, +extras. Was 40h.",
       "platforms": [
         "PS5",
         "Xbox Series",
@@ -718,9 +718,9 @@
       "title": "Tomb Raider: Legacy of Atlantis",
       "date": "2027-02-12",
       "kind": "game",
-      "hltbHours": 12,
-      "basis": "remake-original",
-      "hltbNote": "Based on the original Tomb Raider (1996) (~12h).",
+      "hltbHours": 16,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (action-adventure collectibles). Original TR (1996) ~12h main. Was 12h.",
       "platforms": [
         "PC",
         "Xbox Series",
@@ -743,9 +743,9 @@
       "title": "Persona 4 Revival",
       "date": "2027-02-18",
       "kind": "game",
-      "hltbHours": 55,
-      "basis": "remake-original",
-      "hltbNote": "Based on Persona 4 Golden main (~55h).",
+      "hltbHours": 70,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (JRPG social links + dungeons). Persona 4 Golden ~55h main, ~70h M+E. Was 55h.",
       "platforms": [
         "PS5",
         "Xbox Series",
@@ -772,9 +772,9 @@
       "date": "2027-03",
       "kind": "game",
       "backlog": true,
-      "hltbHours": 30,
-      "basis": "self",
-      "hltbNote": "Main story (~30h).",
+      "hltbHours": 42,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (all Pokémon = M+E). Was 30h (main).",
       "platforms": [
         "Nintendo DS"
       ],
@@ -790,9 +790,9 @@
       "date": "2027-04",
       "kind": "game",
       "backlog": true,
-      "hltbHours": 30,
-      "basis": "self",
-      "hltbNote": "Main story (~30h).",
+      "hltbHours": 42,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (all Pokémon = M+E). Was 30h (main).",
       "platforms": [
         "Nintendo DS"
       ],
@@ -808,9 +808,9 @@
       "date": "2027-05",
       "kind": "game",
       "backlog": true,
-      "hltbHours": 30,
-      "basis": "self",
-      "hltbNote": "Main story incl. epilogue (~30h).",
+      "hltbHours": 42,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (all Pokémon = M+E; long post-game). Was 30h (main+epilogue).",
       "platforms": [
         "Nintendo DS"
       ],
@@ -826,9 +826,9 @@
       "date": "2027-06",
       "kind": "game",
       "backlog": true,
-      "hltbHours": 32,
-      "basis": "self",
-      "hltbNote": "Main story (~32h).",
+      "hltbHours": 45,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (all Pokémon = M+E). Was 32h (main).",
       "platforms": [
         "Nintendo 3DS"
       ],
@@ -843,9 +843,9 @@
       "title": "Final Fantasy VII Revelation",
       "date": "Spring 2027",
       "kind": "game",
-      "hltbHours": 55,
-      "basis": "series-avg",
-      "hltbNote": "Estimate from FF7 Remake (~33h) & Rebirth (~70h) main stories.",
+      "hltbHours": 70,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (JRPG side content). From FF7 Remake (~33h) & Rebirth (~70h main); M+E est. Was 55h.",
       "platforms": [
         "Switch 2",
         "PS5",
@@ -868,9 +868,9 @@
       "date": "2027-07",
       "kind": "game",
       "backlog": true,
-      "hltbHours": 26,
-      "basis": "self",
-      "hltbNote": "Main story (~26h).",
+      "hltbHours": 36,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (all Pokémon = M+E). Was 26h (main).",
       "platforms": [
         "Switch"
       ],
@@ -886,9 +886,9 @@
       "date": "2027-08-16",
       "kind": "game",
       "backlog": true,
-      "hltbHours": 10,
-      "basis": "self",
-      "hltbNote": "Main story (~10h).",
+      "hltbHours": 14,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (clear courses + some requests; full photodex 100% ~30h is a grind you'd skip). Was 10h.",
       "platforms": [
         "Switch"
       ],
@@ -904,9 +904,9 @@
       "date": "2027-09",
       "kind": "game",
       "backlog": true,
-      "hltbHours": 30,
-      "basis": "self",
-      "hltbNote": "Main story (~30h).",
+      "hltbHours": 42,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (all Pokémon = M+E; three story paths + DLC areas). Was 30h (main).",
       "platforms": [
         "Switch"
       ],
@@ -922,9 +922,9 @@
       "date": "2027-10",
       "kind": "game",
       "finishBefore": "2027-10",
-      "hltbHours": 30,
-      "basis": "series-avg",
-      "hltbNote": "Estimate from Pokémon Legends: Arceus main (~27h).",
+      "hltbHours": 40,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (all Pokémon = M+E). Legends: Arceus M+E ~40h. Was 30h.",
       "platforms": [
         "Switch 2",
         "Switch"
@@ -945,9 +945,9 @@
       "date": "2027-11",
       "dateLabel": "Nov 2027 (window)",
       "kind": "game",
-      "hltbHours": 30,
-      "basis": "series-avg",
-      "hltbNote": "Estimate from recent mainline Pokémon (~30h main).",
+      "hltbHours": 42,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (all Pokémon = M+E; Gen 10, no HLTB yet). Was 30h.",
       "platforms": [
         "Switch 2"
       ],
@@ -965,9 +965,9 @@
       "title": "Pikuniku 2",
       "date": "2027",
       "kind": "game",
-      "hltbHours": 5,
-      "basis": "remake-original",
-      "hltbNote": "Based on Pikuniku (~3–4h), now 3D.",
+      "hltbHours": 6,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → 100% (short, cheap completion). Original Pikuniku ~3–4h, now 3D. Was 5h.",
       "platforms": [
         "PC",
         "Switch 2"
@@ -980,9 +980,9 @@
       "title": "Xenoblade Genesis",
       "date": "2027",
       "kind": "game",
-      "hltbHours": 60,
-      "basis": "series-avg",
-      "hltbNote": "Estimate from prior Xenoblade main stories (~55–62h).",
+      "hltbHours": 84,
+      "basis": "calibrated",
+      "hltbNote": "JUDGMENT CALL — calibrated → Main+Extra (~84h; long JRPG, no HLTB yet). Was 60h. Flag if you'd rather main-only.",
       "platforms": [
         "Switch 2"
       ],
@@ -994,9 +994,9 @@
       "title": "Virtua Fighter Crossroads",
       "date": "2027",
       "kind": "game",
-      "hltbHours": 10,
+      "hltbHours": 12,
       "basis": "estimate",
-      "hltbNote": "Estimate for a fighting game with a single-player campaign.",
+      "hltbNote": "Calibrated → Main+Extra (story campaign; estimate). Was 10h.",
       "platforms": [
         "PS5",
         "Xbox Series",
@@ -1011,9 +1011,9 @@
       "date": "TBD",
       "dateLabel": "TBA",
       "kind": "game",
-      "hltbHours": 35,
-      "basis": "series-avg",
-      "hltbNote": "Estimate from Kingdom Hearts III (~30h main).",
+      "hltbHours": 45,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (JRPG; estimate). From KH3 ~30h main. Was 35h.",
       "platforms": [
         "Switch 2",
         "PS5",
@@ -1029,9 +1029,9 @@
       "dateLabel": "Backlog (TBD)",
       "kind": "game",
       "backlog": true,
-      "hltbHours": 33,
-      "basis": "self",
-      "hltbNote": "FF7 Remake main (~33h) incl. Intergrade's Yuffie episode.",
+      "hltbHours": 44,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (JRPG + Yuffie episode). ~33h main. Was 33h.",
       "platforms": [
         "PS5",
         "PC"
@@ -1048,9 +1048,9 @@
       "dateLabel": "Backlog (TBD)",
       "kind": "game",
       "backlog": true,
-      "hltbHours": 14,
-      "basis": "self",
-      "hltbNote": "Main story (~14h).",
+      "hltbHours": 18,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (missions side content). ~14h main. Was 14h.",
       "platforms": [
         "PS5",
         "Switch",
@@ -1069,9 +1069,9 @@
       "dateLabel": "Backlog (TBD)",
       "kind": "game",
       "backlog": true,
-      "hltbHours": 70,
-      "basis": "self",
-      "hltbNote": "Main story (~63–73h).",
+      "hltbHours": 95,
+      "basis": "calibrated",
+      "hltbNote": "JUDGMENT CALL — calibrated → Main+Extra (~95h; huge open-world JRPG). Was 70h (main). Flag if you'd rather main-only.",
       "platforms": [
         "PS5",
         "Switch 2",
