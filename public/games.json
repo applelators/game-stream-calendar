@@ -21,9 +21,9 @@
       "kind": "game",
       "backlog": false,
       "finishBefore": "2026-06",
-      "hltbHours": 37,
+      "hltbHours": 25,
       "basis": "calibrated",
-      "hltbNote": "Calibrated → Main+Extra (you sidequest RPGs; cf. FireRed). Pt 1 of 2 of XC1 DE (M+E ~75h total). Was 27h (main).",
+      "hltbNote": "Calibrated → Main+Extra (you sidequest RPGs; cf. FireRed). Pt 1 of 3 of XC1 DE (M+E ~75h total, spread Jun–Aug).",
       "platforms": [
         "Switch 2"
       ],
@@ -38,9 +38,9 @@
       "date": "2026-07",
       "kind": "game",
       "backlog": true,
-      "hltbHours": 38,
+      "hltbHours": 25,
       "basis": "calibrated",
-      "hltbNote": "Calibrated → Main+Extra. Pt 2 of 2 of XC1 DE (M+E ~75h total). Was 28h (main).",
+      "hltbNote": "Calibrated → Main+Extra. Pt 2 of 3 of XC1 DE (M+E ~75h total, spread Jun–Aug).",
       "platforms": [
         "Switch 2"
       ],
@@ -50,6 +50,24 @@
       "icon": "https://cdn.dekudeals.com/images/14a9585aef502398de4d06d44d8709f1de6f26b4/w500.jpg",
       "iconColor": "#5ed3de",
       "finishBefore": "2026-07"
+    },
+    {
+      "title": "Xenoblade Chronicles: Definitive Edition (NS2) — Pt. 3",
+      "date": "2026-08",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 25,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra. Pt 3 of 3 of XC1 DE (M+E ~75h total, spread Jun–Aug).",
+      "platforms": [
+        "Switch 2"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "",
+      "icon": "https://cdn.dekudeals.com/images/14a9585aef502398de4d06d44d8709f1de6f26b4/w500.jpg",
+      "iconColor": "#5ed3de",
+      "finishBefore": "2026-08"
     },
     {
       "title": "Pokémon HeartGold",
@@ -298,9 +316,27 @@
       "date": "2026-09",
       "kind": "game",
       "backlog": true,
-      "hltbHours": 43,
+      "hltbHours": 29,
       "basis": "calibrated",
-      "hltbNote": "Calibrated → Main+Extra (long JRPG; you sidequest). Pt 1 of 2 of XC2 (M+E ~90h total). Was 31h (main).",
+      "hltbNote": "Calibrated → Main+Extra (long JRPG; you sidequest). Pt 1 of 3 of XC2 (M+E ~86h total, spread Sep–Nov).",
+      "platforms": [
+        "Switch 2"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "",
+      "icon": "https://cdn.dekudeals.com/images/e2119fd96155112a20b409962b182dbee4b0e8f1/w500.jpg",
+      "iconColor": "#5bb1e1",
+      "finishBefore": "2026-09"
+    },
+    {
+      "title": "Xenoblade Chronicles 2 (NS2) — Pt. 2",
+      "date": "2026-10",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 29,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra. Pt 2 of 3 of XC2 (M+E ~86h total, spread Sep–Nov).",
       "platforms": [
         "Switch 2"
       ],
@@ -312,13 +348,13 @@
       "finishBefore": "2026-10"
     },
     {
-      "title": "Xenoblade Chronicles 2 (NS2) — Pt. 2",
-      "date": "2026-10",
+      "title": "Xenoblade Chronicles 2 (NS2) — Pt. 3",
+      "date": "2026-11",
       "kind": "game",
       "backlog": true,
-      "hltbHours": 43,
+      "hltbHours": 28,
       "basis": "calibrated",
-      "hltbNote": "Calibrated → Main+Extra. Pt 2 of 2 of XC2 (M+E ~90h total). Was 31h (main).",
+      "hltbNote": "Calibrated → Main+Extra. Pt 3 of 3 of XC2 (M+E ~86h total, spread Sep–Nov).",
       "platforms": [
         "Switch 2"
       ],
@@ -327,7 +363,7 @@
       "notes": "",
       "icon": "https://cdn.dekudeals.com/images/e2119fd96155112a20b409962b182dbee4b0e8f1/w500.jpg",
       "iconColor": "#5bb1e1",
-      "finishBefore": "2026-10"
+      "finishBefore": "2026-11"
     },
     {
       "title": "Fire Emblem Engage",
@@ -761,12 +797,30 @@
       "binge": true
     },
     {
-      "title": "Xenoblade Chronicles 3 — Nintendo Switch 2 Edition",
+      "title": "Xenoblade Chronicles 3 — Nintendo Switch 2 Edition — Pt. 1",
       "date": "2026-12-03",
       "kind": "game",
-      "hltbHours": 87,
+      "hltbHours": 29,
       "basis": "calibrated",
-      "hltbNote": "Calibrated → Main+Extra (~87h; long JRPG, you sidequest — confirmed by you). Was 62h (main).",
+      "hltbNote": "Calibrated → Main+Extra (~87h total; long JRPG, you sidequest). Pt 1 of 3, spread Dec–Feb (before Persona 4 Revival).",
+      "platforms": [
+        "Switch 2"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "First playthrough.",
+      "icon": "https://cdn.dekudeals.com/images/f995e12bf4034326f6a3ad1a227f24f2b5397ec6/w500.jpg",
+      "iconColor": "#60bcdc",
+      "finishBefore": "2026-12"
+    },
+    {
+      "title": "Xenoblade Chronicles 3 — Nintendo Switch 2 Edition — Pt. 2",
+      "date": "2027-01",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 29,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (~87h total). Pt 2 of 3, spread Dec–Feb (before Persona 4 Revival).",
       "platforms": [
         "Switch 2"
       ],
@@ -776,6 +830,24 @@
       "icon": "https://cdn.dekudeals.com/images/f995e12bf4034326f6a3ad1a227f24f2b5397ec6/w500.jpg",
       "iconColor": "#60bcdc",
       "finishBefore": "2027-01"
+    },
+    {
+      "title": "Xenoblade Chronicles 3 — Nintendo Switch 2 Edition — Pt. 3",
+      "date": "2027-02",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 29,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (~87h total). Pt 3 of 3, spread Dec–Feb; finishes before Persona 4 Revival (Feb 18 2027).",
+      "platforms": [
+        "Switch 2"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "First playthrough.",
+      "icon": "https://cdn.dekudeals.com/images/f995e12bf4034326f6a3ad1a227f24f2b5397ec6/w500.jpg",
+      "iconColor": "#60bcdc",
+      "finishBefore": "persona-4-revival"
     },
     {
       "title": "The Legend of Zelda: Ocarina of Time — Nintendo Switch 2",
