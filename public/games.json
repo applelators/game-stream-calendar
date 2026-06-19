@@ -506,12 +506,12 @@
       "iconColor": "#dd8d60"
     },
     {
-      "title": "KINGDOM HEARTS Collection [I～III]",
+      "title": "Kingdom Hearts Final Mix (I)",
       "date": "2026-10-08",
       "kind": "game",
-      "hltbHours": 90,
-      "basis": "series-avg",
-      "hltbNote": "JUDGMENT CALL — left at 90h (three main stories: KH1 ~25h, KH2 ~33h, KH3 ~30h). Full M+E across all three would be ~140h; flag if you want that.",
+      "hltbHours": 42,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (JRPG side content). HLTB: Main ~29h / M+E ~42h / 100% ~62h.",
       "platforms": [
         "Switch 2",
         "PS5",
@@ -519,12 +519,114 @@
       ],
       "editions": [
         {
-          "name": "Standard",
+          "name": "Collection [I~III] bundle",
           "price": 79.99
         }
       ],
       "earlyAccess": "",
-      "notes": "Includes HD 1.5+2.5 ReMIX, 2.8 Final Chapter Prologue, KH3 + ReMind."
+      "notes": "Game 1 of 7 in KINGDOM HEARTS Collection [I~III] ($79.99 bundle: HD 1.5+2.5 ReMIX, 2.8, KH3 + ReMind)."
+    },
+    {
+      "title": "Kingdom Hearts Re:Chain of Memories",
+      "date": "2026-10",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 31,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (Sora + Riku stories). HLTB: Main ~24h / M+E ~31h / 100% ~42h.",
+      "platforms": [
+        "Switch 2",
+        "PS5",
+        "Xbox Series"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "Game 2 of 7 in KINGDOM HEARTS Collection [I~III] (bundled)."
+    },
+    {
+      "title": "Kingdom Hearts II Final Mix",
+      "date": "2026-11",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 48,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (JRPG side content). HLTB: Main ~35h / M+E ~48h / 100% ~67h.",
+      "platforms": [
+        "Switch 2",
+        "PS5",
+        "Xbox Series"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "Game 3 of 7 in KINGDOM HEARTS Collection [I~III] (bundled)."
+    },
+    {
+      "title": "Kingdom Hearts Birth by Sleep Final Mix",
+      "date": "2026-12",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 43,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (three scenarios). HLTB: Main ~27h / M+E ~43h / 100% ~62h.",
+      "platforms": [
+        "Switch 2",
+        "PS5",
+        "Xbox Series"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "Game 4 of 7 in KINGDOM HEARTS Collection [I~III] (bundled)."
+    },
+    {
+      "title": "Kingdom Hearts Dream Drop Distance HD",
+      "date": "2027-01",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 34,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (Sora + Riku drop system). HLTB: Main ~26h / M+E ~34h / 100% ~45h.",
+      "platforms": [
+        "Switch 2",
+        "PS5",
+        "Xbox Series"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "Game 5 of 7 in KINGDOM HEARTS Collection [I~III] (bundled)."
+    },
+    {
+      "title": "Kingdom Hearts 0.2 -A Fragmentary Passage-",
+      "date": "2027-01",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 5,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (short prologue chapter). HLTB: Main ~3h / M+E ~5h / 100% ~9h.",
+      "platforms": [
+        "Switch 2",
+        "PS5",
+        "Xbox Series"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "Game 6 of 7 in KINGDOM HEARTS Collection [I~III] (bundled; part of 2.8)."
+    },
+    {
+      "title": "Kingdom Hearts III + ReMind",
+      "date": "2027-02",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 52,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra (base + ReMind DLC). HLTB: Main ~32h / M+E ~52h / 100% ~78h.",
+      "platforms": [
+        "Switch 2",
+        "PS5",
+        "Xbox Series"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "Game 7 of 7 in KINGDOM HEARTS Collection [I~III] (bundled)."
     },
     {
       "title": "Switch Sports Resort",
@@ -580,7 +682,7 @@
       "kind": "game",
       "hltbHours": 87,
       "basis": "calibrated",
-      "hltbNote": "JUDGMENT CALL — calibrated → Main+Extra (~87h; long JRPG sidequesting). Was 62h (main). Biggest single time sink; flag if you'd rather main-only.",
+      "hltbNote": "Calibrated → Main+Extra (~87h; long JRPG, you sidequest — confirmed by you). Was 62h (main).",
       "platforms": [
         "Switch 2"
       ],
@@ -675,9 +777,9 @@
       "date": "2027-01",
       "kind": "game",
       "backlog": true,
-      "hltbHours": 50,
+      "hltbHours": 25,
       "basis": "calibrated",
-      "hltbNote": "JUDGMENT CALL — old value (23h) didn't match its own note (main ~45–50h); fixed. Calibrated → Main+Extra (~50h; JRPG social links). Flag if 23h was intentional (e.g. partial run).",
+      "hltbNote": "Calibrated → remaining time. ~106h already logged (2025, on 11/29 first playthrough, ~79% through); ~125–130h total, so ~25h left to finish.",
       "platforms": [
         "PS5",
         "Xbox Series",
@@ -982,7 +1084,7 @@
       "kind": "game",
       "hltbHours": 84,
       "basis": "calibrated",
-      "hltbNote": "JUDGMENT CALL — calibrated → Main+Extra (~84h; long JRPG, no HLTB yet). Was 60h. Flag if you'd rather main-only.",
+      "hltbNote": "Calibrated → Main+Extra (~84h; long JRPG, no HLTB yet — confirmed by you). Was 60h.",
       "platforms": [
         "Switch 2"
       ],
@@ -1071,7 +1173,7 @@
       "backlog": true,
       "hltbHours": 95,
       "basis": "calibrated",
-      "hltbNote": "JUDGMENT CALL — calibrated → Main+Extra (~95h; huge open-world JRPG). Was 70h (main). Flag if you'd rather main-only.",
+      "hltbNote": "Calibrated → Main+Extra (~95h; huge open-world JRPG — confirmed by you). Was 70h (main).",
       "platforms": [
         "PS5",
         "Switch 2",
