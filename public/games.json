@@ -159,13 +159,31 @@
       "binge": true
     },
     {
-      "title": "Pokémon Omega Ruby",
+      "title": "Pokémon Omega Ruby — Pt. 1",
       "date": "2026-07",
       "kind": "game",
       "backlog": true,
-      "hltbHours": 36,
+      "hltbHours": 18,
       "basis": "calibrated",
-      "hltbNote": "Calibrated → Main+Extra (all Pokémon = M+E). Was 26h (main).",
+      "hltbNote": "Calibrated → Main+Extra (all Pokémon = M+E). Pt 1 of 2, spread Jul–Aug. Was 36h single-month.",
+      "platforms": [
+        "Nintendo 3DS"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "First playthrough; originally released Nov 2014.",
+      "finishBefore": "2026-07",
+      "icon": "https://cdn2.steamgriddb.com/thumb/ba3072daa7d54d117b22019c3974b0fe.jpg",
+      "iconColor": "#eeb94f"
+    },
+    {
+      "title": "Pokémon Omega Ruby — Pt. 2",
+      "date": "2026-08",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 18,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra. Pt 2 of 2, spread Jul–Aug.",
       "platforms": [
         "Nintendo 3DS"
       ],
@@ -366,13 +384,13 @@
       "finishBefore": "2026-11"
     },
     {
-      "title": "Fire Emblem Engage",
+      "title": "Fire Emblem Engage — Pt. 1",
       "date": "2026-08",
       "kind": "game",
       "backlog": true,
-      "hltbHours": 45,
+      "hltbHours": 23,
       "basis": "calibrated",
-      "hltbNote": "Calibrated → Main+Extra (SRPG — paralogues/skirmishes). Was 35h (main).",
+      "hltbNote": "Calibrated → Main+Extra (SRPG). Pt 1 of 2, spread Aug–Sep. Was 45h single-month.",
       "platforms": [
         "Switch"
       ],
@@ -382,6 +400,24 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/ce89d7d8c6c4c0f6b4dab0a8606d2d68.jpg",
       "iconColor": "#b65fdd",
       "finishBefore": "2026-08"
+    },
+    {
+      "title": "Fire Emblem Engage — Pt. 2",
+      "date": "2026-09",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 22,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra. Pt 2 of 2; finishes before Fire Emblem: Fortune's Weave (Sep 17).",
+      "platforms": [
+        "Switch"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "First playthrough; originally released Jan 2023.",
+      "icon": "https://cdn2.steamgriddb.com/thumb/ce89d7d8c6c4c0f6b4dab0a8606d2d68.jpg",
+      "iconColor": "#b65fdd",
+      "finishBefore": "fire-emblem-fortune-s-weave"
     },
     {
       "title": "Pokémon Pokopia Expansion Pass: Bubbly Basin",
@@ -524,20 +560,56 @@
       "binge": true
     },
     {
-      "title": "Pokémon Platinum",
+      "title": "Pokémon Platinum — Pt. 1",
       "date": "2026-10",
       "kind": "game",
       "backlog": true,
-      "hltbHours": 45,
+      "hltbHours": 15,
       "basis": "calibrated",
-      "hltbNote": "Calibrated → Main+Extra (all Pokémon = M+E). Was 32h (main).",
+      "hltbNote": "Calibrated → Main+Extra (all Pokémon = M+E). Pt 1 of 3, spread Oct–Dec. Was 45h single-month.",
       "platforms": [
         "Nintendo DS"
       ],
       "editions": [],
       "earlyAccess": "",
       "notes": "First playthrough; originally released Mar 2009.",
-      "finishBefore": "grand-theft-auto-vi",
+      "finishBefore": "2026-10",
+      "icon": "https://cdn2.steamgriddb.com/thumb/91f618d4453134d636932694dcb160f9.jpg",
+      "iconColor": "#dd8d60"
+    },
+    {
+      "title": "Pokémon Platinum — Pt. 2",
+      "date": "2026-11",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 15,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra. Pt 2 of 3, spread Oct–Dec.",
+      "platforms": [
+        "Nintendo DS"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "First playthrough; originally released Mar 2009.",
+      "finishBefore": "2026-11",
+      "icon": "https://cdn2.steamgriddb.com/thumb/91f618d4453134d636932694dcb160f9.jpg",
+      "iconColor": "#dd8d60"
+    },
+    {
+      "title": "Pokémon Platinum — Pt. 3",
+      "date": "2026-12",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 15,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra. Pt 3 of 3, spread Oct–Dec.",
+      "platforms": [
+        "Nintendo DS"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "First playthrough; originally released Mar 2009.",
+      "finishBefore": "2026-12",
       "icon": "https://cdn2.steamgriddb.com/thumb/91f618d4453134d636932694dcb160f9.jpg",
       "iconColor": "#dd8d60"
     },
@@ -1066,12 +1138,35 @@
       "finishBefore": "2027-01"
     },
     {
-      "title": "Stranger Than Heaven",
+      "title": "Stranger Than Heaven — Pt. 1",
       "date": "2027-01-15",
       "kind": "game",
-      "hltbHours": 52,
+      "hltbHours": 26,
       "basis": "calibrated",
-      "hltbNote": "Calibrated → Main+Extra (RGG/Like a Dragon — lots of substories/side content). ~35–45h main, +extras. Was 40h.",
+      "hltbNote": "Calibrated → Main+Extra (RGG side content). Pt 1 of 2, spread Jan–Feb. Was 52h single-month.",
+      "platforms": [
+        "PS5",
+        "Xbox Series",
+        "PC",
+        "Game Pass"
+      ],
+      "editions": [
+        {
+          "name": "Standard (est.)",
+          "price": 69.99
+        }
+      ],
+      "earlyAccess": "",
+      "notes": "RGG Studio (Project Century). Day one on Game Pass.",
+      "finishBefore": "2027-01"
+    },
+    {
+      "title": "Stranger Than Heaven — Pt. 2",
+      "date": "2027-02",
+      "kind": "game",
+      "hltbHours": 26,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra. Pt 2 of 2; finishes before Persona 4 Revival (Feb 18).",
       "platforms": [
         "PS5",
         "Xbox Series",
@@ -1480,13 +1575,13 @@
       "finishBefore": "2027-07"
     },
     {
-      "title": "Pokémon Sword",
+      "title": "Pokémon Sword — Pt. 1",
       "date": "2027-07",
       "kind": "game",
       "backlog": true,
-      "hltbHours": 36,
+      "hltbHours": 18,
       "basis": "calibrated",
-      "hltbNote": "Calibrated → Main+Extra (all Pokémon = M+E). Was 26h (main).",
+      "hltbNote": "Calibrated → Main+Extra (all Pokémon = M+E). Pt 1 of 2, spread Jul–Aug. Was 36h single-month.",
       "platforms": [
         "Switch"
       ],
@@ -1495,7 +1590,25 @@
       "notes": "First playthrough; originally released Nov 2019.",
       "icon": "https://cdn.dekudeals.com/images/a33541a02e6ff30c5c8e2bbb63bba4ecc450d5d5/w500.jpg",
       "iconColor": "#63c4d9",
-      "finishBefore": "2027-08-15"
+      "finishBefore": "2027-07"
+    },
+    {
+      "title": "Pokémon Sword — Pt. 2",
+      "date": "2027-08",
+      "kind": "game",
+      "backlog": true,
+      "hltbHours": 18,
+      "basis": "calibrated",
+      "hltbNote": "Calibrated → Main+Extra. Pt 2 of 2; finishes before New Pokémon Snap (Aug 16).",
+      "platforms": [
+        "Switch"
+      ],
+      "editions": [],
+      "earlyAccess": "",
+      "notes": "First playthrough; originally released Nov 2019.",
+      "icon": "https://cdn.dekudeals.com/images/a33541a02e6ff30c5c8e2bbb63bba4ecc450d5d5/w500.jpg",
+      "iconColor": "#63c4d9",
+      "finishBefore": "new-pok-mon-snap"
     },
     {
       "title": "New Pokémon Snap",
