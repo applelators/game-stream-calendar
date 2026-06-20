@@ -245,16 +245,16 @@
       "date": "2026-07",
       "kind": "dlc",
       "backlog": true,
-      "finishBefore": "splatoon-raiders",
+      "finishBefore": "2026-07-20",
       "hltbHours": 8,
       "basis": "calibrated",
-      "hltbNote": "Calibrated → Main+Extra (clear all stations; skip 100% the toughest dev-test grind). 100% ~13h. Was 6h.",
+      "hltbNote": "Calibrated → Main+Extra (clear all stations; skip 100% the toughest dev-test grind)",
       "platforms": [
         "Switch"
       ],
       "editions": [],
       "earlyAccess": "",
-      "notes": "First playthrough; originally released Jun 2018.",
+      "notes": "First playthrough; originally released Jun 2018. Finish before the July 21 vacation.",
       "icon": "https://cdn.dekudeals.com/images/e8f7cfe5e1786410d6ead1e241deace6ee33b321/w500.jpg",
       "iconColor": "#5d63e0",
       "binge": true
@@ -264,16 +264,16 @@
       "date": "2026-07",
       "kind": "game",
       "backlog": true,
-      "finishBefore": "splatoon-raiders",
+      "finishBefore": "2026-07-20",
       "hltbHours": 11,
       "basis": "calibrated",
-      "hltbNote": "Calibrated → Main+Extra. Story mode: Return of the Mammalians (~9h main). Was 9h.",
+      "hltbNote": "Calibrated → Main+Extra. Story mode: Return of the Mammalians (~9h main).",
       "platforms": [
         "Switch"
       ],
       "editions": [],
       "earlyAccess": "",
-      "notes": "First playthrough; originally released Sep 2022.",
+      "notes": "First playthrough; originally released Sep 2022. Finish before the July 21 vacation.",
       "icon": "https://cdn.dekudeals.com/images/30946c8b3b47637626805e12f242bb71b4cd74d5/w500.jpg",
       "iconColor": "#eb51b8",
       "binge": true
@@ -283,23 +283,23 @@
       "date": "2026-07",
       "kind": "dlc",
       "backlog": true,
-      "finishBefore": "splatoon-raiders",
+      "finishBefore": "2026-07-20",
       "hltbHours": 9,
       "basis": "calibrated",
-      "hltbNote": "Calibrated → Main+Extra (clear all palettes; skip full 100%). 100% ~12h. Was 7h.",
+      "hltbNote": "Calibrated → Main+Extra (clear all palettes; skip full 100%)",
       "platforms": [
         "Switch"
       ],
       "editions": [],
       "earlyAccess": "",
-      "notes": "First playthrough; originally released Feb 2024.",
+      "notes": "First playthrough; originally released Feb 2024. Finish before the July 21 vacation.",
       "icon": "https://cdn.dekudeals.com/images/c178eb9e18768f4b5e2b506c998811630b114b88/w500.jpg",
       "iconColor": "#96ee4f",
       "binge": true
     },
     {
       "title": "Halo: Campaign Evolved",
-      "date": "2026-07-28",
+      "date": "2026-08-05",
       "kind": "game",
       "hltbHours": 12,
       "basis": "calibrated",
@@ -325,9 +325,11 @@
         }
       ],
       "earlyAccess": "Premium & Collector's: up to 5 days early (from Jul 23) + Alpha Halo Armory Pack.",
-      "notes": "Day one on Game Pass.",
+      "notes": "Day one on Game Pass; playing it weekly from Aug 5 (after the July vacation).",
       "icon": "https://cdn.dekudeals.com/images/59dd1f879b1b663b9d3b19813f9f17fc927b3b39/w500.jpg",
-      "iconColor": "#6ec3cf"
+      "iconColor": "#6ec3cf",
+      "backlog": true,
+      "cadence": "weekly"
     },
     {
       "title": "Xenoblade Chronicles 2 (NS2) — Pt. 1",

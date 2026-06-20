@@ -138,6 +138,9 @@ function gameFromFile(e, i) {
   // Optional deadline: finish this game before another game's release (by id/slug)
   // or before a date string. Grouped games are packed to finish before the target.
   if (e.finishBefore) g.finishBefore = String(e.finishBefore);
+  // Optional cadence override: 'weekly' = stream this game once a week until done
+  // (instead of the default ~streamsPerWeek interleaved cadence).
+  if (e.cadence) g.cadence = String(e.cadence);
   return g;
 }
 
@@ -326,6 +329,7 @@ function streamPlan(games, pace, normVacs, today) {
     if (!baseStreams) continue;
     const dl = g.finishBefore ? finishBeforeDeadline(g, byId) : null;
     (g.bonus ? bSpec : cSpec).push({ id: g.id, start, baseStreams, binge: !!g.binge,
+      cadence: g.cadence || null,
       hltb: Number(g.hltbHours) || 0, key: g.finishBefore || null, deadlineMs: dl ? dl.getTime() : Infinity });
   }
   if (cSpec.length === 0 && bSpec.length === 0) return { positions: out, sessionByDay: {}, bonusByDay: {}, boosts: {} };
@@ -387,16 +391,23 @@ function streamPlan(games, pace, normVacs, today) {
       if (inVacation(day, normVacs) || blockedEve(day)) { day = addDays(day, 1); continue; }
       const k = dkey(day);
       const forcedId = launchOnDay[k];
+      // weekly-cadence games are eligible at most once per 7 days; when one is "due"
+      // it forces a stream day (like a launch) so it reliably gets its weekly slot.
+      const WEEK = 7 * 86400000;
+      const weeklyDue = (p) => p.cadence === 'weekly' && undone(p) && p.start <= day && (p.lastSlot === -Infinity || (day.getTime() - p.lastSlot) >= WEEK - 3600000);
+      const anyWeeklyDue = work.some(weeklyDue);
       const boostActive = boostW.some((w) => day >= w.start && day < w.deadline && work.some((p) => w.ids.has(p.id) && undone(p)));
       let isSlot = false;
       if (forcedId) isSlot = true;
       else if (boostActive) isSlot = true;
+      else if (anyWeeklyDue) isSlot = true;
       else { acc += perDay; if (acc >= 1) { acc -= 1; isSlot = true; } }
       if (!isSlot) { day = addDays(day, 1); continue; }
-      const active = work.filter((p) => p.start <= day && undone(p));
+      const active = work.filter((p) => p.start <= day && undone(p) && (p.cadence !== 'weekly' || weeklyDue(p)));
       let pick = null;
       if (forcedId) pick = active.find((p) => p.id === forcedId) || null;
       if (!pick) { const hold = active.filter((p) => p.binge && p.hoursDone > 0); if (hold.length) { hold.sort((a, b) => (a.start - b.start) || (a.id < b.id ? -1 : 1)); pick = hold[0]; } }
+      if (!pick) { const due = active.filter((p) => p.cadence === 'weekly'); if (due.length) { due.sort((a, b) => (a.deadlineMs - b.deadlineMs) || (a.lastSlot - b.lastSlot) || (a.start - b.start) || (a.id < b.id ? -1 : 1)); pick = due[0]; } }
       if (!pick && active.length) {
         // earliest deadline first (deadline-pressured games win slots), then rotate.
         active.sort((a, b) => (a.deadlineMs - b.deadlineMs) || (a.lastSlot - b.lastSlot) || (a.hoursDone - b.hoursDone) || (a.start - b.start) || (a.id < b.id ? -1 : 1));
