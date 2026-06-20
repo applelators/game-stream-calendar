@@ -20,10 +20,10 @@
       "date": "2026-06-09",
       "kind": "game",
       "backlog": false,
-      "finishBefore": "2026-07",
+      "finishBefore": "2026-06",
       "hltbHours": 25,
       "basis": "calibrated",
-      "hltbNote": "Calibrated → Main+Extra (you sidequest RPGs; cf. FireRed). Pt 1 of 3 of XC1 DE (M+E ~75h total, spread Jun–early Jul; yields June priority to HeartGold).",
+      "hltbNote": "Calibrated → Main+Extra (you sidequest RPGs; cf. FireRed). Pt 1 of 3 of XC1 DE (M+E ~75h total, spread Jun–Aug).",
       "platforms": [
         "Switch 2"
       ],
@@ -1313,7 +1313,7 @@
     },
     {
       "title": "Final Fantasy VII Remake Intergrade — Pt. 1",
-      "date": "2026-08",
+      "date": "2026-07",
       "kind": "game",
       "backlog": true,
       "hltbHours": 15,
@@ -1325,10 +1325,10 @@
       ],
       "editions": [],
       "earlyAccess": "",
-      "notes": "FFVII saga 1 of 4 — play in order, finish each before the next. Pt 1 of 3 (moved to Aug to clear the July deadline sprint).",
+      "notes": "FFVII saga 1 of 4 — play in order, finish each before the next. Pt 1 of 3.",
       "icon": "https://cdn.dekudeals.com/images/021d61f43b2a9ae995539745052b73bc9c0e127f/w500.jpg",
       "iconColor": "#a964d8",
-      "finishBefore": "2026-08"
+      "finishBefore": "2026-07"
     },
     {
       "title": "Final Fantasy VII Remake Intergrade — Pt. 2",
