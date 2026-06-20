@@ -454,10 +454,13 @@ function DeadlineBracket({ br, onPick, mobile }) {
           {g.title}{g.placedDay ? (mobile ? ` · ${shortDate(g.placedDay)}` : <small>▸ {shortDate(g.placedDay)}</small>) : null}</button>
       ))}
       {!br.past && br.boost && (
-        <div className={`${pfx}-deadnote warn`}>
-          ⚠ Your ~{br.hpw}h/wk won’t finish these <b>{br.neededHours}h</b> in time. The calendar below shows a
-          catch-up plan: ~<b>{br.boost.days} stream days</b> (vs your usual ~{br.boost.usualDays}) at ~<b>{br.boost.hps}h each</b> —
-          about <b>{br.boost.hpw}h/wk</b>.{br.boost.fits ? '' : ' Even daily streaming may not be enough — consider moving the deadline.'}
+        <div className={`${pfx}-deadnote ${br.boost.fits ? 'warn' : 'warn'}`}>
+          {br.boost.fits
+            ? <>⏱ Intensive: to finish these <b>{br.neededHours}h</b> on time the plan below runs
+              ~<b>{br.boost.days} stream days</b> (vs your usual ~{br.boost.usualDays}) at ~<b>{br.boost.hps}h each</b> —
+              about <b>{br.boost.hpw}h/wk</b>. It does fit.</>
+            : <>⚠ These <b>{br.neededHours}h</b> won’t finish by the deadline even streaming every available day
+              (~{br.boost.days} days at ~{br.boost.hps}h each). Move the deadline or shorten the games.</>}
         </div>
       )}
       {!br.past && !br.boost && (
@@ -489,7 +492,7 @@ function bonusNoteFor(dbrackets) {
   if (!dbrackets || !dbrackets.length) return { note: 'Stream if you have spare time after your other games.', tight: false };
   const tight = dbrackets.some((b) => b.boost);
   return {
-    note: tight ? 'Over capacity this month — stream these only if you get ahead.'
+    note: tight ? 'Packed month — only stream these if you get ahead of the plan.'
                 : 'Some slack this month — fit these in if you stay on pace.',
     tight,
   };

@@ -442,17 +442,31 @@ function streamPlan(games, pace, normVacs, today) {
   for (const p of fin.bwork) {
     if (p.slots.length) { const first = p.slots[0], last = addDays(p.slots[p.slots.length - 1], 1); out[p.id] = { start: first, end: last, segments: [{ start: first, end: last }] }; }
   }
+  // Boost notes describe the ACTUAL catch-up plan the simulation drew (real stream
+  // days, real session length, real intensity over the active stretch) — not an
+  // abstract spread — so the note matches the calendar grid below it.
   const boosts = {};
-  const paceHpw = (pace && pace.hoursPerWeek) || (baseHps * spw);
   for (const key of boostKeys) {
     const gr = groups[key];
-    const pushWeeks = Math.max(0.5, (gr.deadline - gr.winStart) / (7 * 86400000)); // the catch-up runs ~daily
+    const members = fin.work.filter((p) => gr.ids.has(p.id) && p.slots.length);
+    let dayCount = 0, firstSlot = null, lastSlot = null, fitsAll = members.length > 0;
+    for (const p of members) {
+      dayCount += p.slots.length;
+      const s0 = p.slots[0], s1 = p.slots[p.slots.length - 1];
+      if (!firstSlot || s0 < firstSlot) firstSlot = s0;
+      if (!lastSlot || s1 > lastSlot) lastSlot = s1;
+      if (s1 >= gr.deadline) fitsAll = false; // a member runs past the deadline
+    }
+    const spanWeeks = (firstSlot && lastSlot)
+      ? Math.max(0.5, (diffDays(firstSlot, lastSlot) + 1) / 7)
+      : Math.max(0.5, (gr.deadline - gr.winStart) / (7 * 86400000));
+    const sessionH = dayCount > 0 ? gr.neededH / dayCount : baseHps;
     boosts[key] = {
-      days: gr.availDays,
-      usualDays: Math.max(1, Math.round((gr.neededH / paceHpw) * spw)),
-      hps: Math.round((gr.neededH / Math.max(1, gr.availDays)) * 10) / 10,
-      hpw: Math.round((gr.neededH / pushWeeks) * 10) / 10,
-      fits: gr.fits,
+      days: dayCount || gr.availDays,
+      usualDays: Math.max(1, Math.round(gr.availDays * perDay)), // your normal-cadence days in this window
+      hps: Math.round(sessionH * 10) / 10,
+      hpw: Math.round((gr.neededH / spanWeeks) * 10) / 10,
+      fits: fitsAll && gr.fits,
     };
   }
   return { positions: out, sessionByDay, bonusByDay, boosts };
