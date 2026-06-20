@@ -141,6 +141,8 @@ function gameFromFile(e, i) {
   // Optional cadence override: 'weekly' = stream this game once a week until done
   // (instead of the default ~streamsPerWeek interleaved cadence).
   if (e.cadence) g.cadence = String(e.cadence);
+  // Optional milestone: what chapter/badge/region marks this part "done".
+  if (e.partGoal) g.partGoal = String(e.partGoal);
   return g;
 }
 

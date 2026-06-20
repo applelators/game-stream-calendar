@@ -883,6 +883,7 @@ function DetailCard({ game: g, pace, vacations, queuedPos, onClose }) {
             )}
             {g.earlyAccess && <div className="dt-line"><span className="k">Early access / bonus</span>{g.earlyAccess}</div>}
             {g.hltbNote && <div className="dt-line"><span className="k">HLTB basis</span>{labelBasis(g.hltbBasis)} — {g.hltbNote}</div>}
+            {g.partGoal && <div className="dt-line"><span className="k">Part goal</span>{g.partGoal}</div>}
           </div>
 
           {g.notes && <div className="note-box">{g.notes}</div>}
