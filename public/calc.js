@@ -416,11 +416,14 @@ function streamPlan(games, pace, normVacs, today) {
       if (!pick) { const hold = active.filter((p) => p.binge && p.hoursDone > 0); if (hold.length) { hold.sort((a, b) => (a.start - b.start) || (a.id < b.id ? -1 : 1)); pick = hold[0]; } }
       if (!pick && active.length) {
         // earliest deadline first (deadline-pressured games win slots), then rotate.
-        // Priority first (Pokémon beats long-running franchises even if a long game
-        // is overdue and would otherwise look most urgent), then earliest deadline,
-        // then rotate (least-recently-played). Equal-priority games still interleave
-        // by deadline urgency, so a long game never blocks on-time Pokémon.
-        active.sort((a, b) => (b.priority - a.priority) || (a.deadlineMs - b.deadlineMs) || (a.lastSlot - b.lastSlot) || (a.hoursDone - b.hoursDone) || (a.start - b.start) || (a.id < b.id ? -1 : 1));
+        // Earliest deadline first, then a PRIORITY-WEIGHTED rotation: each game's
+        // time-since-last-played is scaled by 2^priority, so a higher-priority game
+        // (e.g. Pokémon, +1) comes "due" sooner and plays a larger share — but it
+        // still interleaves with the other in-progress games rather than bingeing
+        // ahead. Long-running franchises (-1) play a smaller share and yield first.
+        const nowMs = day.getTime();
+        const wgap = (p) => (nowMs - (p.lastSlot === -Infinity ? p.start.getTime() - 7 * 86400000 : p.lastSlot)) * Math.pow(2, p.priority || 0);
+        active.sort((a, b) => (a.deadlineMs - b.deadlineMs) || (wgap(b) - wgap(a)) || (a.hoursDone - b.hoursDone) || (a.start - b.start) || (a.id < b.id ? -1 : 1));
         pick = active[0];
       }
       if (!pick) {
