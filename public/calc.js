@@ -634,19 +634,21 @@ function finishBeforeDays(games, pace, normVacs) {
       avail.push(new Date(d));
     }
     if (avail.length === 0) continue;
-    // Pack in start-month order; each game begins no earlier than its own anchor
-    // month (so "start in August" is honoured even within a shared deadline) and
-    // after the previous game in the group.
+    // Anchor each group game to the first open day on/after its own anchor month
+    // (so "start in August" is honoured within a shared deadline), then let
+    // streamPlan interleave + deadline-prioritise + boost them across the window.
+    // (Earlier this packed games sequentially — cursor += each game's full length —
+    // which assumed non-interleaved play and could shove the last game so late it
+    // couldn't finish before the deadline/a vacation. streamPlan already handles
+    // ordering, so sequential pre-packing only hurt.)
     grp.sort((a, b) => (anchorDate(a.release) - anchorDate(b.release)));
-    let cursor = 0;
     for (const g of grp) {
       const ga = anchorDate(g.release);
-      let startIdx = cursor;
+      let startIdx = 0;
       while (startIdx < avail.length && ga && avail[startIdx] < ga) startIdx++;
       if (startIdx >= avail.length) startIdx = avail.length - 1;
       const s = avail[startIdx];
       out[g.id] = { year: s.getUTCFullYear(), month: s.getUTCMonth() + 1, day: s.getUTCDate() };
-      cursor = startIdx + Math.max(1, activeDaysFor(g, pace));
     }
   }
   return out;
