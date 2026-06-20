@@ -1395,7 +1395,8 @@
       "icon": "https://cdn.dekudeals.com/images/021d61f43b2a9ae995539745052b73bc9c0e127f/w500.jpg",
       "iconColor": "#a964d8",
       "finishBefore": "2026-07",
-      "partGoal": "Chapters 1–6 (Reactor 1 bombing through the Mako Reactor 5 escape)."
+      "partGoal": "Chapters 1–6 (Reactor 1 bombing through the Mako Reactor 5 escape).",
+      "priority": -1
     },
     {
       "title": "Final Fantasy VII Remake Intergrade — Pt. 2",
@@ -1415,7 +1416,8 @@
       "icon": "https://cdn.dekudeals.com/images/021d61f43b2a9ae995539745052b73bc9c0e127f/w500.jpg",
       "iconColor": "#a964d8",
       "finishBefore": "2026-08",
-      "partGoal": "Chapters 7–12 (Wall Market through the collapsed expressway/train graveyard)."
+      "partGoal": "Chapters 7–12 (Wall Market through the collapsed expressway/train graveyard).",
+      "priority": -1
     },
     {
       "title": "Final Fantasy VII Remake Intergrade — Pt. 3",
@@ -1435,7 +1437,8 @@
       "icon": "https://cdn.dekudeals.com/images/021d61f43b2a9ae995539745052b73bc9c0e127f/w500.jpg",
       "iconColor": "#a964d8",
       "finishBefore": "2026-09",
-      "partGoal": "Chapters 13–18 (Sector 7 plate through Shinra HQ & the finale) + the INTERmission (Yuffie) episode."
+      "partGoal": "Chapters 13–18 (Sector 7 plate through Shinra HQ & the finale) + the INTERmission (Yuffie) episode.",
+      "priority": -1
     },
     {
       "title": "Crisis Core: Final Fantasy VII Reunion",
@@ -1456,7 +1459,8 @@
       "notes": "FFVII saga 2 of 4 — single month.",
       "icon": "https://cdn.dekudeals.com/images/9ea134a0656dce08d503a1f4e50bca31ae340307/w500.jpg",
       "iconColor": "#63bad9",
-      "finishBefore": "2026-10"
+      "finishBefore": "2026-10",
+      "priority": -1
     },
     {
       "title": "Final Fantasy VII Rebirth — Pt. 1",
@@ -1478,7 +1482,8 @@
       "icon": "https://cdn.dekudeals.com/images/1c13f2cbb7a62c0d11ff5d0e5adb9cebc0b8ee9b/w500.jpg",
       "iconColor": "#de825e",
       "finishBefore": "2026-11",
-      "partGoal": "Chapters 1–3 (Nibelheim flashback, Kalm, the Grasslands)."
+      "partGoal": "Chapters 1–3 (Nibelheim flashback, Kalm, the Grasslands).",
+      "priority": -1
     },
     {
       "title": "Final Fantasy VII Rebirth — Pt. 2",
@@ -1500,7 +1505,8 @@
       "icon": "https://cdn.dekudeals.com/images/1c13f2cbb7a62c0d11ff5d0e5adb9cebc0b8ee9b/w500.jpg",
       "iconColor": "#de825e",
       "finishBefore": "2026-12",
-      "partGoal": "Chapters 4–6 (Junon → Costa del Sol → Corel region)."
+      "partGoal": "Chapters 4–6 (Junon → Costa del Sol → Corel region).",
+      "priority": -1
     },
     {
       "title": "Final Fantasy VII Rebirth — Pt. 3",
@@ -1522,7 +1528,8 @@
       "icon": "https://cdn.dekudeals.com/images/1c13f2cbb7a62c0d11ff5d0e5adb9cebc0b8ee9b/w500.jpg",
       "iconColor": "#de825e",
       "finishBefore": "2027-01",
-      "partGoal": "Chapters 7–9 (Gongaga → Cosmo Canyon → Nibelheim)."
+      "partGoal": "Chapters 7–9 (Gongaga → Cosmo Canyon → Nibelheim).",
+      "priority": -1
     },
     {
       "title": "Final Fantasy VII Rebirth — Pt. 4",
@@ -1544,7 +1551,8 @@
       "icon": "https://cdn.dekudeals.com/images/1c13f2cbb7a62c0d11ff5d0e5adb9cebc0b8ee9b/w500.jpg",
       "iconColor": "#de825e",
       "finishBefore": "2027-02",
-      "partGoal": "Chapters 10–12 (the Temple of the Ancients arc)."
+      "partGoal": "Chapters 10–12 (the Temple of the Ancients arc).",
+      "priority": -1
     },
     {
       "title": "Final Fantasy VII Rebirth — Pt. 5",
@@ -1566,7 +1574,8 @@
       "icon": "https://cdn.dekudeals.com/images/1c13f2cbb7a62c0d11ff5d0e5adb9cebc0b8ee9b/w500.jpg",
       "iconColor": "#de825e",
       "finishBefore": "2027-03",
-      "partGoal": "Chapters 13–14 (the Forgotten Capital to the finale)."
+      "partGoal": "Chapters 13–14 (the Forgotten Capital to the finale).",
+      "priority": -1
     },
     {
       "title": "Final Fantasy VII Revelation — Pt. 1",
@@ -1587,7 +1596,8 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/b36f15b6a95add0eabe7d206aa858c21.jpg",
       "iconColor": "#706ecf",
       "finishBefore": "2027-04",
-      "partGoal": "Milestones TBD — final FF7 remake-trilogy entry (Spring 2027); will split by chapter at launch."
+      "partGoal": "Milestones TBD — final FF7 remake-trilogy entry (Spring 2027); will split by chapter at launch.",
+      "priority": -1
     },
     {
       "title": "Final Fantasy VII Revelation — Pt. 2",
@@ -1609,7 +1619,8 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/b36f15b6a95add0eabe7d206aa858c21.jpg",
       "iconColor": "#706ecf",
       "finishBefore": "2027-05",
-      "partGoal": "Milestones TBD — will split by chapter at launch."
+      "partGoal": "Milestones TBD — will split by chapter at launch.",
+      "priority": -1
     },
     {
       "title": "Final Fantasy VII Revelation — Pt. 3",
@@ -1631,7 +1642,8 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/b36f15b6a95add0eabe7d206aa858c21.jpg",
       "iconColor": "#706ecf",
       "finishBefore": "2027-06",
-      "partGoal": "Milestones TBD — will split by chapter at launch."
+      "partGoal": "Milestones TBD — will split by chapter at launch.",
+      "priority": -1
     },
     {
       "title": "Final Fantasy VII Revelation — Pt. 4",
@@ -1653,7 +1665,8 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/b36f15b6a95add0eabe7d206aa858c21.jpg",
       "iconColor": "#706ecf",
       "finishBefore": "2027-07",
-      "partGoal": "Milestones TBD — will split by chapter at launch."
+      "partGoal": "Milestones TBD — will split by chapter at launch.",
+      "priority": -1
     },
     {
       "title": "Pokémon Sword — Pt. 1",

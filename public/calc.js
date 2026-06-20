@@ -416,9 +416,11 @@ function streamPlan(games, pace, normVacs, today) {
       if (!pick) { const hold = active.filter((p) => p.binge && p.hoursDone > 0); if (hold.length) { hold.sort((a, b) => (a.start - b.start) || (a.id < b.id ? -1 : 1)); pick = hold[0]; } }
       if (!pick && active.length) {
         // earliest deadline first (deadline-pressured games win slots), then rotate.
-        // earliest deadline first; then higher priority (e.g. Pokémon beats long-
-        // running franchises in a shared window); then rotate (least-recently-played).
-        active.sort((a, b) => (a.deadlineMs - b.deadlineMs) || (b.priority - a.priority) || (a.lastSlot - b.lastSlot) || (a.hoursDone - b.hoursDone) || (a.start - b.start) || (a.id < b.id ? -1 : 1));
+        // Priority first (Pokémon beats long-running franchises even if a long game
+        // is overdue and would otherwise look most urgent), then earliest deadline,
+        // then rotate (least-recently-played). Equal-priority games still interleave
+        // by deadline urgency, so a long game never blocks on-time Pokémon.
+        active.sort((a, b) => (b.priority - a.priority) || (a.deadlineMs - b.deadlineMs) || (a.lastSlot - b.lastSlot) || (a.hoursDone - b.hoursDone) || (a.start - b.start) || (a.id < b.id ? -1 : 1));
         pick = active[0];
       }
       if (!pick) {
