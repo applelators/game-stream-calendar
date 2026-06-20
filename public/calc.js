@@ -143,6 +143,9 @@ function gameFromFile(e, i) {
   if (e.cadence) g.cadence = String(e.cadence);
   // Optional milestone: what chapter/badge/region marks this part "done".
   if (e.partGoal) g.partGoal = String(e.partGoal);
+  // Optional scheduling priority within a shared deadline (higher = scheduled
+  // sooner): Pokémon (+1) beats long-running franchises (-1) when they contend.
+  if (e.priority != null) g.priority = Number(e.priority);
   return g;
 }
 
@@ -331,7 +334,7 @@ function streamPlan(games, pace, normVacs, today) {
     if (!baseStreams) continue;
     const dl = g.finishBefore ? finishBeforeDeadline(g, byId) : null;
     (g.bonus ? bSpec : cSpec).push({ id: g.id, start, baseStreams, binge: !!g.binge,
-      cadence: g.cadence || null,
+      cadence: g.cadence || null, priority: Number(g.priority) || 0,
       hltb: Number(g.hltbHours) || 0, key: g.finishBefore || null, deadlineMs: dl ? dl.getTime() : Infinity });
   }
   if (cSpec.length === 0 && bSpec.length === 0) return { positions: out, sessionByDay: {}, bonusByDay: {}, boosts: {} };
@@ -413,7 +416,9 @@ function streamPlan(games, pace, normVacs, today) {
       if (!pick) { const hold = active.filter((p) => p.binge && p.hoursDone > 0); if (hold.length) { hold.sort((a, b) => (a.start - b.start) || (a.id < b.id ? -1 : 1)); pick = hold[0]; } }
       if (!pick && active.length) {
         // earliest deadline first (deadline-pressured games win slots), then rotate.
-        active.sort((a, b) => (a.deadlineMs - b.deadlineMs) || (a.lastSlot - b.lastSlot) || (a.hoursDone - b.hoursDone) || (a.start - b.start) || (a.id < b.id ? -1 : 1));
+        // earliest deadline first; then higher priority (e.g. Pokémon beats long-
+        // running franchises in a shared window); then rotate (least-recently-played).
+        active.sort((a, b) => (a.deadlineMs - b.deadlineMs) || (b.priority - a.priority) || (a.lastSlot - b.lastSlot) || (a.hoursDone - b.hoursDone) || (a.start - b.start) || (a.id < b.id ? -1 : 1));
         pick = active[0];
       }
       if (!pick) {

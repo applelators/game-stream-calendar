@@ -32,7 +32,8 @@
       "notes": "",
       "icon": "https://cdn.dekudeals.com/images/14a9585aef502398de4d06d44d8709f1de6f26b4/w500.jpg",
       "iconColor": "#5ed3de",
-      "partGoal": "Through Prison Island (1st visit) — Colony 9 to the Eryth Sea/Alcamoth arc; reach Valak Mountain."
+      "partGoal": "Through Prison Island (1st visit) — Colony 9 to the Eryth Sea/Alcamoth arc; reach Valak Mountain.",
+      "priority": -1
     },
     {
       "title": "Xenoblade Chronicles: Definitive Edition (NS2) — Pt. 2",
@@ -51,7 +52,8 @@
       "icon": "https://cdn.dekudeals.com/images/14a9585aef502398de4d06d44d8709f1de6f26b4/w500.jpg",
       "iconColor": "#5ed3de",
       "finishBefore": "2026-07",
-      "partGoal": "Valak Mountain through the Mechonis landing — Sword Valley, Galahad Fortress, the Fallen Arm, up to Agniratha."
+      "partGoal": "Valak Mountain through the Mechonis landing — Sword Valley, Galahad Fortress, the Fallen Arm, up to Agniratha.",
+      "priority": -1
     },
     {
       "title": "Xenoblade Chronicles: Definitive Edition (NS2) — Pt. 3",
@@ -70,7 +72,8 @@
       "icon": "https://cdn.dekudeals.com/images/14a9585aef502398de4d06d44d8709f1de6f26b4/w500.jpg",
       "iconColor": "#5ed3de",
       "finishBefore": "2026-08",
-      "partGoal": "Agniratha & the Mechonis Core through the Bionis interior to the ending."
+      "partGoal": "Agniratha & the Mechonis Core through the Bionis interior to the ending.",
+      "priority": -1
     },
     {
       "title": "Pokémon HeartGold",
@@ -88,7 +91,8 @@
       "earlyAccess": "",
       "notes": "First playthrough; originally released Mar 2010.",
       "icon": "https://cdn2.steamgriddb.com/thumb/bb05ae57de563e3e8a035537cd5fa9ee.jpg",
-      "iconColor": "#eec94f"
+      "iconColor": "#eec94f",
+      "priority": 1
     },
     {
       "title": "Deltarune Chapters 3+4",
@@ -178,7 +182,8 @@
       "finishBefore": "2026-07",
       "icon": "https://cdn2.steamgriddb.com/thumb/ba3072daa7d54d117b22019c3974b0fe.jpg",
       "iconColor": "#eeb94f",
-      "partGoal": "Badges 1–4: Stone (Roxanne), Knuckle (Brawly), Dynamo (Wattson), Heat (Flannery) — Rustboro to Lavaridge."
+      "partGoal": "Badges 1–4: Stone (Roxanne), Knuckle (Brawly), Dynamo (Wattson), Heat (Flannery) — Rustboro to Lavaridge.",
+      "priority": 1
     },
     {
       "title": "Pokémon Omega Ruby — Pt. 2",
@@ -197,7 +202,8 @@
       "finishBefore": "2026-08",
       "icon": "https://cdn2.steamgriddb.com/thumb/ba3072daa7d54d117b22019c3974b0fe.jpg",
       "iconColor": "#eeb94f",
-      "partGoal": "Badges 5–8 (Norman → Winona → Tate&Liza → Wallace), the Elite Four/Champion, + the Delta Episode."
+      "partGoal": "Badges 5–8 (Norman → Winona → Tate&Liza → Wallace), the Elite Four/Champion, + the Delta Episode.",
+      "priority": 1
     },
     {
       "title": "Rhythm Heaven Groove",
@@ -353,7 +359,8 @@
       "icon": "https://cdn.dekudeals.com/images/e2119fd96155112a20b409962b182dbee4b0e8f1/w500.jpg",
       "iconColor": "#5bb1e1",
       "finishBefore": "2026-09",
-      "partGoal": "Chapters 1–4 (Gormott → Uraya → reach Mor Ardain)."
+      "partGoal": "Chapters 1–4 (Gormott → Uraya → reach Mor Ardain).",
+      "priority": -1
     },
     {
       "title": "Xenoblade Chronicles 2 (NS2) — Pt. 2",
@@ -372,7 +379,8 @@
       "icon": "https://cdn.dekudeals.com/images/e2119fd96155112a20b409962b182dbee4b0e8f1/w500.jpg",
       "iconColor": "#5bb1e1",
       "finishBefore": "2026-10",
-      "partGoal": "Chapters 5–7 (Tantal, Leftheria, Indol/Spirit Crucible setup)."
+      "partGoal": "Chapters 5–7 (Tantal, Leftheria, Indol/Spirit Crucible setup).",
+      "priority": -1
     },
     {
       "title": "Xenoblade Chronicles 2 (NS2) — Pt. 3",
@@ -391,7 +399,8 @@
       "icon": "https://cdn.dekudeals.com/images/e2119fd96155112a20b409962b182dbee4b0e8f1/w500.jpg",
       "iconColor": "#5bb1e1",
       "finishBefore": "2026-11",
-      "partGoal": "Chapters 8–10 (Spirit Crucible to the finale)."
+      "partGoal": "Chapters 8–10 (Spirit Crucible to the finale).",
+      "priority": -1
     },
     {
       "title": "Fire Emblem Engage — Pt. 1",
@@ -451,7 +460,8 @@
       "notes": "Date per your note (August); some reports peg the DLC to Q1 2027.",
       "finishBefore": "2026-08",
       "icon": "https://cdn2.steamgriddb.com/thumb/dd343c779597afece742459153202eb6.jpg",
-      "iconColor": "#96dc60"
+      "iconColor": "#96dc60",
+      "priority": 1
     },
     {
       "title": "Final Fantasy XIV",
@@ -488,7 +498,8 @@
       "notes": "First playthrough; originally released Mar 2020.",
       "icon": "https://cdn.dekudeals.com/images/b25e938e729e663863dec4a3e20c928e4c244b8d/w500.jpg",
       "iconColor": "#cfa16e",
-      "finishBefore": "2026-09"
+      "finishBefore": "2026-09",
+      "priority": 1
     },
     {
       "title": "Orbitals",
@@ -589,7 +600,8 @@
       "finishBefore": "2026-10",
       "icon": "https://cdn2.steamgriddb.com/thumb/91f618d4453134d636932694dcb160f9.jpg",
       "iconColor": "#dd8d60",
-      "partGoal": "Badges 1–3: Coal (Roark), Forest (Gardenia), Cobble (Maylene) — Oreburgh to Veilstone."
+      "partGoal": "Badges 1–3: Coal (Roark), Forest (Gardenia), Cobble (Maylene) — Oreburgh to Veilstone.",
+      "priority": 1
     },
     {
       "title": "Pokémon Platinum — Pt. 2",
@@ -608,7 +620,8 @@
       "finishBefore": "2026-11",
       "icon": "https://cdn2.steamgriddb.com/thumb/91f618d4453134d636932694dcb160f9.jpg",
       "iconColor": "#dd8d60",
-      "partGoal": "Badges 4–6: Fen (Crasher Wake), Relic (Fantina), Mine (Byron) — Pastoria to Canalave."
+      "partGoal": "Badges 4–6: Fen (Crasher Wake), Relic (Fantina), Mine (Byron) — Pastoria to Canalave.",
+      "priority": 1
     },
     {
       "title": "Pokémon Platinum — Pt. 3",
@@ -627,7 +640,8 @@
       "finishBefore": "2026-12",
       "icon": "https://cdn2.steamgriddb.com/thumb/91f618d4453134d636932694dcb160f9.jpg",
       "iconColor": "#dd8d60",
-      "partGoal": "Badges 7–8 (Candice, Volkner), the Distortion World/Giratina, + the Elite Four/Champion."
+      "partGoal": "Badges 7–8 (Candice, Volkner), the Distortion World/Giratina, + the Elite Four/Champion.",
+      "priority": 1
     },
     {
       "title": "Kingdom Hearts Final Mix (I) — Pt. 1",
@@ -652,7 +666,8 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/66f6fcf0292987eee074f469c452ff0d.jpg",
       "iconColor": "#5473e7",
       "finishBefore": "2026-10",
-      "partGoal": "Through Monstro (Destiny Islands → Traverse Town → Wonderland → Coliseum → Deep Jungle → Agrabah → Monstro)."
+      "partGoal": "Through Monstro (Destiny Islands → Traverse Town → Wonderland → Coliseum → Deep Jungle → Agrabah → Monstro).",
+      "priority": -1
     },
     {
       "title": "Kingdom Hearts Final Mix (I) — Pt. 2",
@@ -673,7 +688,8 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/66f6fcf0292987eee074f469c452ff0d.jpg",
       "iconColor": "#5473e7",
       "finishBefore": "2026-11",
-      "partGoal": "Atlantica → Halloween Town → Neverland → Hollow Bastion → End of the World (finale)."
+      "partGoal": "Atlantica → Halloween Town → Neverland → Hollow Bastion → End of the World (finale).",
+      "priority": -1
     },
     {
       "title": "Kingdom Hearts Re:Chain of Memories",
@@ -693,7 +709,8 @@
       "notes": "Game 2 of 11 — KINGDOM HEARTS marathon (bundled).",
       "icon": "https://cdn2.steamgriddb.com/thumb/da1dbf20ae8394f0fb70bfffa143a6b9.jpg",
       "iconColor": "#7e72c9",
-      "finishBefore": "2026-12"
+      "finishBefore": "2026-12",
+      "priority": -1
     },
     {
       "title": "Kingdom Hearts II Final Mix — Pt. 1",
@@ -714,7 +731,8 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/76e60d6d85f4a00c7ccbdbe98e172179.jpg",
       "iconColor": "#5eb3dd",
       "finishBefore": "2027-01",
-      "partGoal": "First visits to all worlds, through the Battle of Hollow Bastion (the '1000 Heartless' fight)."
+      "partGoal": "First visits to all worlds, through the Battle of Hollow Bastion (the '1000 Heartless' fight).",
+      "priority": -1
     },
     {
       "title": "Kingdom Hearts II Final Mix — Pt. 2",
@@ -735,7 +753,8 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/76e60d6d85f4a00c7ccbdbe98e172179.jpg",
       "iconColor": "#5eb3dd",
       "finishBefore": "2027-02",
-      "partGoal": "Second visits through The World That Never Was (finale)."
+      "partGoal": "Second visits through The World That Never Was (finale).",
+      "priority": -1
     },
     {
       "title": "Kingdom Hearts 358/2 Days",
@@ -753,7 +772,8 @@
       "editions": [],
       "earlyAccess": "",
       "notes": "Game 4 of 11 — KINGDOM HEARTS marathon (cinematic, bundled in 1.5+2.5 ReMIX).",
-      "finishBefore": "2027-03"
+      "finishBefore": "2027-03",
+      "priority": -1
     },
     {
       "title": "Kingdom Hearts Birth by Sleep Final Mix — Pt. 1",
@@ -774,7 +794,8 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/30b3841e8543e1995128f44fde0fe712.jpg",
       "iconColor": "#b572c9",
       "finishBefore": "2027-03",
-      "partGoal": "Terra's and Ventus's full scenarios."
+      "partGoal": "Terra's and Ventus's full scenarios.",
+      "priority": -1
     },
     {
       "title": "Kingdom Hearts Birth by Sleep Final Mix — Pt. 2",
@@ -795,7 +816,8 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/30b3841e8543e1995128f44fde0fe712.jpg",
       "iconColor": "#b572c9",
       "finishBefore": "2027-04",
-      "partGoal": "Aqua's scenario + the Final Episode (and secret ending)."
+      "partGoal": "Aqua's scenario + the Final Episode (and secret ending).",
+      "priority": -1
     },
     {
       "title": "Kingdom Hearts Re:coded",
@@ -815,7 +837,8 @@
       "notes": "Game 6 of 11 — KINGDOM HEARTS marathon (cinematic, bundled in 1.5+2.5 ReMIX).",
       "icon": "https://cdn2.steamgriddb.com/thumb/5045efd0278f9582162ce6ddd5e0eeaa.jpg",
       "iconColor": "#d9c063",
-      "finishBefore": "2027-05"
+      "finishBefore": "2027-05",
+      "priority": -1
     },
     {
       "title": "Kingdom Hearts Dream Drop Distance HD — Pt. 1",
@@ -836,7 +859,8 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/f07056820e9ef297061d86c0c4c45737.jpg",
       "iconColor": "#c972a1",
       "finishBefore": "2027-05",
-      "partGoal": "Through The Grid (Traverse Town → La Cité des Cloches → The Grid for both Sora & Riku)."
+      "partGoal": "Through The Grid (Traverse Town → La Cité des Cloches → The Grid for both Sora & Riku).",
+      "priority": -1
     },
     {
       "title": "Kingdom Hearts Dream Drop Distance HD — Pt. 2",
@@ -857,7 +881,8 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/f07056820e9ef297061d86c0c4c45737.jpg",
       "iconColor": "#c972a1",
       "finishBefore": "2027-06",
-      "partGoal": "Prankster's Paradise → Country of the Musketeers → Symphony of Sorcery → The World That Never Was (finale)."
+      "partGoal": "Prankster's Paradise → Country of the Musketeers → Symphony of Sorcery → The World That Never Was (finale).",
+      "priority": -1
     },
     {
       "title": "Kingdom Hearts χ Back Cover",
@@ -875,7 +900,8 @@
       "editions": [],
       "earlyAccess": "",
       "notes": "Game 8 of 11 — KINGDOM HEARTS marathon (cinematic, bundled in 2.8).",
-      "finishBefore": "2027-07"
+      "finishBefore": "2027-07",
+      "priority": -1
     },
     {
       "title": "Kingdom Hearts 0.2 -A Fragmentary Passage-",
@@ -893,7 +919,8 @@
       "editions": [],
       "earlyAccess": "",
       "notes": "Game 9 of 11 — KINGDOM HEARTS marathon (bundled in 2.8).",
-      "finishBefore": "2027-07"
+      "finishBefore": "2027-07",
+      "priority": -1
     },
     {
       "title": "Kingdom Hearts III + ReMind — Pt. 1",
@@ -914,7 +941,8 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/18b9bdc56c4268c709fab4763719bbe4.jpg",
       "iconColor": "#7284c9",
       "finishBefore": "2027-08",
-      "partGoal": "Through Arendelle (Olympus → Twilight Town → Toy Box → Kingdom of Corona → Monstropolis → Frozen)."
+      "partGoal": "Through Arendelle (Olympus → Twilight Town → Toy Box → Kingdom of Corona → Monstropolis → Frozen).",
+      "priority": -1
     },
     {
       "title": "Kingdom Hearts III + ReMind — Pt. 2",
@@ -935,7 +963,8 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/18b9bdc56c4268c709fab4763719bbe4.jpg",
       "iconColor": "#7284c9",
       "finishBefore": "2027-09",
-      "partGoal": "The Caribbean → San Fransokyo → the Keyblade Graveyard & finale, then the ReMind DLC."
+      "partGoal": "The Caribbean → San Fransokyo → the Keyblade Graveyard & finale, then the ReMind DLC.",
+      "priority": -1
     },
     {
       "title": "Kingdom Hearts Melody of Memory",
@@ -960,7 +989,8 @@
       "notes": "Game 11 of 11 — KINGDOM HEARTS marathon (owned separately, not in the collection). Finish by end of 2027.",
       "icon": "https://cdn2.steamgriddb.com/thumb/3c27eff5b85b5a200dd10ace970c33c2.jpg",
       "iconColor": "#c9b472",
-      "finishBefore": "2027-12"
+      "finishBefore": "2027-12",
+      "priority": -1
     },
     {
       "title": "Switch Sports Resort",
@@ -1026,7 +1056,8 @@
       "icon": "https://cdn.dekudeals.com/images/f995e12bf4034326f6a3ad1a227f24f2b5397ec6/w500.jpg",
       "iconColor": "#60bcdc",
       "finishBefore": "2026-12",
-      "partGoal": "Chapters 1–2 (through entering Swordmarch / Origin setup)."
+      "partGoal": "Chapters 1–2 (through entering Swordmarch / Origin setup).",
+      "priority": -1
     },
     {
       "title": "Xenoblade Chronicles 3 — Nintendo Switch 2 Edition — Pt. 2",
@@ -1045,7 +1076,8 @@
       "icon": "https://cdn.dekudeals.com/images/f995e12bf4034326f6a3ad1a227f24f2b5397ec6/w500.jpg",
       "iconColor": "#60bcdc",
       "finishBefore": "2027-01",
-      "partGoal": "Chapters 3–5 (the Captain Jin/Moebius mid-game arc)."
+      "partGoal": "Chapters 3–5 (the Captain Jin/Moebius mid-game arc).",
+      "priority": -1
     },
     {
       "title": "Xenoblade Chronicles 3 — Nintendo Switch 2 Edition — Pt. 3",
@@ -1064,7 +1096,8 @@
       "icon": "https://cdn.dekudeals.com/images/f995e12bf4034326f6a3ad1a227f24f2b5397ec6/w500.jpg",
       "iconColor": "#60bcdc",
       "finishBefore": "persona-4-revival",
-      "partGoal": "Chapters 6–7 (the march on Origin to the ending)."
+      "partGoal": "Chapters 6–7 (the march on Origin to the ending).",
+      "priority": -1
     },
     {
       "title": "The Legend of Zelda: Ocarina of Time — Nintendo Switch 2",
@@ -1237,7 +1270,8 @@
       "notes": "Unreal Engine 5 full remake of Tomb Raider (1996).",
       "icon": "https://cdn.dekudeals.com/images/ee4bc711f641a150fefdc08242f9b62f74ca8d15/w500.jpg",
       "iconColor": "#68d4cd",
-      "finishBefore": "persona-4-revival"
+      "finishBefore": "persona-4-revival",
+      "binge": true
     },
     {
       "title": "Persona 4 Revival",
@@ -1283,7 +1317,8 @@
       "notes": "First playthrough; originally released Mar 2011.",
       "finishBefore": "2027-03",
       "icon": "https://cdn2.steamgriddb.com/thumb/1dda5bc8b529f9dc6719c341656a8e4e.png",
-      "iconColor": "#cb56e6"
+      "iconColor": "#cb56e6",
+      "priority": 1
     },
     {
       "title": "Pokémon Black 2",
@@ -1301,7 +1336,8 @@
       "notes": "First playthrough; originally released Oct 2012.",
       "finishBefore": "2027-04",
       "icon": "https://cdn2.steamgriddb.com/thumb/1d178bbecb5fe472eabd360fd56134c6.jpg",
-      "iconColor": "#53c4e9"
+      "iconColor": "#53c4e9",
+      "priority": 1
     },
     {
       "title": "Pokémon Mystery Dungeon: Explorers of Sky",
@@ -1319,7 +1355,8 @@
       "notes": "First playthrough; originally released Oct 2009.",
       "finishBefore": "2027-05",
       "icon": "https://cdn2.steamgriddb.com/thumb/208ef41fb9dc674c9ff340fc0e4e7dab.jpg",
-      "iconColor": "#5be1bf"
+      "iconColor": "#5be1bf",
+      "priority": 1
     },
     {
       "title": "Pokémon Ultra Sun",
@@ -1337,7 +1374,8 @@
       "notes": "First playthrough; originally released Nov 2017.",
       "finishBefore": "2027-06",
       "icon": "https://cdn2.steamgriddb.com/thumb/0cc963329f477f669d4cdbef1217ed5d.png",
-      "iconColor": "#ec9c50"
+      "iconColor": "#ec9c50",
+      "priority": 1
     },
     {
       "title": "Final Fantasy VII Remake Intergrade — Pt. 1",
@@ -1634,7 +1672,8 @@
       "icon": "https://cdn.dekudeals.com/images/a33541a02e6ff30c5c8e2bbb63bba4ecc450d5d5/w500.jpg",
       "iconColor": "#63c4d9",
       "finishBefore": "2027-07",
-      "partGoal": "Badges 1–4: Grass (Milo), Water (Nessa), Fire (Kabu), Fighting (Bea) — Turffield to Stow-on-Side."
+      "partGoal": "Badges 1–4: Grass (Milo), Water (Nessa), Fire (Kabu), Fighting (Bea) — Turffield to Stow-on-Side.",
+      "priority": 1
     },
     {
       "title": "Pokémon Sword — Pt. 2",
@@ -1653,7 +1692,8 @@
       "icon": "https://cdn.dekudeals.com/images/a33541a02e6ff30c5c8e2bbb63bba4ecc450d5d5/w500.jpg",
       "iconColor": "#63c4d9",
       "finishBefore": "new-pok-mon-snap",
-      "partGoal": "Badges 5–8 (Opal, Gordie, Piers, Raihan) + the Champion Cup finale."
+      "partGoal": "Badges 5–8 (Opal, Gordie, Piers, Raihan) + the Champion Cup finale.",
+      "priority": 1
     },
     {
       "title": "New Pokémon Snap",
@@ -1689,7 +1729,8 @@
       "notes": "First playthrough; originally released Nov 2022.",
       "icon": "https://cdn.dekudeals.com/images/4de144fe89642562a1364c89fb8f6ea9efc3b8cb/w500.jpg",
       "iconColor": "#db61db",
-      "finishBefore": "2027-09"
+      "finishBefore": "2027-09",
+      "priority": 1
     },
     {
       "title": "Pokémon Legends: Z-A",
@@ -1712,7 +1753,8 @@
       "earlyAccess": "",
       "notes": "Set in Lumiose City; latest Legends entry.",
       "icon": "https://cdn.dekudeals.com/images/5d0a4118faf51d4be2c2ae54850ff8a79319d68d/w500.jpg",
-      "iconColor": "#6e8ecf"
+      "iconColor": "#6e8ecf",
+      "priority": 1
     },
     {
       "title": "Pokémon Winds and Waves",
@@ -1733,7 +1775,8 @@
       ],
       "earlyAccess": "",
       "notes": "Gen 10. Official window is 2027; you noted November.",
-      "finishBefore": "2027-12"
+      "finishBefore": "2027-12",
+      "priority": 1
     },
     {
       "title": "Pikuniku 2",
@@ -1762,7 +1805,8 @@
       ],
       "editions": [],
       "earlyAccess": "",
-      "notes": "New Monolith Soft Xenoblade entry."
+      "notes": "New Monolith Soft Xenoblade entry.",
+      "priority": -1
     },
     {
       "title": "Virtua Fighter Crossroads",
@@ -1795,7 +1839,8 @@
       ],
       "editions": [],
       "earlyAccess": "",
-      "notes": "No firm date; reported coming to Switch 2."
+      "notes": "No firm date; reported coming to Switch 2.",
+      "priority": -1
     }
   ]
 }
