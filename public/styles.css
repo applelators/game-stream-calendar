@@ -356,6 +356,20 @@ input, select, textarea { font-family: inherit; }
 .dp-game { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* bonus games — optional "if time allows" extras, set apart from the committed plan */
+/* slipped-deadline strip — games that won't finish on time this month */
+.gc-slip, .mg-slip { display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  padding: 8px 16px; background: #2a1416; border-bottom: 1px solid var(--border);
+  border-left: 3px solid var(--danger); }
+.mg-slip { padding: 7px 12px; }
+.gc-slip-h, .mg-slip-h { font-size: 0.7rem; color: var(--danger); font-weight: 700;
+  font-family: var(--mono); margin-right: 2px; letter-spacing: 0.02em; width: 100%; }
+.gc-slip-chip, .mg-slip-chip { font-size: 0.74rem; font-weight: 600; color: var(--text);
+  background: var(--panel-2); border: 1px solid var(--danger); border-radius: 999px;
+  padding: 3px 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
+.gc-slip-chip:hover, .mg-slip-chip:hover { filter: brightness(1.12); }
+.gc-slip-chip small, .mg-slip-chip small { color: var(--danger); font-weight: 700;
+  font-family: var(--mono); font-size: 0.62rem; }
+
 .gc-bonus, .mg-bonus { display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
   padding: 8px 16px; background: var(--panel); border-bottom: 1px solid var(--border);
   border-left: 3px dashed var(--accent); }

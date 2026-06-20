@@ -470,6 +470,23 @@ function DeadlineBracket({ br, onPick, mobile }) {
   );
 }
 
+// Games that miss their deadline this month — surfaced as a prominent strip at the
+// top of the month so a slip is never silent.
+function SlipStrip({ items, mobile, onPick }) {
+  const pfx = mobile ? 'mg' : 'gc';
+  return (
+    <div className={`${pfx}-slip`}>
+      <span className={`${pfx}-slip-h`}>⚠ Won’t finish on time — {items.length} game{items.length === 1 ? '' : 's'} slipping past deadline</span>
+      {items.map((s) => (
+        <button key={s.id} className={`${pfx}-slip-chip`} style={{ borderColor: gameColor(s.id).solid }}
+          onClick={() => onPick(s.id)}
+          title={`${s.title} — finishes ${fmtDate(s.finish)}, ~${s.daysLate} day${s.daysLate === 1 ? '' : 's'} after its deadline (${s.deadlineLabel})`}>
+          {s.title}<small>+{s.daysLate}d late</small></button>
+      ))}
+    </div>
+  );
+}
+
 // Bonus games for a month — optional "stream if there's time" extras, shown apart
 // from the committed plan with a slack note read off that month's priorities.
 function BonusStrip({ games, note, tight, mobile, onPick }) {
@@ -520,7 +537,7 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
 
   // The realistic one-game-per-day plan (release-priority queue) drives the
   // calendar: each stream day maps to the game you'll actually be playing.
-  const { releasesByDay, sessionByDay, gameById, plannedByMonth, bonusByMonth, bonusPlayByDay, deadlineByDay, deadlineBracketsByMonth, min, max } = useMemo(() => {
+  const { releasesByDay, sessionByDay, gameById, plannedByMonth, bonusByMonth, bonusPlayByDay, deadlineByDay, deadlineBracketsByMonth, slippedByMonth, min, max } = useMemo(() => {
     // Interleaved plan: stream sessions rotate among in-progress games; bonus games
     // fill only spare slots. Drives the calendar directly.
     const plan = streamPlan(placeable, pace, vacations);
@@ -549,6 +566,7 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
     const prior = placeable.filter((g) => !g.bonus);
     // Finish-before deadline groups → a bracket per month with a feasibility note.
     const dbm = {}; // displayMonthKey -> [bracket]
+    const sbm = {}; // displayMonthKey -> [{ slipped game }] (finishes after its deadline)
     const groupsByKey = {};
     for (const g of prior) {
       if (!g.finishBefore) continue;
@@ -573,8 +591,19 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
         precision: pr ? pr.precision : 'day', periodLabel: pr ? releaseLabel(pr) : null,
         neededHours, hpw, feasible: !boost, boost, past: deadline <= today,
       });
+      // Per-game slip: a member whose scheduled finish lands after the deadline.
+      for (const g of grp) {
+        const p = pos[g.id];
+        if (p && p.end > deadline) {
+          const daysLate = Math.max(1, Math.round((p.end - deadline) / 86400000));
+          (sbm[dmk] = sbm[dmk] || []).push({
+            id: g.id, title: g.title, daysLate, finish: addDays(p.end, -1),
+            deadlineLabel: t ? `before ${t.title}` : (pr ? releaseLabel(pr) : 'deadline'),
+          });
+        }
+      }
     }
-    return { releasesByDay: rbd, sessionByDay: sbd, gameById: gbi, plannedByMonth: pbm, bonusByMonth: bbm, bonusPlayByDay: bpd, deadlineByDay: dbd, deadlineBracketsByMonth: dbm, min: mn, max: mx };
+    return { releasesByDay: rbd, sessionByDay: sbd, gameById: gbi, plannedByMonth: pbm, bonusByMonth: bbm, bonusPlayByDay: bpd, deadlineByDay: dbd, deadlineBracketsByMonth: dbm, slippedByMonth: sbm, min: mn, max: mx };
   }, [placeable, pace, vacations]);
 
   // Bonus games don't reserve midnight-launch eves (they're not committed).
@@ -665,6 +694,7 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
             return (
               <div className="mg-card" key={i}>
                 <div className="mg-head">{MONTHS_LONG[mon]} {y}<span className="cnt">{monthCount} release{monthCount === 1 ? '' : 's'}</span></div>
+                {(slippedByMonth[`${y}-${mon}`] || []).length > 0 && <SlipStrip items={slippedByMonth[`${y}-${mon}`]} mobile={true} onPick={onPick} />}
                 {dbrackets.map((br) => <DeadlineBracket key={br.key} br={br} onPick={onPick} mobile={true} />)}
                 {loose.length > 0 && (
                   <div className="mg-planned">
@@ -787,6 +817,7 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
             <div className="gc-month" id={`gcm-${y}-${mon}`} key={idx}>
               <div className="gc-mhead">{MONTHS_LONG[mon]} {y}
                 <span className="gc-headcnt">{monthCount} release{monthCount === 1 ? '' : 's'}</span></div>
+              {(slippedByMonth[`${y}-${mon}`] || []).length > 0 && <SlipStrip items={slippedByMonth[`${y}-${mon}`]} mobile={false} onPick={onPick} />}
               {dbrackets.map((br) => <DeadlineBracket key={br.key} br={br} onPick={onPick} mobile={false} />)}
               {loose.length > 0 && (
                 <div className="gc-planned">
