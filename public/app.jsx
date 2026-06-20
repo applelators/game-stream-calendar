@@ -628,7 +628,7 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
                 <div key={d} className={cls} style={cellStyle}>
                   <span className="dnum">{d}{info.releases.length ? <span className="relstar">★</span> : null}{dl ? <span className="mg-deadflag" title={`Finish before ${dl.title}`}>⚑</span> : null}</span>
                   {!info.vac && !info.launch && info.session && info.play && (
-                    <span className="mg-strno" title={`Stream ${info.session.idx} of ${info.session.total}`}>{info.session.idx}/{info.session.total}</span>
+                    <span className="mg-strno" title={`Stream ${info.session.idx} of ${info.session.total}`}>{info.session.idx}/{info.session.total}{info.session.hours ? ` · ~${info.session.hours}h` : ''}</span>
                   )}
                   {info.streamed && info.streamed.map((s, si) => (
                     <span className="mg-pill mg-done" key={si} title={`Streamed: ${s.name}`}>
@@ -746,6 +746,9 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
                   <span className="gc-strno" style={{ background: gameColor(info.play.id).solid, color: '#0c0c12' }}
                     title={`Stream ${info.session.idx} of ${info.session.total}`}>{info.session.idx}/{info.session.total}</span>
                 )}
+                {!info.vac && !info.launch && info.session && info.session.hours ? (
+                  <span className="gc-hrs" title={`Estimated stream length this day (${(day.getUTCDay() === 0 || day.getUTCDay() === 6) ? 'weekend' : 'weekday'} pace)`}>~{info.session.hours}h</span>
+                ) : null}
                 {info.streamed && info.streamed.map((s, si) => (
                   <div className="gc-done" key={si} title={`Streamed: ${s.name}`}>
                     {s.art ? <img className="gc-done-art" src={s.art} alt="" loading="lazy" /> : null}

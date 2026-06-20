@@ -379,8 +379,8 @@ function streamPlan(games, pace, normVacs, today) {
   // One scheduling pass. boostKeys = groups that stream every available day (and use
   // their boosted, possibly-lengthened stream counts) to make their deadline.
   function simulate(boostKeys) {
-    const work = cSpec.map((s) => ({ ...s, target: s.hltb, hoursDone: 0, lastSlot: -Infinity, slots: [], lengthen: boostKeys.has(s.key) && groups[s.key] ? groups[s.key].lengthen : 1 }));
-    const bwork = bSpec.map((s) => ({ ...s, target: s.hltb, hoursDone: 0, lastSlot: -Infinity, slots: [], lengthen: 1 }));
+    const work = cSpec.map((s) => ({ ...s, target: s.hltb, hoursDone: 0, lastSlot: -Infinity, slots: [], slotHours: [], lengthen: boostKeys.has(s.key) && groups[s.key] ? groups[s.key].lengthen : 1 }));
+    const bwork = bSpec.map((s) => ({ ...s, target: s.hltb, hoursDone: 0, lastSlot: -Infinity, slots: [], slotHours: [], lengthen: 1 }));
     const boostW = [...boostKeys].filter((k) => groups[k]).map((k) => ({ start: groups[k].winStart, deadline: groups[k].deadline, ids: groups[k].ids }));
     let earliest = null; for (const p of work.concat(bwork)) if (!earliest || p.start < earliest) earliest = p.start;
     let day = new Date(Math.max(earliest.getTime(), t0.getTime())), acc = 0, guard = 0;
@@ -388,7 +388,7 @@ function streamPlan(games, pace, normVacs, today) {
     let remaining = work.concat(bwork).filter(undone).length;
     // Each stream day delivers hoursOnDay (weekends longer); a game finishes when its
     // accumulated hours reach its HLTB target. Boosted groups lengthen each session.
-    const take = (p) => { const was = undone(p); p.hoursDone += hoursOnDay(day, pace) * (p.lengthen || 1); p.lastSlot = day.getTime(); p.slots.push(new Date(day)); if (was && !undone(p)) remaining--; };
+    const take = (p) => { const was = undone(p); const h = hoursOnDay(day, pace) * (p.lengthen || 1); p.hoursDone += h; p.lastSlot = day.getTime(); p.slots.push(new Date(day)); p.slotHours.push(h); if (was && !undone(p)) remaining--; };
     while (remaining > 0 && guard++ < 500000) {
       if (inVacation(day, normVacs) || blockedEve(day)) { day = addDays(day, 1); continue; }
       const k = dkey(day);
@@ -437,7 +437,7 @@ function streamPlan(games, pace, normVacs, today) {
     const first = p.slots[0], last = addDays(p.slots[p.slots.length - 1], 1);
     out[p.id] = { start: first, end: last, segments: [{ start: first, end: last }] };
     const total = p.slots.length;
-    p.slots.forEach((d, i) => { sessionByDay[dkey(d)] = { id: p.id, idx: i + 1, total }; });
+    p.slots.forEach((d, i) => { sessionByDay[dkey(d)] = { id: p.id, idx: i + 1, total, hours: Math.round((p.slotHours[i] || 0) * 10) / 10 }; });
   }
   for (const p of fin.bwork) {
     if (p.slots.length) { const first = p.slots[0], last = addDays(p.slots[p.slots.length - 1], 1); out[p.id] = { start: first, end: last, segments: [{ start: first, end: last }] }; }
