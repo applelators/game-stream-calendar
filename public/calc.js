@@ -406,8 +406,9 @@ function streamPlan(games, pace, normVacs, today) {
       const active = work.filter((p) => p.start <= day && undone(p) && (p.cadence !== 'weekly' || weeklyDue(p)));
       let pick = null;
       if (forcedId) pick = active.find((p) => p.id === forcedId) || null;
-      if (!pick) { const hold = active.filter((p) => p.binge && p.hoursDone > 0); if (hold.length) { hold.sort((a, b) => (a.start - b.start) || (a.id < b.id ? -1 : 1)); pick = hold[0]; } }
+      // A due weekly game wins its one day even mid-binge, then the binge resumes.
       if (!pick) { const due = active.filter((p) => p.cadence === 'weekly'); if (due.length) { due.sort((a, b) => (a.deadlineMs - b.deadlineMs) || (a.lastSlot - b.lastSlot) || (a.start - b.start) || (a.id < b.id ? -1 : 1)); pick = due[0]; } }
+      if (!pick) { const hold = active.filter((p) => p.binge && p.hoursDone > 0); if (hold.length) { hold.sort((a, b) => (a.start - b.start) || (a.id < b.id ? -1 : 1)); pick = hold[0]; } }
       if (!pick && active.length) {
         // earliest deadline first (deadline-pressured games win slots), then rotate.
         active.sort((a, b) => (a.deadlineMs - b.deadlineMs) || (a.lastSlot - b.lastSlot) || (a.hoursDone - b.hoursDone) || (a.start - b.start) || (a.id < b.id ? -1 : 1));

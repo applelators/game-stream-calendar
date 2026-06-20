@@ -219,7 +219,7 @@
     },
     {
       "title": "Splatoon Raiders",
-      "date": "2026-07-23",
+      "date": "2026-08-04",
       "kind": "game",
       "hltbHours": 13,
       "basis": "calibrated",
@@ -234,7 +234,7 @@
         }
       ],
       "earlyAccess": "",
-      "notes": "Single-player-focused Splatoon spin-off.",
+      "notes": "Single-player-focused Splatoon spin-off; start Aug 4 (after vacation) and binge to completion.",
       "icon": "https://cdn.dekudeals.com/images/7a30dd9a431ec4c530654e9cccbdb224ccff497a/w500.jpg",
       "iconColor": "#cade5e",
       "finishBefore": "2026-08",
