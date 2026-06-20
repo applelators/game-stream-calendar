@@ -1299,7 +1299,8 @@
       "earlyAccess": "",
       "notes": "Eight editions; physical PS5 only. Day one on Game Pass.",
       "icon": "https://cdn.dekudeals.com/images/eaa46dc1f6dede6e119446c992edb6d1c1508c2e/w500.jpg",
-      "iconColor": "#78ee4f"
+      "iconColor": "#78ee4f",
+      "binge": true
     },
     {
       "title": "Pokémon Black",
@@ -1597,7 +1598,8 @@
       "iconColor": "#706ecf",
       "finishBefore": "2027-04",
       "partGoal": "Milestones TBD — final FF7 remake-trilogy entry (Spring 2027); will split by chapter at launch.",
-      "priority": -1
+      "priority": -1,
+      "binge": true
     },
     {
       "title": "Final Fantasy VII Revelation — Pt. 2",
@@ -1620,7 +1622,8 @@
       "iconColor": "#706ecf",
       "finishBefore": "2027-05",
       "partGoal": "Milestones TBD — will split by chapter at launch.",
-      "priority": -1
+      "priority": -1,
+      "binge": true
     },
     {
       "title": "Final Fantasy VII Revelation — Pt. 3",
@@ -1643,7 +1646,8 @@
       "iconColor": "#706ecf",
       "finishBefore": "2027-06",
       "partGoal": "Milestones TBD — will split by chapter at launch.",
-      "priority": -1
+      "priority": -1,
+      "binge": true
     },
     {
       "title": "Final Fantasy VII Revelation — Pt. 4",
@@ -1666,7 +1670,8 @@
       "iconColor": "#706ecf",
       "finishBefore": "2027-07",
       "partGoal": "Milestones TBD — will split by chapter at launch.",
-      "priority": -1
+      "priority": -1,
+      "binge": true
     },
     {
       "title": "Pokémon Sword — Pt. 1",
