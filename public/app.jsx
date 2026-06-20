@@ -215,7 +215,7 @@ function App() {
         </div>
         <div className="hdr-sub">
           {games.length} titles · pace {ep.hoursPerStream}h/stream · {ep.hoursPerWeek}h/week
-          {settings.override ? ' (manual)' : ` (${pace.source === 'sullygnome' ? 'live 90-day' : 'fallback'})`}
+          {settings.override ? ' (manual)' : ` (${pace.source === 'sullygnome' ? 'live 90-day' : pace.source === 'twitchtracker' ? 'TwitchTracker 30-day' : 'fallback'})`}
           {normVacs.length > 0 ? ` · ${normVacs.length} break${normVacs.length === 1 ? '' : 's'} blocked off` : ''}
           {settings.schedMode === 'sequential' && settings.view === 'timeline' ? ' · new releases first, older games split around them' : ''}
         </div>
@@ -926,7 +926,7 @@ function SettingsPanel({ settings, pace, setSettings, setPace, onClose }) {
           <div className="set-pace">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
               <div className="big">{pace.hoursPerStream}h<span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}> / stream</span></div>
-              <span className="src-pill">{pace.source === 'sullygnome' ? 'live · 90-day' : pace.source || 'fallback'}</span>
+              <span className="src-pill">{pace.source === 'sullygnome' ? 'live · 90-day' : pace.source === 'twitchtracker' ? 'TwitchTracker · 30-day' : pace.source || 'fallback'}</span>
             </div>
             <div style={{ color: 'var(--muted)', fontSize: '0.85rem', marginTop: 4 }}>
               {pace.hoursPerWeek}h / week · {pace.numStreams || '–'} streams · {pace.totalHours || '–'}h over last {pace.windowDays || 90} days

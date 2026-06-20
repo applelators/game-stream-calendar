@@ -26,7 +26,11 @@ const json = (obj, status = 200) =>
   });
 
 async function refreshPace(env) {
-  const pace = await fetchPace(env);
+  // Pass the last-known pace so a TwitchTracker fallback (weekly hours only) or a
+  // total outage carries forward hours/stream + the weekday/weekend split.
+  let prevPace = null;
+  try { const raw = await env.CALENDAR_KV.get(PACE_KEY); prevPace = raw ? JSON.parse(raw) : null; } catch (e) { /* ignore */ }
+  const pace = await fetchPace(env, prevPace);
   await env.CALENDAR_KV.put(PACE_KEY, JSON.stringify(pace));
   return pace;
 }

@@ -114,15 +114,60 @@ export async function fetchStreams(env, days = 45) {
   }
 }
 
-// Fetch + compute. Never throws — returns FALLBACK_PACE on any failure so the
-// caller (scheduled handler / API route) can always write something to KV.
-export async function fetchPace(env) {
+// TwitchTracker fallback. Its per-stream table is Cloudflare-protected, but the
+// summary endpoint (aggregate minutes over a rolling ~30-day window) is fetchable.
+// It can't give a stream count or a per-day breakdown, so it only refreshes
+// hoursPerWeek — hoursPerStream and the weekday/weekend split are carried forward
+// from the last good SullyGnome fetch (prevPace).
+export const TT_WINDOW_DAYS = 30;
+
+export function paceFromTwitchTracker(summary, prevPace) {
+  const minutes = Number(summary && summary.minutes_streamed) || 0;
+  if (!minutes) return null;
+  const totalHours = minutes / 60;
+  const hoursPerWeek = round(totalHours / (TT_WINDOW_DAYS / 7));
+  const prev = prevPace || FALLBACK_PACE;
+  const hoursPerStream = prev.hoursPerStream || FALLBACK_PACE.hoursPerStream;
+  return {
+    hoursPerStream,
+    hoursPerWeek,
+    streamsPerWeek: hoursPerStream ? round(hoursPerWeek / hoursPerStream) : prev.streamsPerWeek,
+    weekdayHps: prev.weekdayHps || null,
+    weekendHps: prev.weekendHps || null,
+    weekdayStreams: prev.weekdayStreams || 0,
+    weekendStreams: prev.weekendStreams || 0,
+    totalHours: round(totalHours, 1),
+    numStreams: null,
+    windowDays: TT_WINDOW_DAYS,
+    source: 'twitchtracker',
+    note: 'TwitchTracker fallback: weekly hours from ~30-day summary; hours/stream + weekend split carried from the last SullyGnome fetch.',
+  };
+}
+
+async function fetchTwitchTrackerSummary(env) {
+  const login = (env && env.TWITCH_CHANNEL) || 'nabunan';
+  const res = await fetch(`https://twitchtracker.com/api/channels/summary/${login}`, {
+    headers: {
+      'User-Agent':
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
+      Accept: 'application/json, text/plain, */*',
+    },
+  });
+  if (!res.ok) throw new Error(`twitchtracker HTTP ${res.status}`);
+  return res.json();
+}
+
+// Fetch + compute. Never throws. Source order: SullyGnome (per-stream, full
+// weekday/weekend split) -> TwitchTracker (weekly hours only) -> last-known pace
+// (prevPace) so a transient outage never wipes good data with a bare fallback.
+export async function fetchPace(env, prevPace) {
   const channelId =
     (env && env.SULLYGNOME_CHANNEL_ID) || DEFAULT_SG_CHANNEL_ID;
   const login = (env && env.TWITCH_CHANNEL) || 'nabunan';
   const url =
     `https://sullygnome.com/api/tables/channeltables/streams/${WINDOW_DAYS}/` +
     `${channelId}/%20/1/1/desc/0/100`;
+  // 1) SullyGnome (primary) — full per-stream data incl. weekend split.
   try {
     const res = await fetch(url, {
       headers: {
@@ -135,13 +180,21 @@ export async function fetchPace(env) {
     if (!res.ok) throw new Error(`sullygnome HTTP ${res.status}`);
     const json = await res.json();
     const rows = Array.isArray(json.data) ? json.data : [];
-    const pace = computePace(rows);
-    return { ...pace, fetchedAt: new Date().toISOString() };
-  } catch (err) {
-    return {
-      ...FALLBACK_PACE,
-      fetchedAt: new Date().toISOString(),
-      error: String(err && err.message ? err.message : err),
-    };
-  }
+    if (rows.length > 0) {
+      return { ...computePace(rows), fetchedAt: new Date().toISOString() };
+    }
+    // empty payload -> fall through to TwitchTracker
+  } catch (err) { /* fall through */ }
+  // 2) TwitchTracker (fallback) — weekly hours; keep last-known stream length/split.
+  try {
+    const tt = paceFromTwitchTracker(await fetchTwitchTrackerSummary(env), prevPace);
+    if (tt) return { ...tt, fetchedAt: new Date().toISOString() };
+  } catch (err) { /* fall through */ }
+  // 3) Last-known pace, else hardcoded fallback — never wipe good data.
+  const base = prevPace && prevPace.hoursPerStream ? prevPace : FALLBACK_PACE;
+  return {
+    ...base,
+    fetchedAt: new Date().toISOString(),
+    error: 'sullygnome + twitchtracker unavailable',
+  };
 }
