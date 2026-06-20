@@ -336,11 +336,12 @@
         }
       ],
       "earlyAccess": "Premium & Collector's: up to 5 days early (from Jul 23) + Alpha Halo Armory Pack.",
-      "notes": "Day one on Game Pass; playing it weekly from Aug 5 (after the July vacation).",
+      "notes": "Day one on Game Pass; playing it weekly on Fridays from Aug 5 (after the July vacation).",
       "icon": "https://cdn.dekudeals.com/images/59dd1f879b1b663b9d3b19813f9f17fc927b3b39/w500.jpg",
       "iconColor": "#6ec3cf",
       "backlog": true,
-      "cadence": "weekly"
+      "cadence": "weekly",
+      "weeklyDay": "Fri"
     },
     {
       "title": "Xenoblade Chronicles 2 (NS2) — Pt. 1",

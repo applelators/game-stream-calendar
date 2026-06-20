@@ -75,6 +75,15 @@ function slugify(s) {
   return (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 }
 
+// Parse a day-of-week (name or 0..6, Sun=0) to a number, or null.
+const DOW_MAP = { sun: 0, sunday: 0, mon: 1, monday: 1, tue: 2, tues: 2, tuesday: 2, wed: 3, weds: 3, wednesday: 3, thu: 4, thur: 4, thurs: 4, thursday: 4, fri: 5, friday: 5, sat: 6, saturday: 6 };
+function parseDow(v) {
+  if (v == null || v === '') return null;
+  if (typeof v === 'number') return ((Math.trunc(v) % 7) + 7) % 7;
+  const k = String(v).trim().toLowerCase();
+  return DOW_MAP[k] != null ? DOW_MAP[k] : null;
+}
+
 // Parse a friendly date string from games.json into a release object.
 //   "2026-06-25" day · "2026-08" month · "2026-Q3"/"Holiday 2026"/"Spring 2027"
 //   quarter · "2026" year (rail) · "TBD"/"TBA ..." or anything unrecognized (rail)
@@ -141,6 +150,8 @@ function gameFromFile(e, i) {
   // Optional cadence override: 'weekly' = stream this game once a week until done
   // (instead of the default ~streamsPerWeek interleaved cadence).
   if (e.cadence) g.cadence = String(e.cadence);
+  // Optional fixed day-of-week for a weekly-cadence game (e.g. "Fri").
+  if (e.weeklyDay != null) { const dw = parseDow(e.weeklyDay); if (dw != null) g.weeklyDow = dw; }
   // Optional milestone: what chapter/badge/region marks this part "done".
   if (e.partGoal) g.partGoal = String(e.partGoal);
   // Optional scheduling priority within a shared deadline (higher = scheduled
@@ -334,7 +345,7 @@ function streamPlan(games, pace, normVacs, today) {
     if (!baseStreams) continue;
     const dl = g.finishBefore ? finishBeforeDeadline(g, byId) : null;
     (g.bonus ? bSpec : cSpec).push({ id: g.id, start, baseStreams, binge: !!g.binge,
-      cadence: g.cadence || null, priority: Number(g.priority) || 0,
+      cadence: g.cadence || null, weeklyDow: (g.weeklyDow != null ? g.weeklyDow : null), priority: Number(g.priority) || 0,
       hltb: Number(g.hltbHours) || 0, key: g.finishBefore || null, deadlineMs: dl ? dl.getTime() : Infinity });
   }
   if (cSpec.length === 0 && bSpec.length === 0) return { positions: out, sessionByDay: {}, bonusByDay: {}, boosts: {} };
@@ -399,7 +410,9 @@ function streamPlan(games, pace, normVacs, today) {
       // weekly-cadence games are eligible at most once per 7 days; when one is "due"
       // it forces a stream day (like a launch) so it reliably gets its weekly slot.
       const WEEK = 7 * 86400000;
-      const weeklyDue = (p) => p.cadence === 'weekly' && undone(p) && p.start <= day && (p.lastSlot === -Infinity || (day.getTime() - p.lastSlot) >= WEEK - 3600000);
+      const weeklyDue = (p) => p.cadence === 'weekly' && undone(p) && p.start <= day
+        && (p.weeklyDow == null || day.getUTCDay() === p.weeklyDow) // pinned to a day-of-week
+        && (p.lastSlot === -Infinity || (day.getTime() - p.lastSlot) >= WEEK - 3600000);
       const anyWeeklyDue = work.some(weeklyDue);
       const boostActive = boostW.some((w) => day >= w.start && day < w.deadline && work.some((p) => w.ids.has(p.id) && undone(p)));
       let isSlot = false;
