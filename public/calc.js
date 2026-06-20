@@ -409,20 +409,35 @@ function streamPlan(games, pace, normVacs, today) {
       else { acc += perDay; if (acc >= 1) { acc -= 1; isSlot = true; } }
       if (!isSlot) { day = addDays(day, 1); continue; }
       const active = work.filter((p) => p.start <= day && undone(p) && (p.cadence !== 'weekly' || weeklyDue(p)));
+      // Priority-weighted recency: time-since-last-played scaled by 2^priority, so a
+      // higher-priority game (Pokémon, +1) comes "due" sooner and plays a larger share.
+      const nowMs = day.getTime();
+      const wgap = (p) => (nowMs - (p.lastSlot === -Infinity ? p.start.getTime() - 7 * 86400000 : p.lastSlot)) * Math.pow(2, p.priority || 0);
       let pick = null;
       if (forcedId) pick = active.find((p) => p.id === forcedId) || null;
       // A due weekly game wins its one day even mid-binge, then the binge resumes.
       if (!pick) { const due = active.filter((p) => p.cadence === 'weekly'); if (due.length) { due.sort((a, b) => (a.deadlineMs - b.deadlineMs) || (a.lastSlot - b.lastSlot) || (a.start - b.start) || (a.id < b.id ? -1 : 1)); pick = due[0]; } }
-      if (!pick) { const hold = active.filter((p) => p.binge && p.hoursDone > 0); if (hold.length) { hold.sort((a, b) => (a.start - b.start) || (a.id < b.id ? -1 : 1)); pick = hold[0]; } }
+      if (!pick) {
+        const hold = active.filter((p) => p.binge && p.hoursDone > 0);
+        if (hold.length) {
+          hold.sort((a, b) => (a.start - b.start) || (a.id < b.id ? -1 : 1));
+          const h = hold[0];
+          // A LONG-RUNNING binge (priority < 0, e.g. FF7 Revelation) can be interrupted
+          // by a higher-priority game (Pokémon): share this slot between the binge and
+          // its challengers via weighted rotation so the prioritized game stays on
+          // track, then the binge resumes. A neutral binge (priority >= 0, e.g.
+          // Persona 4 Revival) is never interrupted — it holds against everything.
+          const challengers = h.priority < 0 ? active.filter((p) => p.priority > h.priority) : [];
+          if (challengers.length) {
+            const pool = [h, ...challengers];
+            pool.sort((a, b) => (wgap(b) - wgap(a)) || (a.deadlineMs - b.deadlineMs) || (a.id < b.id ? -1 : 1));
+            pick = pool[0];
+          } else { pick = h; }
+        }
+      }
       if (!pick && active.length) {
-        // earliest deadline first (deadline-pressured games win slots), then rotate.
-        // Earliest deadline first, then a PRIORITY-WEIGHTED rotation: each game's
-        // time-since-last-played is scaled by 2^priority, so a higher-priority game
-        // (e.g. Pokémon, +1) comes "due" sooner and plays a larger share — but it
-        // still interleaves with the other in-progress games rather than bingeing
-        // ahead. Long-running franchises (-1) play a smaller share and yield first.
-        const nowMs = day.getTime();
-        const wgap = (p) => (nowMs - (p.lastSlot === -Infinity ? p.start.getTime() - 7 * 86400000 : p.lastSlot)) * Math.pow(2, p.priority || 0);
+        // Earliest deadline first (deadline-pressured games win), then weighted rotation
+        // (higher priority plays a larger share but still interleaves, doesn't binge).
         active.sort((a, b) => (a.deadlineMs - b.deadlineMs) || (wgap(b) - wgap(a)) || (a.hoursDone - b.hoursDone) || (a.start - b.start) || (a.id < b.id ? -1 : 1));
         pick = active[0];
       }
