@@ -501,7 +501,8 @@
         }
       ],
       "earlyAccess": "Deluxe Edition adds extra in-game content.",
-      "notes": "Two-player co-op sci-fi adventure."
+      "notes": "Two-player co-op sci-fi adventure.",
+      "bonus": true
     },
     {
       "title": "Marvel's Wolverine",
