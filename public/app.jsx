@@ -23,7 +23,7 @@ const DEFAULT_SETTINGS = {
   autoPlace: [],   // ids of month/quarter games the user pinned to an auto-picked start day
 };
 
-const FALLBACK_PACE = { hoursPerStream: 5.11, hoursPerWeek: 11.52, source: 'fallback', fetchedAt: null, numStreams: 29, totalHours: 148.1, windowDays: 90 };
+const FALLBACK_PACE = { hoursPerStream: 5.11, hoursPerWeek: 11.52, weekdayHps: 4.0, weekendHps: 8.0, weekdayStreams: 0, weekendStreams: 0, source: 'fallback', fetchedAt: null, numStreams: 29, totalHours: 148.1, windowDays: 90 };
 
 const KIND_LABEL = { game: 'Game', replay: 'Replay', dlc: 'DLC / Chapter', event: 'Event' };
 const KIND_COLOR = { game: 'var(--accent)', replay: 'var(--accent-2)', dlc: 'var(--good)', event: 'var(--warn)' };
@@ -100,8 +100,8 @@ function uid() { return 'g' + Math.random().toString(36).slice(2, 9); }
 const fmtDate = (d) => `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
 const shortDate = (d) => `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`;
 function effectivePace(settings, pace) {
-  if (settings.override) return { hoursPerStream: settings.hoursPerStream, hoursPerWeek: settings.hoursPerWeek };
-  return { hoursPerStream: pace.hoursPerStream, hoursPerWeek: pace.hoursPerWeek };
+  if (settings.override) return { hoursPerStream: settings.hoursPerStream, hoursPerWeek: settings.hoursPerWeek, weekdayHps: settings.hoursPerStream, weekendHps: settings.hoursPerStream };
+  return { hoursPerStream: pace.hoursPerStream, hoursPerWeek: pace.hoursPerWeek, weekdayHps: pace.weekdayHps, weekendHps: pace.weekendHps };
 }
 
 // ============================================================================
@@ -931,6 +931,12 @@ function SettingsPanel({ settings, pace, setSettings, setPace, onClose }) {
             <div style={{ color: 'var(--muted)', fontSize: '0.85rem', marginTop: 4 }}>
               {pace.hoursPerWeek}h / week · {pace.numStreams || '–'} streams · {pace.totalHours || '–'}h over last {pace.windowDays || 90} days
             </div>
+            {!settings.override && (pace.weekdayHps || pace.weekendHps) && (
+              <div style={{ color: 'var(--muted)', fontSize: '0.85rem', marginTop: 2 }}>
+                weekday ~{pace.weekdayHps}h/stream · weekend ~{pace.weekendHps}h/stream
+                {pace.weekendStreams ? ` (${pace.weekdayStreams}wd / ${pace.weekendStreams}we)` : ''}
+              </div>
+            )}
             <div className="hint" style={{ marginTop: 6 }}>
               {pace.fetchedAt ? 'Updated ' + new Date(pace.fetchedAt).toLocaleString() : 'Auto-refreshes weekly (Mondays).'}
               {pace.error ? ' · source unreachable, using fallback' : ''}

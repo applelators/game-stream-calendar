@@ -170,6 +170,17 @@ function daysToFinish(hltbHours, pace) {
   return weeksToFinish(hltbHours, pace) * 7;
 }
 
+// Hours a single stream delivers on a given calendar day. Weekends (Sat/Sun) run
+// longer than weekdays, so the plan credits a weekend session more hours. Falls
+// back to the flat hoursPerStream when the weekday/weekend split isn't available.
+function hoursOnDay(date, pace) {
+  const dow = date.getUTCDay(); // 0 Sun .. 6 Sat
+  const wknd = dow === 0 || dow === 6;
+  if (wknd && pace && pace.weekendHps) return pace.weekendHps;
+  if (!wknd && pace && pace.weekdayHps) return pace.weekdayHps;
+  return (pace && pace.hoursPerStream) || 5;
+}
+
 // How many calendar days a game's bar should span.
 //  - events: the explicit window length (release -> eventEnd)
 //  - everything else: HLTB hours converted through the current pace
@@ -328,21 +339,20 @@ function streamPlan(games, pace, normVacs, today) {
     const gr = groups[key];
     let earliest = null; for (const m of gr.members) if (!earliest || m.start < earliest) earliest = m.start;
     gr.winStart = earliest && earliest > t0 ? earliest : t0;
-    gr.availDays = 0;
-    for (let d = new Date(gr.winStart); d < gr.deadline; d = addDays(d, 1)) if (!inVacation(d, normVacs) && !blockedEve(d)) gr.availDays++;
+    // available stream HOURS in the window — every non-vacation, non-eve day, with
+    // weekend days worth more (hoursOnDay).
+    gr.availDays = 0; gr.availHours = 0;
+    for (let d = new Date(gr.winStart); d < gr.deadline; d = addDays(d, 1)) if (!inVacation(d, normVacs) && !blockedEve(d)) { gr.availDays++; gr.availHours += hoursOnDay(d, pace); }
     gr.neededH = gr.members.reduce((s, m) => s + m.hltb, 0);
-    let hps = baseHps, guard = 0;
-    const sumCeil = (h) => gr.members.reduce((s, m) => s + Math.max(1, Math.ceil(m.hltb / h)), 0);
-    while (gr.availDays > 0 && sumCeil(hps) > gr.availDays && hps < 24 && guard++ < 400) hps += 0.1;
-    gr.boostHps = hps;
-    gr.boostStreams = {}; gr.boostTotal = 0;
-    for (const m of gr.members) { const bs = Math.max(1, Math.ceil(m.hltb / hps)); gr.boostStreams[m.id] = bs; gr.boostTotal += bs; }
-    gr.fits = gr.availDays > 0 && gr.boostTotal <= gr.availDays;
-    // Local feasibility: the group's streams must fit the window's base slots AFTER
-    // higher-priority work that contends in the same window (launches, binge games,
-    // and earlier/equal-deadline groups). Local — so a far month isn't falsely boosted
-    // by the global backlog.
-    let contention = 0;
+    // If even streaming every available day isn't enough, sessions must run longer:
+    // the lengthen factor scales each session's hours so the group fits the window.
+    gr.lengthen = (gr.availHours > 0 && gr.neededH > gr.availHours) ? gr.neededH / gr.availHours : 1;
+    gr.fits = gr.availHours > 0 && gr.neededH <= gr.availHours + 0.001;
+    // Local feasibility: the group's hours must fit the window's base-cadence hours
+    // AFTER higher-priority work that contends in the same window (launches, binge
+    // games, and earlier/equal-deadline groups). Local — so a far month isn't falsely
+    // boosted by the global backlog.
+    let contentionH = 0;
     for (const s of cSpec) {
       if (gr.ids.has(s.id)) continue;
       if (s.start >= gr.deadline) continue;
@@ -353,44 +363,47 @@ function streamPlan(games, pace, normVacs, today) {
       if (!overlaps) continue;
       const launches = launchOnDay[dkey(s.start)] === s.id && s.start >= gr.winStart && s.start < gr.deadline;
       const priority = s.binge || launches || (hasDl && s.deadlineMs <= gr.deadline.getTime());
-      if (priority) contention += s.baseStreams;
+      if (priority) contentionH += s.hltb;
     }
-    const baseTotal = gr.members.reduce((sm, m) => sm + m.baseStreams, 0);
-    gr.boost = gr.availDays > 0 && baseTotal > (gr.availDays * perDay - contention) + 0.001;
+    const baseCapH = gr.availHours * perDay; // hours deliverable at base cadence in window
+    gr.boost = gr.availDays > 0 && gr.neededH > (baseCapH - contentionH) + 0.001;
   }
   const boostKeys = new Set(Object.keys(groups).filter((k) => groups[k].boost));
 
   // One scheduling pass. boostKeys = groups that stream every available day (and use
   // their boosted, possibly-lengthened stream counts) to make their deadline.
   function simulate(boostKeys) {
-    const work = cSpec.map((s) => ({ ...s, streams: boostKeys.has(s.key) ? groups[s.key].boostStreams[s.id] : s.baseStreams, done: 0, lastSlot: -Infinity, slots: [] }));
-    const bwork = bSpec.map((s) => ({ ...s, streams: s.baseStreams, done: 0, lastSlot: -Infinity, slots: [] }));
+    const work = cSpec.map((s) => ({ ...s, target: s.hltb, hoursDone: 0, lastSlot: -Infinity, slots: [], lengthen: boostKeys.has(s.key) && groups[s.key] ? groups[s.key].lengthen : 1 }));
+    const bwork = bSpec.map((s) => ({ ...s, target: s.hltb, hoursDone: 0, lastSlot: -Infinity, slots: [], lengthen: 1 }));
     const boostW = [...boostKeys].filter((k) => groups[k]).map((k) => ({ start: groups[k].winStart, deadline: groups[k].deadline, ids: groups[k].ids }));
     let earliest = null; for (const p of work.concat(bwork)) if (!earliest || p.start < earliest) earliest = p.start;
     let day = new Date(Math.max(earliest.getTime(), t0.getTime())), acc = 0, guard = 0;
-    let remaining = work.concat(bwork).reduce((s, p) => s + p.streams, 0);
-    const take = (p) => { p.done++; p.lastSlot = day.getTime(); p.slots.push(new Date(day)); remaining--; };
+    const undone = (p) => p.hoursDone < p.target - 0.001;
+    let remaining = work.concat(bwork).filter(undone).length;
+    // Each stream day delivers hoursOnDay (weekends longer); a game finishes when its
+    // accumulated hours reach its HLTB target. Boosted groups lengthen each session.
+    const take = (p) => { const was = undone(p); p.hoursDone += hoursOnDay(day, pace) * (p.lengthen || 1); p.lastSlot = day.getTime(); p.slots.push(new Date(day)); if (was && !undone(p)) remaining--; };
     while (remaining > 0 && guard++ < 500000) {
       if (inVacation(day, normVacs) || blockedEve(day)) { day = addDays(day, 1); continue; }
       const k = dkey(day);
       const forcedId = launchOnDay[k];
-      const boostActive = boostW.some((w) => day >= w.start && day < w.deadline && work.some((p) => w.ids.has(p.id) && p.done < p.streams));
+      const boostActive = boostW.some((w) => day >= w.start && day < w.deadline && work.some((p) => w.ids.has(p.id) && undone(p)));
       let isSlot = false;
       if (forcedId) isSlot = true;
       else if (boostActive) isSlot = true;
       else { acc += perDay; if (acc >= 1) { acc -= 1; isSlot = true; } }
       if (!isSlot) { day = addDays(day, 1); continue; }
-      const active = work.filter((p) => p.start <= day && p.done < p.streams);
+      const active = work.filter((p) => p.start <= day && undone(p));
       let pick = null;
       if (forcedId) pick = active.find((p) => p.id === forcedId) || null;
-      if (!pick) { const hold = active.filter((p) => p.binge && p.done > 0); if (hold.length) { hold.sort((a, b) => (a.start - b.start) || (a.id < b.id ? -1 : 1)); pick = hold[0]; } }
+      if (!pick) { const hold = active.filter((p) => p.binge && p.hoursDone > 0); if (hold.length) { hold.sort((a, b) => (a.start - b.start) || (a.id < b.id ? -1 : 1)); pick = hold[0]; } }
       if (!pick && active.length) {
         // earliest deadline first (deadline-pressured games win slots), then rotate.
-        active.sort((a, b) => (a.deadlineMs - b.deadlineMs) || (a.lastSlot - b.lastSlot) || (a.done - b.done) || (a.start - b.start) || (a.id < b.id ? -1 : 1));
+        active.sort((a, b) => (a.deadlineMs - b.deadlineMs) || (a.lastSlot - b.lastSlot) || (a.hoursDone - b.hoursDone) || (a.start - b.start) || (a.id < b.id ? -1 : 1));
         pick = active[0];
       }
       if (!pick) {
-        const ab = bwork.filter((p) => p.start <= day && p.done < p.streams);
+        const ab = bwork.filter((p) => p.start <= day && undone(p));
         if (ab.length) { ab.sort((a, b) => (a.lastSlot - b.lastSlot) || (a.start - b.start) || (a.id < b.id ? -1 : 1)); take(ab[0]); }
         day = addDays(day, 1); continue;
       }
@@ -409,17 +422,24 @@ function streamPlan(games, pace, normVacs, today) {
     if (!p.slots.length) { const e = addDays(p.start, 1); out[p.id] = { start: p.start, end: e, segments: [{ start: p.start, end: e }] }; continue; }
     const first = p.slots[0], last = addDays(p.slots[p.slots.length - 1], 1);
     out[p.id] = { start: first, end: last, segments: [{ start: first, end: last }] };
-    p.slots.forEach((d, i) => { sessionByDay[dkey(d)] = { id: p.id, idx: i + 1, total: p.streams }; });
+    const total = p.slots.length;
+    p.slots.forEach((d, i) => { sessionByDay[dkey(d)] = { id: p.id, idx: i + 1, total }; });
   }
   for (const p of fin.bwork) {
     if (p.slots.length) { const first = p.slots[0], last = addDays(p.slots[p.slots.length - 1], 1); out[p.id] = { start: first, end: last, segments: [{ start: first, end: last }] }; }
   }
   const boosts = {};
+  const paceHpw = (pace && pace.hoursPerWeek) || (baseHps * spw);
   for (const key of boostKeys) {
     const gr = groups[key];
-    const pushWeeks = Math.max(0.5, gr.boostTotal / 7); // the catch-up runs ~daily
-    boosts[key] = { days: gr.boostTotal, usualDays: Math.max(1, Math.round(gr.boostTotal / 7 * spw)),
-      hps: Math.round(gr.boostHps * 10) / 10, hpw: Math.round(gr.neededH / pushWeeks * 10) / 10, fits: gr.fits };
+    const pushWeeks = Math.max(0.5, (gr.deadline - gr.winStart) / (7 * 86400000)); // the catch-up runs ~daily
+    boosts[key] = {
+      days: gr.availDays,
+      usualDays: Math.max(1, Math.round((gr.neededH / paceHpw) * spw)),
+      hps: Math.round((gr.neededH / Math.max(1, gr.availDays)) * 10) / 10,
+      hpw: Math.round((gr.neededH / pushWeeks) * 10) / 10,
+      fits: gr.fits,
+    };
   }
   return { positions: out, sessionByDay, bonusByDay, boosts };
 }

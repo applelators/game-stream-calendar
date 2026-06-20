@@ -17,6 +17,10 @@ export const FALLBACK_PACE = {
   hoursPerStream: 5.11,
   hoursPerWeek: 11.52,
   streamsPerWeek: 2.26,
+  weekdayHps: 4.0,
+  weekendHps: 8.0,
+  weekdayStreams: 0,
+  weekendStreams: 0,
   totalHours: 148.1,
   numStreams: 29,
   windowDays: WINDOW_DAYS,
@@ -40,10 +44,26 @@ export function computePace(rows, windowDays = WINDOW_DAYS) {
   if (numStreams === 0 || totalHours === 0) {
     return { ...FALLBACK_PACE, source: 'fallback-empty' };
   }
+  // Weekday vs weekend split: bucket each stream by the day of week it started on,
+  // so the scheduler can credit longer weekend sessions (Sat/Sun) differently from
+  // weekday sessions. Empty buckets fall back to the overall average.
+  let wdH = 0, wdN = 0, weH = 0, weN = 0;
+  for (const r of rows) {
+    const h = (Number(r.length) || 0) / 60;
+    const dt = String(r.startDateTime || r.starttime || '').slice(0, 10);
+    const dd = dt ? new Date(dt + 'T00:00:00Z') : null;
+    const dow = dd && !isNaN(dd.getTime()) ? dd.getUTCDay() : null; // 0 Sun .. 6 Sat
+    if (dow === 0 || dow === 6) { weH += h; weN += 1; } else { wdH += h; wdN += 1; }
+  }
+  const overall = totalHours / numStreams;
   return {
-    hoursPerStream: round(totalHours / numStreams),
+    hoursPerStream: round(overall),
     hoursPerWeek: round(totalHours / weeks),
     streamsPerWeek: round(numStreams / weeks),
+    weekdayHps: wdN ? round(wdH / wdN) : round(overall),
+    weekendHps: weN ? round(weH / weN) : round(overall * 1.5),
+    weekdayStreams: wdN,
+    weekendStreams: weN,
     totalHours: round(totalHours, 1),
     numStreams,
     windowDays,
