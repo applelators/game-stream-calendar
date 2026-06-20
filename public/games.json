@@ -32,7 +32,7 @@
       "notes": "",
       "icon": "https://cdn.dekudeals.com/images/14a9585aef502398de4d06d44d8709f1de6f26b4/w500.jpg",
       "iconColor": "#5ed3de",
-      "partGoal": "Through Prison Island (1st visit) — Colony 9 to the Eryth Sea/Alcamoth arc; reach Valak Mountain.",
+      "partGoal": "About the first third of the story — ||through Prison Island (1st visit): Colony 9 → Eryth Sea/Alcamoth, reaching Valak Mountain||.",
       "priority": -1
     },
     {
@@ -52,7 +52,7 @@
       "icon": "https://cdn.dekudeals.com/images/14a9585aef502398de4d06d44d8709f1de6f26b4/w500.jpg",
       "iconColor": "#5ed3de",
       "finishBefore": "2026-07",
-      "partGoal": "Valak Mountain through the Mechonis landing — Sword Valley, Galahad Fortress, the Fallen Arm, up to Agniratha.",
+      "partGoal": "The middle third — ||Valak Mountain through the Mechonis landing: Sword Valley, Galahad Fortress, the Fallen Arm, up to Agniratha||.",
       "priority": -1
     },
     {
@@ -72,7 +72,7 @@
       "icon": "https://cdn.dekudeals.com/images/14a9585aef502398de4d06d44d8709f1de6f26b4/w500.jpg",
       "iconColor": "#5ed3de",
       "finishBefore": "2026-08",
-      "partGoal": "Agniratha & the Mechonis Core through the Bionis interior to the ending.",
+      "partGoal": "The final third — ||Agniratha & the Mechonis Core through the Bionis interior to the ending||.",
       "priority": -1
     },
     {
@@ -202,7 +202,7 @@
       "finishBefore": "2026-08",
       "icon": "https://cdn2.steamgriddb.com/thumb/ba3072daa7d54d117b22019c3974b0fe.jpg",
       "iconColor": "#eeb94f",
-      "partGoal": "Badges 5–8 (Norman → Winona → Tate&Liza → Wallace), the Elite Four/Champion, + the Delta Episode.",
+      "partGoal": "Badges 5–8 (Norman → Winona → Tate&Liza → Wallace), the Elite Four/Champion, + ||the Delta Episode||.",
       "priority": 1
     },
     {
@@ -360,7 +360,7 @@
       "icon": "https://cdn.dekudeals.com/images/e2119fd96155112a20b409962b182dbee4b0e8f1/w500.jpg",
       "iconColor": "#5bb1e1",
       "finishBefore": "2026-09",
-      "partGoal": "Chapters 1–4 (Gormott → Uraya → reach Mor Ardain).",
+      "partGoal": "Chapters 1–4 ||(Gormott → Uraya → reach Mor Ardain)||.",
       "priority": -1
     },
     {
@@ -380,7 +380,7 @@
       "icon": "https://cdn.dekudeals.com/images/e2119fd96155112a20b409962b182dbee4b0e8f1/w500.jpg",
       "iconColor": "#5bb1e1",
       "finishBefore": "2026-10",
-      "partGoal": "Chapters 5–7 (Tantal, Leftheria, Indol/Spirit Crucible setup).",
+      "partGoal": "Chapters 5–7 ||(Tantal, Leftheria, Indol / Spirit Crucible setup)||.",
       "priority": -1
     },
     {
@@ -400,7 +400,7 @@
       "icon": "https://cdn.dekudeals.com/images/e2119fd96155112a20b409962b182dbee4b0e8f1/w500.jpg",
       "iconColor": "#5bb1e1",
       "finishBefore": "2026-11",
-      "partGoal": "Chapters 8–10 (Spirit Crucible to the finale).",
+      "partGoal": "Chapters 8–10 ||(Spirit Crucible to the finale)||.",
       "priority": -1
     },
     {
@@ -420,7 +420,7 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/ce89d7d8c6c4c0f6b4dab0a8606d2d68.jpg",
       "iconColor": "#b65fdd",
       "finishBefore": "2026-08",
-      "partGoal": "Chapters 1–13 (through the mid-game reversal)."
+      "partGoal": "Chapters 1–13 ||(through the mid-game reversal)||."
     },
     {
       "title": "Fire Emblem Engage — Pt. 2",
@@ -439,7 +439,7 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/ce89d7d8c6c4c0f6b4dab0a8606d2d68.jpg",
       "iconColor": "#b65fdd",
       "finishBefore": "fire-emblem-fortune-s-weave",
-      "partGoal": "Chapters 14–26 (the endgame to the finale)."
+      "partGoal": "Chapters 14–26 ||(the endgame to the finale)||."
     },
     {
       "title": "Pokémon Pokopia Expansion Pass: Bubbly Basin",
@@ -641,7 +641,7 @@
       "finishBefore": "2026-12",
       "icon": "https://cdn2.steamgriddb.com/thumb/91f618d4453134d636932694dcb160f9.jpg",
       "iconColor": "#dd8d60",
-      "partGoal": "Badges 7–8 (Candice, Volkner), the Distortion World/Giratina, + the Elite Four/Champion.",
+      "partGoal": "Badges 7–8 (Candice, Volkner), the Elite Four/Champion, + ||the Distortion World / Giratina||.",
       "priority": 1
     },
     {
@@ -667,7 +667,7 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/66f6fcf0292987eee074f469c452ff0d.jpg",
       "iconColor": "#5473e7",
       "finishBefore": "2026-10",
-      "partGoal": "Through Monstro (Destiny Islands → Traverse Town → Wonderland → Coliseum → Deep Jungle → Agrabah → Monstro).",
+      "partGoal": "Roughly the first half of the worlds — ||Destiny Islands → Traverse Town → Wonderland → Coliseum → Deep Jungle → Agrabah → Monstro||.",
       "priority": -1
     },
     {
@@ -689,7 +689,7 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/66f6fcf0292987eee074f469c452ff0d.jpg",
       "iconColor": "#5473e7",
       "finishBefore": "2026-11",
-      "partGoal": "Atlantica → Halloween Town → Neverland → Hollow Bastion → End of the World (finale).",
+      "partGoal": "The remaining worlds to the finale — ||Atlantica → Halloween Town → Neverland → Hollow Bastion → End of the World||.",
       "priority": -1
     },
     {
@@ -732,7 +732,7 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/76e60d6d85f4a00c7ccbdbe98e172179.jpg",
       "iconColor": "#5eb3dd",
       "finishBefore": "2027-01",
-      "partGoal": "First visits to all worlds, through the Battle of Hollow Bastion (the '1000 Heartless' fight).",
+      "partGoal": "First visits to all worlds — ||through the Battle of Hollow Bastion (the '1000 Heartless' fight)||.",
       "priority": -1
     },
     {
@@ -754,7 +754,7 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/76e60d6d85f4a00c7ccbdbe98e172179.jpg",
       "iconColor": "#5eb3dd",
       "finishBefore": "2027-02",
-      "partGoal": "Second visits through The World That Never Was (finale).",
+      "partGoal": "Second visits to the finale — ||through The World That Never Was||.",
       "priority": -1
     },
     {
@@ -795,7 +795,7 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/30b3841e8543e1995128f44fde0fe712.jpg",
       "iconColor": "#b572c9",
       "finishBefore": "2027-03",
-      "partGoal": "Terra's and Ventus's full scenarios.",
+      "partGoal": "The first two of three scenarios — ||Terra's and Ventus's stories||.",
       "priority": -1
     },
     {
@@ -817,7 +817,7 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/30b3841e8543e1995128f44fde0fe712.jpg",
       "iconColor": "#b572c9",
       "finishBefore": "2027-04",
-      "partGoal": "Aqua's scenario + the Final Episode (and secret ending).",
+      "partGoal": "The final scenario + endgame — ||Aqua's scenario, the Final Episode, and secret ending||.",
       "priority": -1
     },
     {
@@ -860,7 +860,7 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/f07056820e9ef297061d86c0c4c45737.jpg",
       "iconColor": "#c972a1",
       "finishBefore": "2027-05",
-      "partGoal": "Through The Grid (Traverse Town → La Cité des Cloches → The Grid for both Sora & Riku).",
+      "partGoal": "Roughly the first half of the Drop worlds — ||Traverse Town → La Cité des Cloches → The Grid (both Sora & Riku)||.",
       "priority": -1
     },
     {
@@ -882,7 +882,7 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/f07056820e9ef297061d86c0c4c45737.jpg",
       "iconColor": "#c972a1",
       "finishBefore": "2027-06",
-      "partGoal": "Prankster's Paradise → Country of the Musketeers → Symphony of Sorcery → The World That Never Was (finale).",
+      "partGoal": "The remaining worlds to the finale — ||Prankster's Paradise → Country of the Musketeers → Symphony of Sorcery → The World That Never Was||.",
       "priority": -1
     },
     {
@@ -942,7 +942,7 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/18b9bdc56c4268c709fab4763719bbe4.jpg",
       "iconColor": "#7284c9",
       "finishBefore": "2027-08",
-      "partGoal": "Through Arendelle (Olympus → Twilight Town → Toy Box → Kingdom of Corona → Monstropolis → Frozen).",
+      "partGoal": "Roughly the first half of the worlds — ||Olympus → Twilight Town → Toy Box → Kingdom of Corona → Monstropolis → Arendelle (Frozen)||.",
       "priority": -1
     },
     {
@@ -964,7 +964,7 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/18b9bdc56c4268c709fab4763719bbe4.jpg",
       "iconColor": "#7284c9",
       "finishBefore": "2027-09",
-      "partGoal": "The Caribbean → San Fransokyo → the Keyblade Graveyard & finale, then the ReMind DLC.",
+      "partGoal": "The remaining worlds to the finale, then the ReMind DLC — ||The Caribbean → San Fransokyo → the Keyblade Graveyard||.",
       "priority": -1
     },
     {
@@ -1057,7 +1057,7 @@
       "icon": "https://cdn.dekudeals.com/images/f995e12bf4034326f6a3ad1a227f24f2b5397ec6/w500.jpg",
       "iconColor": "#60bcdc",
       "finishBefore": "2026-12",
-      "partGoal": "Chapters 1–2 (through entering Swordmarch / Origin setup).",
+      "partGoal": "Chapters 1–2 ||(through entering Swordmarch / Origin setup)||.",
       "priority": -1
     },
     {
@@ -1077,7 +1077,7 @@
       "icon": "https://cdn.dekudeals.com/images/f995e12bf4034326f6a3ad1a227f24f2b5397ec6/w500.jpg",
       "iconColor": "#60bcdc",
       "finishBefore": "2027-01",
-      "partGoal": "Chapters 3–5 (the Captain Jin/Moebius mid-game arc).",
+      "partGoal": "Chapters 3–5 ||(the Captain Jin / Moebius mid-game arc)||.",
       "priority": -1
     },
     {
@@ -1097,7 +1097,7 @@
       "icon": "https://cdn.dekudeals.com/images/f995e12bf4034326f6a3ad1a227f24f2b5397ec6/w500.jpg",
       "iconColor": "#60bcdc",
       "finishBefore": "persona-4-revival",
-      "partGoal": "Chapters 6–7 (the march on Origin to the ending).",
+      "partGoal": "Chapters 6–7 ||(the march on Origin to the ending)||.",
       "priority": -1
     },
     {
@@ -1397,7 +1397,7 @@
       "icon": "https://cdn.dekudeals.com/images/021d61f43b2a9ae995539745052b73bc9c0e127f/w500.jpg",
       "iconColor": "#a964d8",
       "finishBefore": "2026-07",
-      "partGoal": "Chapters 1–6 (Reactor 1 bombing through the Mako Reactor 5 escape).",
+      "partGoal": "Chapters 1–6 ||(Reactor 1 bombing through the Mako Reactor 5 escape)||.",
       "priority": -1
     },
     {
@@ -1418,7 +1418,7 @@
       "icon": "https://cdn.dekudeals.com/images/021d61f43b2a9ae995539745052b73bc9c0e127f/w500.jpg",
       "iconColor": "#a964d8",
       "finishBefore": "2026-08",
-      "partGoal": "Chapters 7–12 (Wall Market through the collapsed expressway/train graveyard).",
+      "partGoal": "Chapters 7–12 ||(Wall Market through the collapsed expressway / train graveyard)||.",
       "priority": -1
     },
     {
@@ -1439,7 +1439,7 @@
       "icon": "https://cdn.dekudeals.com/images/021d61f43b2a9ae995539745052b73bc9c0e127f/w500.jpg",
       "iconColor": "#a964d8",
       "finishBefore": "2026-09",
-      "partGoal": "Chapters 13–18 (Sector 7 plate through Shinra HQ & the finale) + the INTERmission (Yuffie) episode.",
+      "partGoal": "Chapters 13–18 ||(Sector 7 plate through Shinra HQ & the finale)|| + the INTERmission (Yuffie) episode.",
       "priority": -1
     },
     {
@@ -1484,7 +1484,7 @@
       "icon": "https://cdn.dekudeals.com/images/1c13f2cbb7a62c0d11ff5d0e5adb9cebc0b8ee9b/w500.jpg",
       "iconColor": "#de825e",
       "finishBefore": "2026-11",
-      "partGoal": "Chapters 1–3 (Nibelheim flashback, Kalm, the Grasslands).",
+      "partGoal": "Chapters 1–3 ||(Nibelheim flashback, Kalm, the Grasslands)||.",
       "priority": -1
     },
     {
@@ -1507,7 +1507,7 @@
       "icon": "https://cdn.dekudeals.com/images/1c13f2cbb7a62c0d11ff5d0e5adb9cebc0b8ee9b/w500.jpg",
       "iconColor": "#de825e",
       "finishBefore": "2026-12",
-      "partGoal": "Chapters 4–6 (Junon → Costa del Sol → Corel region).",
+      "partGoal": "Chapters 4–6 ||(Junon → Costa del Sol → Corel region)||.",
       "priority": -1
     },
     {
@@ -1530,7 +1530,7 @@
       "icon": "https://cdn.dekudeals.com/images/1c13f2cbb7a62c0d11ff5d0e5adb9cebc0b8ee9b/w500.jpg",
       "iconColor": "#de825e",
       "finishBefore": "2027-01",
-      "partGoal": "Chapters 7–9 (Gongaga → Cosmo Canyon → Nibelheim).",
+      "partGoal": "Chapters 7–9 ||(Gongaga → Cosmo Canyon → Nibelheim)||.",
       "priority": -1
     },
     {
@@ -1553,7 +1553,7 @@
       "icon": "https://cdn.dekudeals.com/images/1c13f2cbb7a62c0d11ff5d0e5adb9cebc0b8ee9b/w500.jpg",
       "iconColor": "#de825e",
       "finishBefore": "2027-02",
-      "partGoal": "Chapters 10–12 (the Temple of the Ancients arc).",
+      "partGoal": "Chapters 10–12 ||(the Temple of the Ancients arc)||.",
       "priority": -1
     },
     {
@@ -1576,7 +1576,7 @@
       "icon": "https://cdn.dekudeals.com/images/1c13f2cbb7a62c0d11ff5d0e5adb9cebc0b8ee9b/w500.jpg",
       "iconColor": "#de825e",
       "finishBefore": "2027-03",
-      "partGoal": "Chapters 13–14 (the Forgotten Capital to the finale).",
+      "partGoal": "Chapters 13–14 ||(the Forgotten Capital to the finale)||.",
       "priority": -1
     },
     {

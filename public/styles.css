@@ -356,6 +356,14 @@ input, select, textarea { font-family: inherit; }
 .dp-game { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* bonus games — optional "if time allows" extras, set apart from the committed plan */
+/* tap-to-reveal spoiler (plot details in part goals) */
+.spoiler { background: #4a5161; color: transparent; border-radius: 4px; padding: 0 4px;
+  cursor: pointer; user-select: none; transition: background .12s, color .12s; }
+.spoiler::after { content: ' 👁'; font-size: 0.7em; color: #cdd3df; }
+.spoiler:hover { background: #565d6e; }
+.spoiler.shown { background: rgba(255,255,255,0.06); color: inherit; cursor: default; user-select: text; }
+.spoiler.shown::after { content: ''; }
+
 /* slipped-deadline strip — games that won't finish on time this month */
 .gc-slip, .mg-slip { display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
   padding: 8px 16px; background: #2a1416; border-bottom: 1px solid var(--border);

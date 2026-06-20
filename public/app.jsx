@@ -470,6 +470,22 @@ function DeadlineBracket({ br, onPick, mobile }) {
   );
 }
 
+// Tap-to-reveal spoiler. Hidden until clicked, so plot details stay covered.
+function Spoiler({ children }) {
+  const [shown, setShown] = React.useState(false);
+  return (
+    <span className={`spoiler${shown ? ' shown' : ''}`}
+      onClick={(e) => { e.stopPropagation(); if (!shown) setShown(true); }}
+      title={shown ? '' : 'Tap to reveal spoiler'}>{children}</span>
+  );
+}
+
+// Render text with Discord-style ||spoiler|| segments as tap-to-reveal spans.
+function renderSpoilers(text) {
+  const segs = String(text || '').split('||');
+  return segs.map((s, i) => (i % 2 === 1 ? <Spoiler key={i}>{s}</Spoiler> : <span key={i}>{s}</span>));
+}
+
 // Games that miss their deadline this month — surfaced as a prominent strip at the
 // top of the month so a slip is never silent.
 function SlipStrip({ items, mobile, onPick }) {
@@ -920,7 +936,7 @@ function DetailCard({ game: g, pace, vacations, queuedPos, onClose }) {
             )}
             {g.earlyAccess && <div className="dt-line"><span className="k">Early access / bonus</span>{g.earlyAccess}</div>}
             {g.hltbNote && <div className="dt-line"><span className="k">HLTB basis</span>{labelBasis(g.hltbBasis)} — {g.hltbNote}</div>}
-            {g.partGoal && <div className="dt-line"><span className="k">Part goal</span>{g.partGoal}</div>}
+            {g.partGoal && <div className="dt-line"><span className="k">Part goal</span>{renderSpoilers(g.partGoal)}</div>}
           </div>
 
           {g.notes && <div className="note-box">{g.notes}</div>}
