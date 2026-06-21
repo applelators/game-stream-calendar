@@ -152,6 +152,9 @@ function gameFromFile(e, i) {
   if (e.cadence) g.cadence = String(e.cadence);
   // Optional fixed day-of-week for a weekly-cadence game (e.g. "Fri").
   if (e.weeklyDay != null) { const dw = parseDow(e.weeklyDay); if (dw != null) g.weeklyDow = dw; }
+  // Optional release-day session length (hours) for a midnight launch — overrides the
+  // default binge-launch ~6h (e.g. a one-go finish: set to the game's full length).
+  if (e.launchHours != null) g.launchHours = Number(e.launchHours);
   // Optional milestone: what chapter/badge/region marks this part "done".
   if (e.partGoal) g.partGoal = String(e.partGoal);
   // Optional scheduling priority within a shared deadline (higher = scheduled
@@ -345,7 +348,8 @@ function streamPlan(games, pace, normVacs, today) {
     if (!baseStreams) continue;
     const dl = g.finishBefore ? finishBeforeDeadline(g, byId) : null;
     (g.bonus ? bSpec : cSpec).push({ id: g.id, start, baseStreams, binge: !!g.binge,
-      cadence: g.cadence || null, weeklyDow: (g.weeklyDow != null ? g.weeklyDow : null), priority: Number(g.priority) || 0,
+      cadence: g.cadence || null, weeklyDow: (g.weeklyDow != null ? g.weeklyDow : null),
+      launchHours: (g.launchHours != null ? g.launchHours : null), priority: Number(g.priority) || 0,
       hltb: Number(g.hltbHours) || 0, key: g.finishBefore || null, deadlineMs: dl ? dl.getTime() : Infinity });
   }
   if (cSpec.length === 0 && bSpec.length === 0) return { positions: out, sessionByDay: {}, bonusByDay: {}, boosts: {} };
@@ -402,7 +406,21 @@ function streamPlan(games, pace, normVacs, today) {
     let remaining = work.concat(bwork).filter(undone).length;
     // Each stream day delivers hoursOnDay (weekends longer); a game finishes when its
     // accumulated hours reach its HLTB target. Boosted groups lengthen each session.
-    const take = (p) => { const was = undone(p); const h = hoursOnDay(day, pace) * (p.lengthen || 1); p.hoursDone += h; p.lastSlot = day.getTime(); p.slots.push(new Date(day)); p.slotHours.push(h); if (was && !undone(p)) remaining--; };
+    // Binge-launch: on a binge game's release day the user does a midnight stream
+    // + another session after work (~6h total), so the launch day credits more than
+    // a normal weekday. A per-game `launchHours` overrides this (e.g. a one-go finish).
+    const LAUNCH_HOURS = 6;
+    const take = (p) => {
+      const was = undone(p);
+      let dayH = hoursOnDay(day, pace);
+      if (launchOnDay[dkey(day)] === p.id) {
+        if (p.launchHours != null) dayH = Math.max(dayH, p.launchHours);
+        else if (p.binge) dayH = Math.max(dayH, LAUNCH_HOURS);
+      }
+      const h = dayH * (p.lengthen || 1);
+      p.hoursDone += h; p.lastSlot = day.getTime(); p.slots.push(new Date(day)); p.slotHours.push(h);
+      if (was && !undone(p)) remaining--;
+    };
     while (remaining > 0 && guard++ < 500000) {
       if (inVacation(day, normVacs) || blockedEve(day)) { day = addDays(day, 1); continue; }
       const k = dkey(day);
