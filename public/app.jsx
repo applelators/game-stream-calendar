@@ -660,7 +660,8 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
               const info = dayInfo(day, ctx);
               monthCount += info.releases.length;
               const isToday = y === tY && mon === tM && d === tD;
-              const cls = 'mg-cell' + (info.vac ? ' vac' : info.streamed ? ' streamed' : '') + (isToday ? ' today' : '');
+              const mHasArt = !info.vac && !info.launch && info.session && info.play && isImgIcon(info.play.icon);
+              const cls = 'mg-cell' + (info.vac ? ' vac' : info.streamed ? ' streamed' : '') + (mHasArt ? ' hasart' : '') + (isToday ? ' today' : '');
               let cellStyle;
               if (!info.vac && !info.streamed) {
                 if (info.launch) cellStyle = { backgroundColor: gameColor(info.launch.id).solid + '12' };
