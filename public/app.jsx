@@ -21,6 +21,8 @@ const DEFAULT_SETTINGS = {
   schedMode: 'parallel',
   vacations: [],   // [{ id, label, start:'YYYY-MM-DD', end:'YYYY-MM-DD' }] — no streaming
   autoPlace: [],   // ids of month/quarter games the user pinned to an auto-picked start day
+  longDays: [],    // ISO dates (days off) to treat as weekend-length stream days
+  dayPins: {},     // { 'YYYY-MM-DD': gameId } — force a specific game on a specific day
 };
 
 const FALLBACK_PACE = { hoursPerStream: 5.11, hoursPerWeek: 11.52, weekdayHps: 4.0, weekendHps: 8.0, weekdayStreams: 0, weekendStreams: 0, source: 'fallback', fetchedAt: null, numStreams: 29, totalHours: 148.1, windowDays: 90 };
@@ -175,6 +177,13 @@ function App() {
   const effGames = useMemo(() => withAutoPlacement(games, { ...autoMap, ...beforeMap }), [games, autoMap, beforeMap]);
   // Register cover-derived band colours before any child renders/uses gameColor.
   effGames.forEach((g) => { if (g.iconColor) ICON_COLORS[g.id] = g.iconColor; });
+  // Per-day overrides (settings store ISO dates; convert to engine day-keys):
+  // longDays = days off treated as weekend-length; dayPins = force a game on a day.
+  const isoToKey = (iso) => { const [y, m, d] = String(iso).split('-').map(Number); return `${y}-${m - 1}-${d}`; };
+  const dayOpts = useMemo(() => ({
+    longDays: new Set((settings.longDays || []).map(isoToKey)),
+    dayPins: Object.fromEntries(Object.entries(settings.dayPins || {}).map(([iso, id]) => [isoToKey(iso), id])),
+  }), [settings.longDays, settings.dayPins]);
   const togglePlan = useCallback((id) => {
     setSettings((s) => {
       const cur = s.autoPlace || [];
@@ -183,8 +192,8 @@ function App() {
   }, []);
   // Realistic release-priority finish per game (for the detail card).
   const seqPositions = useMemo(
-    () => schedule(effGames.filter((g) => isPlaceable(g.release) && !g.bonus), ep, 'sequential', normVacs),
-    [effGames, ep, normVacs]
+    () => schedule(effGames.filter((g) => isPlaceable(g.release) && !g.bonus), ep, 'sequential', normVacs, dayOpts),
+    [effGames, ep, normVacs, dayOpts]
   );
 
   const detailGame = detail ? effGames.find((g) => g.id === detail) : null;
@@ -223,7 +232,7 @@ function App() {
 
       {settings.view === 'timeline'
         ? <TimelineView games={effGames} pace={ep} mode={settings.schedMode} vacations={normVacs} onPick={setDetail} />
-        : <MonthGridView games={effGames} pace={ep} vacations={normVacs} streams={streams} onPick={setDetail} onTogglePlan={togglePlan} />}
+        : <MonthGridView games={effGames} pace={ep} vacations={normVacs} dayOpts={dayOpts} streams={streams} onPick={setDetail} onTogglePlan={togglePlan} />}
 
       {detailGame && (
         <DetailCard game={detailGame} pace={ep} vacations={normVacs} queuedPos={seqPositions[detailGame.id]}
@@ -531,7 +540,7 @@ function bonusNoteFor(dbrackets) {
   };
 }
 
-function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }) {
+function MonthGridView({ games, pace, vacations, dayOpts, streams, onPick, onTogglePlan }) {
   const isMobile = useIsMobile();
 
   // Actual streams already done (from @nabunan's Twitch history) keyed by calendar
@@ -556,7 +565,7 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
   const { releasesByDay, sessionByDay, gameById, plannedByMonth, bonusByMonth, bonusPlayByDay, deadlineByDay, deadlineBracketsByMonth, slippedByMonth, min, max } = useMemo(() => {
     // Interleaved plan: stream sessions rotate among in-progress games; bonus games
     // fill only spare slots. Drives the calendar directly.
-    const plan = streamPlan(placeable, pace, vacations);
+    const plan = streamPlan(placeable, pace, vacations, undefined, dayOpts);
     const pos = plan.positions, sbd = plan.sessionByDay, bpd = plan.bonusByDay, boosts = plan.boosts || {};
     const todayD = new Date();
     const today = utc(todayD.getUTCFullYear(), todayD.getUTCMonth() + 1, todayD.getUTCDate());
@@ -620,7 +629,7 @@ function MonthGridView({ games, pace, vacations, streams, onPick, onTogglePlan }
       }
     }
     return { releasesByDay: rbd, sessionByDay: sbd, gameById: gbi, plannedByMonth: pbm, bonusByMonth: bbm, bonusPlayByDay: bpd, deadlineByDay: dbd, deadlineBracketsByMonth: dbm, slippedByMonth: sbm, min: mn, max: mx };
-  }, [placeable, pace, vacations]);
+  }, [placeable, pace, vacations, dayOpts]);
 
   // Bonus games don't reserve midnight-launch eves (they're not committed).
   const eves = useMemo(() => launchEves(placeable.filter((g) => !g.bonus)), [placeable]);

@@ -198,9 +198,11 @@ function daysToFinish(hltbHours, pace) {
 // Hours a single stream delivers on a given calendar day. Weekends (Sat/Sun) run
 // longer than weekdays, so the plan credits a weekend session more hours. Falls
 // back to the flat hoursPerStream when the weekday/weekend split isn't available.
-function hoursOnDay(date, pace) {
+function hoursOnDay(date, pace, longDays) {
   const dow = date.getUTCDay(); // 0 Sun .. 6 Sat
-  const wknd = dow === 0 || dow === 6;
+  // longDays = a Set of day-keys the user flagged as long (days off) — treated as
+  // weekend-length even on a weekday.
+  const wknd = dow === 0 || dow === 6 || (longDays && longDays.has(dkey(date)));
   if (wknd && pace && pace.weekendHps) return pace.weekendHps;
   if (!wknd && pace && pace.weekdayHps) return pace.weekdayHps;
   return (pace && pace.hoursPerStream) || 5;
@@ -329,7 +331,11 @@ function scheduleParallel(games, pace, normVacs) {
 // (interleave non-binge, binge games hold, launch on release day). Returns
 // { positions, sessionByDay, bonusByDay, boosts } where boosts[key] describes the
 // extra cadence needed (days, hours/stream, hours/week, whether it fits).
-function streamPlan(games, pace, normVacs, today) {
+function streamPlan(games, pace, normVacs, today, opts) {
+  // Per-day overrides: longDays = Set of day-keys to treat as weekend-length;
+  // dayPins = { dayKey: gameId } to force a specific game on a specific day.
+  const longDays = (opts && opts.longDays) || null;
+  const dayPins = (opts && opts.dayPins) || null;
   const out = {};
   const byId = {};
   for (const g of (games || [])) byId[g.id] = g;
@@ -375,7 +381,7 @@ function streamPlan(games, pace, normVacs, today) {
     // available stream HOURS in the window — every non-vacation, non-eve day, with
     // weekend days worth more (hoursOnDay).
     gr.availDays = 0; gr.availHours = 0;
-    for (let d = new Date(gr.winStart); d < gr.deadline; d = addDays(d, 1)) if (!inVacation(d, normVacs) && !blockedEve(d)) { gr.availDays++; gr.availHours += hoursOnDay(d, pace); }
+    for (let d = new Date(gr.winStart); d < gr.deadline; d = addDays(d, 1)) if (!inVacation(d, normVacs) && !blockedEve(d)) { gr.availDays++; gr.availHours += hoursOnDay(d, pace, longDays); }
     gr.neededH = gr.members.reduce((s, m) => s + m.hltb, 0);
     // If even streaming every available day isn't enough, sessions must run longer:
     // the lengthen factor scales each session's hours so the group fits the window.
@@ -421,7 +427,7 @@ function streamPlan(games, pace, normVacs, today) {
     const LAUNCH_HOURS = 6;
     const take = (p) => {
       const was = undone(p);
-      let dayH = hoursOnDay(day, pace);
+      let dayH = hoursOnDay(day, pace, longDays);
       if (launchOnDay[dkey(day)] === p.id) {
         if (p.launchHours != null) dayH = Math.max(dayH, p.launchHours);
         else if (p.binge) dayH = Math.max(dayH, LAUNCH_HOURS);
@@ -433,7 +439,7 @@ function streamPlan(games, pace, normVacs, today) {
     while (remaining > 0 && guard++ < 500000) {
       if (inVacation(day, normVacs) || blockedEve(day)) { day = addDays(day, 1); continue; }
       const k = dkey(day);
-      const forcedId = forceStartDay[k];
+      const forcedId = forceStartDay[k] || (dayPins && dayPins[k]) || undefined;
       // weekly-cadence games are eligible at most once per 7 days; when one is "due"
       // it forces a stream day (like a launch) so it reliably gets its weekly slot.
       const WEEK = 7 * 86400000;
@@ -537,13 +543,13 @@ function streamPlan(games, pace, normVacs, today) {
   return { positions: out, sessionByDay, bonusByDay, boosts };
 }
 
-function scheduleSequential(games, pace, normVacs) {
-  return streamPlan(games, pace, normVacs).positions;
+function scheduleSequential(games, pace, normVacs, opts) {
+  return streamPlan(games, pace, normVacs, undefined, opts).positions;
 }
 
-function schedule(games, pace, mode /* 'parallel' | 'sequential' */, normVacs) {
+function schedule(games, pace, mode /* 'parallel' | 'sequential' */, normVacs, opts) {
   return mode === 'sequential'
-    ? scheduleSequential(games, pace, normVacs)
+    ? scheduleSequential(games, pace, normVacs, opts)
     : scheduleParallel(games, pace, normVacs);
 }
 
