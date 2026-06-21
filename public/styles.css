@@ -362,6 +362,24 @@ input, select, textarea { font-family: inherit; }
 .dp-game { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* bonus games — optional "if time allows" extras, set apart from the committed plan */
+/* "what can I stream today" picker */
+.gc-today, .mg-today { display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  background: var(--panel); border: 1px solid var(--border-solid); border-left: 3px solid var(--accent);
+  border-radius: var(--radius); padding: 10px 14px; margin-bottom: 14px; }
+.mg-today { padding: 9px 12px; gap: 6px; }
+.gc-today-h, .mg-today-h { width: 100%; font-size: 0.74rem; font-weight: 700; font-family: var(--mono);
+  color: var(--accent); letter-spacing: 0.02em; }
+.gc-today-chip, .mg-today-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem;
+  font-weight: 600; color: var(--text); background: var(--panel-2); border: 1px solid var(--border-solid);
+  border-radius: 999px; padding: 5px 11px; cursor: pointer; transition: 0.12s; }
+.gc-today-chip:hover, .mg-today-chip:hover { filter: brightness(1.12); }
+.gc-today-chip .dot, .mg-today-chip .dot { width: 9px; height: 9px; border-radius: 999px; flex: none; }
+.gc-today-chip small, .mg-today-chip small { font-family: var(--mono); font-size: 0.62rem; font-weight: 700; opacity: 0.9; }
+.gc-today-chip.rec, .mg-today-chip.rec { border-color: var(--good); background: #14241c; }
+.gc-today-chip.rec small, .mg-today-chip.rec small { color: var(--good); }
+.gc-today-chip.safe small, .mg-today-chip.safe small { color: var(--muted); }
+.gc-today-chip.risk small, .mg-today-chip.risk small { color: var(--danger); }
+
 /* tap-to-reveal spoiler (plot details in part goals) */
 .spoiler { background: #4a5161; color: transparent; border-radius: 4px; padding: 0 4px;
   cursor: pointer; user-select: none; transition: background .12s, color .12s; }

@@ -550,6 +550,22 @@ function streamPlan(games, pace, normVacs, today, opts) {
   return { positions: out, sessionByDay, bonusByDay, boosts };
 }
 
+// Count how many finish-before deadlines are missed in a given positions map
+// (a game finishing after its deadline). Used to test "what if I play X today".
+function countMissedDeadlines(positions, games) {
+  const byId = {};
+  for (const g of (games || [])) byId[g.id] = g;
+  let n = 0;
+  for (const g of (games || [])) {
+    if (!g.finishBefore || g.kind === 'event' || g.bonus) continue;
+    const dl = finishBeforeDeadline(g, byId);
+    if (!dl) continue;
+    const p = positions[g.id];
+    if (p && p.end > dl) n++;
+  }
+  return n;
+}
+
 function scheduleSequential(games, pace, normVacs, opts) {
   return streamPlan(games, pace, normVacs, undefined, opts).positions;
 }

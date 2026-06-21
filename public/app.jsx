@@ -495,6 +495,31 @@ function renderSpoilers(text) {
   return segs.map((s, i) => (i % 2 === 1 ? <Spoiler key={i}>{s}</Spoiler> : <span key={i}>{s}</span>));
 }
 
+// "What can I stream today" — the planned pick (recommended, keeps deadlines on
+// track) plus alternatives, each flagged for whether swapping to it slips a deadline.
+function TodayPicker({ options, mobile, onPick }) {
+  if (!options || !options.length) return null;
+  const pfx = mobile ? 'mg' : 'gc';
+  const today = new Date();
+  const label = `${MONTHS[today.getMonth()]} ${today.getDate()}`;
+  return (
+    <div className={`${pfx}-today`}>
+      <span className={`${pfx}-today-h`}>▶ Today ({label}) · feel like something else?</span>
+      {options.map((o) => (
+        <button key={o.id} className={`${pfx}-today-chip${o.recommended ? ' rec' : o.slips ? ' risk' : ' safe'}`}
+          style={{ borderColor: gameColor(o.id).solid }}
+          onClick={() => onPick(o.id)}
+          title={o.recommended ? 'Recommended — keeps every deadline on track'
+            : o.slips ? 'Playing this today would push a deadline' : 'Safe — no deadline slips if you play this today'}>
+          <span className="dot" style={{ background: gameColor(o.id).solid }} />
+          {o.title}{o.bonus ? ' ★' : ''}
+          <small>{o.recommended ? '✓ recommended' : o.slips ? '⚠ may slip' : '✓ no slip'}</small>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 // Games that miss their deadline this month — surfaced as a prominent strip at the
 // top of the month so a slip is never silent.
 function SlipStrip({ items, mobile, onPick }) {
@@ -562,7 +587,7 @@ function MonthGridView({ games, pace, vacations, dayOpts, streams, onPick, onTog
 
   // The realistic one-game-per-day plan (release-priority queue) drives the
   // calendar: each stream day maps to the game you'll actually be playing.
-  const { releasesByDay, sessionByDay, gameById, plannedByMonth, bonusByMonth, bonusPlayByDay, deadlineByDay, deadlineBracketsByMonth, slippedByMonth, min, max } = useMemo(() => {
+  const { releasesByDay, sessionByDay, gameById, plannedByMonth, bonusByMonth, bonusPlayByDay, deadlineByDay, deadlineBracketsByMonth, slippedByMonth, todayOptions, min, max } = useMemo(() => {
     // Interleaved plan: stream sessions rotate among in-progress games; bonus games
     // fill only spare slots. Drives the calendar directly.
     const plan = streamPlan(placeable, pace, vacations, undefined, dayOpts);
@@ -628,7 +653,44 @@ function MonthGridView({ games, pace, vacations, dayOpts, streams, onPick, onTog
         }
       }
     }
-    return { releasesByDay: rbd, sessionByDay: sbd, gameById: gbi, plannedByMonth: pbm, bonusByMonth: bbm, bonusPlayByDay: bpd, deadlineByDay: dbd, deadlineBracketsByMonth: dbm, slippedByMonth: sbm, min: mn, max: mx };
+    // ---- "what can I stream today" options ----------------------------------
+    // The planned pick keeps everything on track (recommended). Alternatives are the
+    // other games in progress today (+ available bonus); each is re-simulated with a
+    // one-day pin to see whether swapping to it today would push a deadline.
+    const tkey = dayKey(today);
+    let todayOptions = [];
+    if (!inVacation(today, vacations)) {
+      const baseMissed = countMissedDeadlines(pos, placeable);
+      const recId = sbd[tkey] ? sbd[tkey].id : null; // today's planned pick (if any)
+      const cand = [];
+      const soon = addDays(today, 10); // a game is a realistic "today" pick if it's
+      for (const g of placeable) {     // already out and in progress or starting soon
+        if (g.kind === 'event') continue;
+        const p = pos[g.id]; const a = anchorDate(g.release);
+        if (!a || a > today) continue;            // not yet released
+        if (p && today >= p.end) continue;        // already finished
+        const current = p && p.start <= soon;     // in progress or imminent
+        if (current || g.bonus || g.id === recId) cand.push(g.id);
+      }
+      const seen = {}; const order = [];
+      for (const id of [recId, ...cand]) { if (id && !seen[id]) { seen[id] = 1; order.push(id); } }
+      let optList = order.map((id) => {
+        const g = gbi[id];
+        let slips = false;
+        if (id !== recId) {
+          const pins = { ...(dayOpts && dayOpts.dayPins), [tkey]: id };
+          const sim = streamPlan(placeable, pace, vacations, undefined, { longDays: dayOpts && dayOpts.longDays, dayPins: pins });
+          slips = countMissedDeadlines(sim.positions, placeable) > baseMissed;
+        }
+        return { id, title: g.title, bonus: !!g.bonus, recommended: false, slips };
+      });
+      // recommended = today's planned pick; if today wasn't a planned stream day,
+      // the first no-slip option.
+      const rec = optList.find((o) => o.id === recId) || optList.find((o) => !o.slips);
+      if (rec) rec.recommended = true;
+      todayOptions = optList;
+    }
+    return { releasesByDay: rbd, sessionByDay: sbd, gameById: gbi, plannedByMonth: pbm, bonusByMonth: bbm, bonusPlayByDay: bpd, deadlineByDay: dbd, deadlineBracketsByMonth: dbm, slippedByMonth: sbm, todayOptions, min: mn, max: mx };
   }, [placeable, pace, vacations, dayOpts]);
 
   // Bonus games don't reserve midnight-launch eves (they're not committed).
@@ -655,6 +717,7 @@ function MonthGridView({ games, pace, vacations, dayOpts, streams, onPick, onTog
     while (m <= end) { months.push(m); m = new Date(Date.UTC(m.getUTCFullYear(), m.getUTCMonth() + 1, 1)); }
     return (
       <div>
+        <TodayPicker options={todayOptions} mobile={true} onPick={onPick} />
         <div className="cal-legend">Each game has its own colour; numbers = each stream (3/6) · ✓ + box art = already streamed · 🌙 = launch · hatched = vacation · ★ = release · dashed chip = planned (tap to auto-pick a day) · ✓ chip = placed</div>
         <div className="mg-wrap">
           {months.map((mo, i) => {
@@ -763,6 +826,7 @@ function MonthGridView({ games, pace, vacations, dayOpts, streams, onPick, onTog
 
   return (
     <div>
+      <TodayPicker options={todayOptions} mobile={false} onPick={onPick} />
       <div className="gc-bar">
         <button className="gc-today" onClick={scrollToToday}>Jump to today</button>
         <div className="gc-cnt">{totalCount} release{totalCount === 1 ? '' : 's'} · scroll for more months ↓</div>
