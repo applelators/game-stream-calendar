@@ -425,6 +425,12 @@ function streamPlan(games, pace, normVacs, today, opts) {
     // + another session after work (~6h total), so the launch day credits more than
     // a normal weekday. A per-game `launchHours` overrides this (e.g. a one-go finish).
     const LAUNCH_HOURS = 6;
+    // Weekday cap: weekday sessions realistically max ~6h even under deadline pressure
+    // (the user goes ~4h on a normal weekday, ~6h if pushing). Weekends and explicit
+    // days-off (longDays) can run their full length. So a deadline boost can stretch a
+    // weekday up to 6h but no further — if that's not enough the deadline slips honestly.
+    const WEEKDAY_MAX = 6;
+    const isLongDay = (d) => { const w = d.getUTCDay(); return w === 0 || w === 6 || (longDays && longDays.has(dkey(d))); };
     const take = (p) => {
       const was = undone(p);
       let dayH = hoursOnDay(day, pace, longDays);
@@ -432,7 +438,8 @@ function streamPlan(games, pace, normVacs, today, opts) {
         if (p.launchHours != null) dayH = Math.max(dayH, p.launchHours);
         else if (p.binge) dayH = Math.max(dayH, LAUNCH_HOURS);
       }
-      const h = dayH * (p.lengthen || 1);
+      let h = dayH * (p.lengthen || 1);
+      if (!isLongDay(day)) h = Math.min(h, WEEKDAY_MAX); // cap weekday sessions at ~6h
       p.hoursDone += h; p.lastSlot = day.getTime(); p.slots.push(new Date(day)); p.slotHours.push(h);
       if (was && !undone(p)) remaining--;
     };
