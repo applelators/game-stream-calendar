@@ -155,6 +155,9 @@ function gameFromFile(e, i) {
   // Optional release-day session length (hours) for a midnight launch — overrides the
   // default binge-launch ~6h (e.g. a one-go finish: set to the game's full length).
   if (e.launchHours != null) g.launchHours = Number(e.launchHours);
+  // Optional: pin this game to start on its exact day without it being a midnight
+  // launch (no eve, no ~6h) — e.g. starting a game some time after its release.
+  if (e.pinStart) g.pinStart = true;
   // Optional milestone: what chapter/badge/region marks this part "done".
   if (e.partGoal) g.partGoal = String(e.partGoal);
   // Optional scheduling priority within a shared deadline (higher = scheduled
@@ -349,12 +352,18 @@ function streamPlan(games, pace, normVacs, today) {
     const dl = g.finishBefore ? finishBeforeDeadline(g, byId) : null;
     (g.bonus ? bSpec : cSpec).push({ id: g.id, start, baseStreams, binge: !!g.binge,
       cadence: g.cadence || null, weeklyDow: (g.weeklyDow != null ? g.weeklyDow : null),
-      launchHours: (g.launchHours != null ? g.launchHours : null), priority: Number(g.priority) || 0,
+      launchHours: (g.launchHours != null ? g.launchHours : null), pinStart: !!g.pinStart, priority: Number(g.priority) || 0,
       hltb: Number(g.hltbHours) || 0, key: g.finishBefore || null, deadlineMs: dl ? dl.getTime() : Infinity });
   }
   if (cSpec.length === 0 && bSpec.length === 0) return { positions: out, sessionByDay: {}, bonusByDay: {}, boosts: {} };
   const launchOnDay = {};
   for (const s of cSpec) { const ev = eveByDay[dkey(addDays(s.start, -1))]; if (ev && ev.id === s.id) launchOnDay[dkey(s.start)] = s.id; }
+  // Force-start = a game pinned to begin on its exact day. Genuine launches (above)
+  // qualify; `pinStart` games also do (e.g. Splatoon Raiders starting post-vacation,
+  // not a midnight launch). Force-start drives the start day only — the midnight eve
+  // and binge-launch ~6h stay tied to launchOnDay (real launches).
+  const forceStartDay = { ...launchOnDay };
+  for (const s of cSpec) { if (s.pinStart) forceStartDay[dkey(s.start)] = s.id; }
 
   // finish-before groups (committed) + per-group window + boosted stream counts.
   const groups = {};
@@ -424,7 +433,7 @@ function streamPlan(games, pace, normVacs, today) {
     while (remaining > 0 && guard++ < 500000) {
       if (inVacation(day, normVacs) || blockedEve(day)) { day = addDays(day, 1); continue; }
       const k = dkey(day);
-      const forcedId = launchOnDay[k];
+      const forcedId = forceStartDay[k];
       // weekly-cadence games are eligible at most once per 7 days; when one is "due"
       // it forces a stream day (like a launch) so it reliably gets its weekly slot.
       const WEEK = 7 * 86400000;

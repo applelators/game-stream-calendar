@@ -245,11 +245,13 @@
         }
       ],
       "earlyAccess": "",
-      "notes": "Single-player-focused Splatoon spin-off; start Aug 4 (after vacation) and binge to completion.",
+      "notes": "Single-player-focused Splatoon spin-off; backlog binge from Aug 4 (after vacation; released Jul 23, not a midnight launch) to completion.",
       "icon": "https://cdn.dekudeals.com/images/7a30dd9a431ec4c530654e9cccbdb224ccff497a/w500.jpg",
       "iconColor": "#cade5e",
       "finishBefore": "2026-08",
-      "binge": true
+      "binge": true,
+      "backlog": true,
+      "pinStart": true
     },
     {
       "title": "Splatoon 2: Octo Expansion",
@@ -668,7 +670,8 @@
       "iconColor": "#5473e7",
       "finishBefore": "2026-10",
       "partGoal": "Roughly the first half of the worlds — ||Destiny Islands → Traverse Town → Wonderland → Coliseum → Deep Jungle → Agrabah → Monstro||.",
-      "priority": -1
+      "priority": -1,
+      "backlog": true
     },
     {
       "title": "Kingdom Hearts Final Mix (I) — Pt. 2",
@@ -1859,7 +1862,8 @@
       "editions": [],
       "earlyAccess": "",
       "notes": "No firm date; reported coming to Switch 2.",
-      "priority": -1
+      "priority": -1,
+      "binge": true
     }
   ]
 }
