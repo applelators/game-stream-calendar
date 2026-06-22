@@ -379,6 +379,8 @@ input, select, textarea { font-family: inherit; }
 .gc-today-chip.rec small, .mg-today-chip.rec small { color: var(--good); }
 .gc-today-chip.safe small, .mg-today-chip.safe small { color: var(--muted); }
 .gc-today-chip.risk small, .mg-today-chip.risk small { color: var(--danger); }
+.gc-today-chip.bonus, .mg-today-chip.bonus { border-style: dashed; }
+.gc-today-chip.bonus small, .mg-today-chip.bonus small { color: var(--warn); }
 
 /* tap-to-reveal spoiler (plot details in part goals) */
 .spoiler { background: #4a5161; color: transparent; border-radius: 4px; padding: 0 4px;

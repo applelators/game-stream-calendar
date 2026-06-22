@@ -550,9 +550,10 @@ function streamPlan(games, pace, normVacs, today, opts) {
   return { positions: out, sessionByDay, bonusByDay, boosts };
 }
 
-// Count how many finish-before deadlines are missed in a given positions map
-// (a game finishing after its deadline). Used to test "what if I play X today".
-function countMissedDeadlines(positions, games) {
+// Total deadline lateness (sum of days every finish-before game runs past its
+// deadline) in a positions map. Days, not just count — so a change that pushes an
+// already-late game even later is still detected. Used to test "what if I play X today".
+function totalSlipDays(positions, games) {
   const byId = {};
   for (const g of (games || [])) byId[g.id] = g;
   let n = 0;
@@ -561,7 +562,7 @@ function countMissedDeadlines(positions, games) {
     const dl = finishBeforeDeadline(g, byId);
     if (!dl) continue;
     const p = positions[g.id];
-    if (p && p.end > dl) n++;
+    if (p && p.end > dl) n += Math.round((p.end - dl) / 86400000);
   }
   return n;
 }
