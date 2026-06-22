@@ -385,6 +385,11 @@ input, select, textarea { font-family: inherit; }
 .gc-today-chip.rest, .mg-today-chip.rest { border-color: var(--border-solid); }
 .gc-today-chip.rest.rec, .mg-today-chip.rest.rec { border-color: var(--good); background: #14241c; }
 .gc-today-chip.rest.rec small, .mg-today-chip.rest.rec small { color: var(--good); }
+/* the option you actively picked for today */
+.gc-today-chip.chosen, .mg-today-chip.chosen { background: var(--accent); border-color: var(--accent); color: #160a2b; }
+.gc-today-chip.chosen small, .mg-today-chip.chosen small { color: #160a2bcc; }
+.gc-today-chip.def, .mg-today-chip.def { border-style: dashed; color: var(--muted); font-size: 0.74rem; }
+.mg-pill.mg-rest { background: #1a2130; color: var(--muted); }
 
 /* tap-to-reveal spoiler (plot details in part goals) */
 .spoiler { background: #4a5161; color: transparent; border-radius: 4px; padding: 0 4px;

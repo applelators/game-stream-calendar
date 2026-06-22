@@ -343,7 +343,8 @@ function streamPlan(games, pace, normVacs, today, opts) {
   const spw = (pace && pace.hoursPerStream && pace.hoursPerWeek) ? pace.hoursPerWeek / pace.hoursPerStream : 2;
   const perDay = Math.max(0.01, spw / 7);
   const { eveByDay, releaseDays } = launchEves((games || []).filter((g) => !g.bonus));
-  const blockedEve = (d) => { const k = dkey(d); return !!eveByDay[k] && !releaseDays[k]; };
+  const restSet = (opts && opts.restDays) || null; // user-chosen rest days (no committed stream)
+  const blockedEve = (d) => { const k = dkey(d); return (!!eveByDay[k] && !releaseDays[k]) || (restSet && restSet.has(k)); };
   const nowD = today || new Date();
   const t0 = utc(nowD.getUTCFullYear(), nowD.getUTCMonth() + 1, nowD.getUTCDate());
 

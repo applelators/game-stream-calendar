@@ -121,9 +121,10 @@ export default {
     return env.ASSETS.fetch(request);
   },
 
-  // Weekly cron trigger (see [triggers] crons in wrangler.toml).
+  // Daily cron (~5am ET) — re-pull SullyGnome so past days lock in to what was
+  // actually streamed, and keep the rolling pace fresh.
   async scheduled(event, env, ctx) {
-    ctx.waitUntil(refreshPace(env));
     ctx.waitUntil(refreshStreams(env));
+    ctx.waitUntil(refreshPace(env));
   },
 };

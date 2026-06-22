@@ -23,6 +23,7 @@ const DEFAULT_SETTINGS = {
   autoPlace: [],   // ids of month/quarter games the user pinned to an auto-picked start day
   longDays: [],    // ISO dates (days off) to treat as weekend-length stream days
   dayPins: {},     // { 'YYYY-MM-DD': gameId } — force a specific game on a specific day
+  restDays: [],    // ISO dates the user chose to rest (no committed stream)
 };
 
 const FALLBACK_PACE = { hoursPerStream: 5.11, hoursPerWeek: 11.52, weekdayHps: 4.0, weekendHps: 8.0, weekdayStreams: 0, weekendStreams: 0, source: 'fallback', fetchedAt: null, numStreams: 29, totalHours: 148.1, windowDays: 90 };
@@ -183,7 +184,21 @@ function App() {
   const dayOpts = useMemo(() => ({
     longDays: new Set((settings.longDays || []).map(isoToKey)),
     dayPins: Object.fromEntries(Object.entries(settings.dayPins || {}).map(([iso, id]) => [isoToKey(iso), id])),
-  }), [settings.longDays, settings.dayPins]);
+    restDays: new Set((settings.restDays || []).map(isoToKey)),
+  }), [settings.longDays, settings.dayPins, settings.restDays]);
+  // Choose what to stream today (pins it / marks rest / clears to plan default). Saved
+  // to settings (KV), so the calendar cell reflects it everywhere and it persists.
+  const chooseToday = useCallback((choice) => {
+    const iso = new Date().toISOString().slice(0, 10);
+    setSettings((s) => {
+      const dayPins = { ...(s.dayPins || {}) };
+      const restDays = (s.restDays || []).filter((d) => d !== iso);
+      delete dayPins[iso];
+      if (choice === '__rest__') restDays.push(iso);
+      else if (choice && choice !== '__default__') dayPins[iso] = choice;
+      return { ...s, dayPins, restDays };
+    });
+  }, []);
   const togglePlan = useCallback((id) => {
     setSettings((s) => {
       const cur = s.autoPlace || [];
@@ -232,7 +247,7 @@ function App() {
 
       {settings.view === 'timeline'
         ? <TimelineView games={effGames} pace={ep} mode={settings.schedMode} vacations={normVacs} onPick={setDetail} />
-        : <MonthGridView games={effGames} pace={ep} vacations={normVacs} dayOpts={dayOpts} streams={streams} onPick={setDetail} onTogglePlan={togglePlan} />}
+        : <MonthGridView games={effGames} pace={ep} vacations={normVacs} dayOpts={dayOpts} streams={streams} onPick={setDetail} onTogglePlan={togglePlan} onChooseToday={chooseToday} />}
 
       {detailGame && (
         <DetailCard game={detailGame} pace={ep} vacations={normVacs} queuedPos={seqPositions[detailGame.id]}
@@ -429,6 +444,8 @@ function dayInfo(day, ctx) {
   if (inVacation(day, ctx.vacations)) {
     return { vac: true, vacRunStart: !inVacation(prev, ctx.vacations), vacLabel: vacLabelFor(day, ctx.vacations), releases };
   }
+  // A day the user chose to rest (no committed stream).
+  if (ctx.restDays && ctx.restDays.has(k)) return { rest: true, releases };
   const eve = ctx.eveByDay && ctx.eveByDay[k];
   if (eve && !(ctx.releaseDays && ctx.releaseDays[k])) return { launch: eve, releases };
   // Show one cell per actual stream session (a game appears on exactly its
@@ -495,47 +512,56 @@ function renderSpoilers(text) {
   return segs.map((s, i) => (i % 2 === 1 ? <Spoiler key={i}>{s}</Spoiler> : <span key={i}>{s}</span>));
 }
 
-// "What can I stream today" — the planned pick (recommended, keeps deadlines on
-// track) plus alternatives, each flagged for whether swapping to it slips a deadline.
-function TodayPicker({ options, mobile, onPick }) {
+// "What can I stream today" — committed games + a rest option. Clicking one PICKS
+// it for today (pins it; reflected in the calendar cell and saved). The plan's
+// recommendation is marked; an already-behind game is surfaced. No bonus games.
+function TodayPicker({ options, mobile, onPick, onChoose }) {
   if (!options || !options.length) return null;
   const pfx = mobile ? 'mg' : 'gc';
   const today = new Date();
   const label = `${MONTHS[today.getMonth()]} ${today.getDate()}`;
   return (
     <div className={`${pfx}-today`}>
-      <span className={`${pfx}-today-h`}>▶ Today ({label}) · feel like something else?</span>
+      <span className={`${pfx}-today-h`}>▶ Today ({label}) · what are you streaming?</span>
       {options.map((o) => {
-        if (o.rest) {
+        if (o.def) {
           return (
-            <button key="__rest__" className={`${pfx}-today-chip rest${o.recommended ? ' rec' : ' risk'}`}
-              title={o.recommended ? 'Resting today can be made up later this month — no deadline slips'
-                : o.behindTitle ? `Resting today can't be made up — it pushes deadlines ~${o.restCost}d further (${o.behindTitle} is already behind)`
-                : `Resting today can't be made up — it pushes deadlines ~${o.restCost}d further`}>
-              <span className="dot" style={{ background: 'var(--muted)' }} />
-              ☕ Take a break (rest day)
-              <small>{o.recommended ? '✓ recommended · can make it up later' : `⚠ pushes deadlines +${o.restCost}d`}</small>
+            <button key="__default__" className={`${pfx}-today-chip def`} onClick={() => onChoose('__default__')}
+              title="Clear your pick and use the plan's default for today">
+              ↺ Use plan default
             </button>
           );
         }
-        const note = o.recommended ? (o.behind ? '✓ recommended · behind — limits slip' : '✓ recommended')
-          : o.bonus ? (o.pressure ? '⚠ not now' : 'bonus · if ahead')
+        if (o.rest) {
+          return (
+            <button key="__rest__" className={`${pfx}-today-chip rest${o.chosen ? ' chosen' : ''}${o.recommended ? ' rec' : o.restCost > 0 ? ' risk' : ''}`}
+              onClick={() => onChoose('__rest__')}
+              title={o.recommended ? 'Resting today can be made up later this month — no deadline slips'
+                : `Resting today can't be made up — it pushes deadlines ~${o.restCost}d further`}>
+              <span className="dot" style={{ background: 'var(--muted)' }} />
+              ☕ Take a break (rest day)
+              <small>{o.chosen ? '● chosen' : o.recommended ? '✓ recommended · make up later' : `⚠ +${o.restCost}d slip`}</small>
+            </button>
+          );
+        }
+        const note = o.chosen ? '● chosen'
+          : o.recommended ? (o.behind ? '✓ recommended · behind — limits slip' : '✓ recommended')
           : o.behind ? '⚠ behind — slips further'
           : o.danger ? '⚠ at risk'
           : o.getAhead ? 'optional · get ahead'
           : 'alternative';
-        const cls = o.recommended ? ' rec' : o.bonus ? (o.pressure ? ' risk bonus' : ' bonus') : (o.behind || o.danger) ? ' risk' : ' safe';
+        const cls = o.chosen ? ' chosen' : o.recommended ? ' rec' : (o.behind || o.danger) ? ' risk' : ' safe';
         return (
           <button key={o.id} className={`${pfx}-today-chip${cls}`}
             style={{ borderColor: gameColor(o.id).solid }}
-            onClick={() => onPick(o.id)}
-            title={o.recommended ? (o.behind ? 'Recommended — already behind; play it to limit the slip' : 'Recommended — playing today keeps you on track')
-              : o.bonus ? (o.pressure ? 'Not now — another game is slipping or in danger' : 'Bonus — only if you’re ahead of schedule')
+            onClick={() => onChoose(o.id)}
+            title={o.chosen ? 'You picked this for today (click another to change)'
+              : o.recommended ? (o.behind ? 'Recommended — already behind; play it to limit the slip' : 'Recommended — playing today keeps you on track')
               : o.behind ? 'Already behind its deadline; not playing it slips it further'
               : o.danger ? 'Deadline is tight — at risk of slipping'
               : o.getAhead ? 'Optional — play to build a buffer' : 'An alternative committed game'}>
             <span className="dot" style={{ background: gameColor(o.id).solid }} />
-            {o.bonus ? '★ ' : ''}{o.title}
+            {o.title}
             <small>{note}</small>
           </button>
         );
@@ -589,7 +615,7 @@ function bonusNoteFor(dbrackets) {
   };
 }
 
-function MonthGridView({ games, pace, vacations, dayOpts, streams, onPick, onTogglePlan }) {
+function MonthGridView({ games, pace, vacations, dayOpts, streams, onPick, onTogglePlan, onChooseToday }) {
   const isMobile = useIsMobile();
 
   // Actual streams already done (from @nabunan's Twitch history) keyed by calendar
@@ -678,75 +704,70 @@ function MonthGridView({ games, pace, vacations, dayOpts, streams, onPick, onTog
       }
     }
     // ---- "what can I stream today" options ----------------------------------
-    // Rest is allowed whenever resting TODAY can be made up later (blocking today
-    // doesn't add any deadline slip). If it can't be made up, recommend the committed
-    // game that minimises slip. Already-behind / in-danger games are surfaced, and
-    // bonus games are never recommended — and flagged "not now" when anything is at risk.
+    // Committed games only (no bonus). Rest is allowed whenever resting today can be
+    // made up later this month (blocking it adds no near-term slip); otherwise the
+    // committed game that minimises slip is recommended. Picking an option pins it for
+    // today (reflected in the cell + saved). A past day locked to its real stream is
+    // not offered. Already-behind / in-danger games are surfaced.
     const tkey = dayKey(today);
     let todayOptions = [];
-    if (!inVacation(today, vacations)) {
+    const lockedToday = streamedByDay[tkey] && streamedByDay[tkey].length; // real stream recorded
+    if (!inVacation(today, vacations) && !lockedToday) {
       const recId = sbd[tkey] ? sbd[tkey].id : null;
-      const cand = [];
-      const soon = addDays(today, 10);
+      const chosen = (dayOpts && dayOpts.dayPins && dayOpts.dayPins[tkey])
+        || (dayOpts && dayOpts.restDays && dayOpts.restDays.has(tkey) ? '__rest__' : null);
+      const cand = []; const soon = addDays(today, 10);
       for (const g of placeable) {
-        if (g.kind === 'event') continue;
+        if (g.kind === 'event' || g.bonus) continue;      // committed only — no bonus
         const p = pos[g.id]; const a = anchorDate(g.release);
         if (!a || a > today) continue;
         if (p && today >= p.end) continue;
         const current = p && p.start <= soon;
-        if (current || g.bonus || g.id === recId) cand.push(g.id);
+        if (current || g.id === recId) cand.push(g.id);
       }
-      const committed = []; const bonusIds = []; const seen = {};
-      for (const id of cand) { if (seen[id]) continue; seen[id] = 1; (gbi[id].bonus ? bonusIds : committed).push(id); }
+      const committed = []; const seen = {};
+      for (const id of cand) { if (!seen[id]) { seen[id] = 1; committed.push(id); } }
       const isBehind = (id) => { const dl = finishBeforeDeadline(gbi[id], gbi); const p = pos[id]; return !!(dl && p && p.end > dl); };
-      const inDanger = (id) => { const k = gbi[id].finishBefore; return !!(k && boosts[k]); }; // tight/boosted deadline group
-      // Anything slipping or in danger this view → bonus is "not now".
-      const pressure = committed.some((id) => isBehind(id) || inDanger(id));
+      const inDanger = (id) => { const k = gbi[id].finishBefore; return !!(k && boosts[k]); };
 
-      // Can today be made up later this month? Block today and see if NEAR-TERM
-      // slip rises (horizon = end of next month, so the noisy far-future cascade
-      // doesn't dominate). restCost = extra near-term slip days from resting today.
       const horizon = utc(today.getUTCFullYear(), today.getUTCMonth() + 3, 1).getTime();
       const baseSlip = totalSlipDays(pos, placeable, horizon);
       const restVacs = vacations.concat([{ start: today, end: addDays(today, 1) }]);
       const restSlip = totalSlipDays(streamPlan(placeable, pace, restVacs, undefined, dayOpts).positions, placeable, horizon);
-      const restCost = Math.max(0, restSlip - baseSlip); // extra near-term slip from resting
-      const restFree = restCost <= 0;                    // makeup room exists → resting is fine
+      const restCost = Math.max(0, restSlip - baseSlip);
+      const restFree = restCost <= 0;
 
-      // If resting isn't free, find the committed game that minimises near-term slip.
       let bestId = null;
       if (!restFree) {
         let bestSlip = Infinity;
         for (const id of committed) {
           const pins = { ...(dayOpts && dayOpts.dayPins), [tkey]: id };
-          const s = totalSlipDays(streamPlan(placeable, pace, vacations, undefined, { longDays: dayOpts && dayOpts.longDays, dayPins: pins }).positions, placeable, horizon);
+          const s = totalSlipDays(streamPlan(placeable, pace, vacations, undefined, { longDays: dayOpts && dayOpts.longDays, dayPins: pins, restDays: dayOpts && dayOpts.restDays }).positions, placeable, horizon);
           if (s < bestSlip) { bestSlip = s; bestId = id; }
         }
       }
 
       const opts = [];
       for (const id of committed) {
-        opts.push({ id, title: gbi[id].title, bonus: false, recommended: !restFree && id === bestId,
-          behind: isBehind(id), danger: inDanger(id), getAhead: restFree });
+        opts.push({ id, title: gbi[id].title, recommended: !restFree && id === bestId,
+          chosen: chosen === id, behind: isBehind(id), danger: inDanger(id), getAhead: restFree });
       }
-      opts.push({ rest: true, recommended: restFree, restCost: restFree ? 0 : restCost,
-        behindTitle: (committed.find(isBehind) ? gbi[committed.find(isBehind)].title : null) });
-      for (const id of bonusIds) opts.push({ id, title: gbi[id].title, bonus: true, recommended: false, pressure });
+      opts.push({ rest: true, recommended: restFree, chosen: chosen === '__rest__', restCost });
+      if (chosen) opts.push({ def: true }); // "use the plan's default" option
       opts.sort((a, b) => (b.recommended ? 1 : 0) - (a.recommended ? 1 : 0)
-        || (a.bonus ? 1 : 0) - (b.bonus ? 1 : 0)
         || ((b.behind ? 1 : 0) - (a.behind ? 1 : 0))
-        || (a.rest ? 1 : 0) - (b.rest ? 1 : 0));
+        || (a.rest ? 1 : 0) - (b.rest ? 1 : 0) || (a.def ? 1 : 0) - (b.def ? 1 : 0));
       todayOptions = opts;
     }
     return { releasesByDay: rbd, sessionByDay: sbd, gameById: gbi, plannedByMonth: pbm, bonusByMonth: bbm, bonusPlayByDay: bpd, deadlineByDay: dbd, deadlineBracketsByMonth: dbm, slippedByMonth: sbm, todayOptions, min: mn, max: mx };
-  }, [placeable, pace, vacations, dayOpts]);
+  }, [placeable, pace, vacations, dayOpts, streamedByDay]);
 
   // Bonus games don't reserve midnight-launch eves (they're not committed).
   const eves = useMemo(() => launchEves(placeable.filter((g) => !g.bonus)), [placeable]);
 
   const now = new Date();
   const tY = now.getFullYear(), tM = now.getMonth(), tD = now.getDate();
-  const ctx = { vacations, sessionByDay, bonusPlayByDay, gameById, releasesByDay, deadlineByDay, streamedByDay, eveByDay: eves.eveByDay, releaseDays: eves.releaseDays };
+  const ctx = { vacations, sessionByDay, bonusPlayByDay, gameById, releasesByDay, deadlineByDay, streamedByDay, eveByDay: eves.eveByDay, releaseDays: eves.releaseDays, restDays: dayOpts && dayOpts.restDays };
 
   if (!min) {
     return (
@@ -765,7 +786,7 @@ function MonthGridView({ games, pace, vacations, dayOpts, streams, onPick, onTog
     while (m <= end) { months.push(m); m = new Date(Date.UTC(m.getUTCFullYear(), m.getUTCMonth() + 1, 1)); }
     return (
       <div>
-        <TodayPicker options={todayOptions} mobile={true} onPick={onPick} />
+        <TodayPicker options={todayOptions} mobile={true} onPick={onPick} onChoose={onChooseToday} />
         <div className="cal-legend">Each game has its own colour; numbers = each stream (3/6) · ✓ + box art = already streamed · 🌙 = launch · hatched = vacation · ★ = release · dashed chip = planned (tap to auto-pick a day) · ✓ chip = placed</div>
         <div className="mg-wrap">
           {months.map((mo, i) => {
@@ -802,6 +823,7 @@ function MonthGridView({ games, pace, vacations, dayOpts, streams, onPick, onTog
                     </span>
                   ))}
                   {info.vac && info.vacRunStart && <span className="mg-pill nowvac" title={info.vacLabel}>✈ {info.vacLabel}</span>}
+                  {info.rest && <span className="mg-pill mg-rest" title="Rest day (you chose to rest)">☕ rest</span>}
                   {info.launch && (
                     <span className="mg-pill mg-launch" onClick={() => onPick(info.launch.id)}
                       title={`Midnight launch — ${info.launch.title}`}>🌙</span>
@@ -874,7 +896,7 @@ function MonthGridView({ games, pace, vacations, dayOpts, streams, onPick, onTog
 
   return (
     <div>
-      <TodayPicker options={todayOptions} mobile={false} onPick={onPick} />
+      <TodayPicker options={todayOptions} mobile={false} onPick={onPick} onChoose={onChooseToday} />
       <div className="gc-bar">
         <button className="gc-today" onClick={scrollToToday}>Jump to today</button>
         <div className="gc-cnt">{totalCount} release{totalCount === 1 ? '' : 's'} · scroll for more months ↓</div>
@@ -923,6 +945,7 @@ function MonthGridView({ games, pace, vacations, dayOpts, streams, onPick, onTog
                   </div>
                 ))}
                 {info.vac && info.vacRunStart && <div className="gc-away">✈ {info.vacLabel}</div>}
+                {info.rest && <div className="gc-away">☕ Rest day</div>}
                 {info.launch && (
                   <div className="gc-ev gc-launch" onClick={() => onPick(info.launch.id)}
                     title={`Midnight launch — ${info.launch.title}`}>🌙</div>

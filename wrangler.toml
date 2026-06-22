@@ -23,6 +23,7 @@ id = "d6b88d74dc484129ae32424747f6a007"
 [vars]
 TWITCH_CHANNEL = "nabunan"
 
-# Weekly auto-refresh of the rolling 90-day stream pace (Mondays 12:00 UTC).
+# Daily at 09:00 UTC ≈ 5am ET — refresh SullyGnome streams (lock in what was
+# actually streamed each day) + the rolling pace. (~1h DST drift; close to 5am.)
 [triggers]
-crons = ["0 12 * * 1"]
+crons = ["0 9 * * *"]
