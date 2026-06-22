@@ -552,8 +552,10 @@ function streamPlan(games, pace, normVacs, today, opts) {
 
 // Total deadline lateness (sum of days every finish-before game runs past its
 // deadline) in a positions map. Days, not just count — so a change that pushes an
-// already-late game even later is still detected. Used to test "what if I play X today".
-function totalSlipDays(positions, games) {
+// already-late game even later is still detected. Optional `horizonMs` limits it to
+// deadlines on/before that instant (near-term), which keeps a "rest today?" test
+// stable — the far-future cascade reshuffles noisily and would otherwise dominate.
+function totalSlipDays(positions, games, horizonMs) {
   const byId = {};
   for (const g of (games || [])) byId[g.id] = g;
   let n = 0;
@@ -561,6 +563,7 @@ function totalSlipDays(positions, games) {
     if (!g.finishBefore || g.kind === 'event' || g.bonus) continue;
     const dl = finishBeforeDeadline(g, byId);
     if (!dl) continue;
+    if (horizonMs && dl.getTime() > horizonMs) continue;
     const p = positions[g.id];
     if (p && p.end > dl) n += Math.round((p.end - dl) / 86400000);
   }

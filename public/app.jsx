@@ -507,30 +507,32 @@ function TodayPicker({ options, mobile, onPick }) {
       <span className={`${pfx}-today-h`}>▶ Today ({label}) · feel like something else?</span>
       {options.map((o) => {
         if (o.rest) {
-          const cls = o.recommended ? ' rec' : ' risk';
           return (
-            <button key="__rest__" className={`${pfx}-today-chip rest${cls}`}
-              title={o.recommended ? 'The plan has today free — a good day to rest'
-                : o.behindTitle ? `Today is a scheduled stream day — resting pushes your deadlines further (${o.behindTitle} is already behind)`
-                : 'Today is a scheduled stream day — resting pushes your deadlines further'}>
+            <button key="__rest__" className={`${pfx}-today-chip rest${o.recommended ? ' rec' : ' risk'}`}
+              title={o.recommended ? 'Resting today can be made up later this month — no deadline slips'
+                : o.behindTitle ? `Resting today can't be made up — it pushes deadlines ~${o.restCost}d further (${o.behindTitle} is already behind)`
+                : `Resting today can't be made up — it pushes deadlines ~${o.restCost}d further`}>
               <span className="dot" style={{ background: 'var(--muted)' }} />
               ☕ Take a break (rest day)
-              <small>{o.recommended ? '✓ recommended · plan is free today' : '⚠ pushes deadlines'}</small>
+              <small>{o.recommended ? '✓ recommended · can make it up later' : `⚠ pushes deadlines +${o.restCost}d`}</small>
             </button>
           );
         }
         const note = o.recommended ? (o.behind ? '✓ recommended · behind — limits slip' : '✓ recommended')
-          : o.bonus ? 'bonus · if ahead'
+          : o.bonus ? (o.pressure ? '⚠ not now' : 'bonus · if ahead')
           : o.behind ? '⚠ behind — slips further'
-          : o.getAhead ? 'optional · play to get ahead'
+          : o.danger ? '⚠ at risk'
+          : o.getAhead ? 'optional · get ahead'
           : 'alternative';
+        const cls = o.recommended ? ' rec' : o.bonus ? (o.pressure ? ' risk bonus' : ' bonus') : (o.behind || o.danger) ? ' risk' : ' safe';
         return (
-          <button key={o.id} className={`${pfx}-today-chip${o.recommended ? ' rec' : o.bonus ? ' bonus' : o.behind ? ' risk' : ' safe'}`}
+          <button key={o.id} className={`${pfx}-today-chip${cls}`}
             style={{ borderColor: gameColor(o.id).solid }}
             onClick={() => onPick(o.id)}
-            title={o.recommended ? (o.behind ? 'Recommended — already behind; play it to limit the slip' : 'Recommended — today is a scheduled stream day')
-              : o.bonus ? 'Bonus — only if you’re ahead of schedule'
-              : o.behind ? 'This game is already behind its deadline; not playing it slips it further'
+            title={o.recommended ? (o.behind ? 'Recommended — already behind; play it to limit the slip' : 'Recommended — playing today keeps you on track')
+              : o.bonus ? (o.pressure ? 'Not now — another game is slipping or in danger' : 'Bonus — only if you’re ahead of schedule')
+              : o.behind ? 'Already behind its deadline; not playing it slips it further'
+              : o.danger ? 'Deadline is tight — at risk of slipping'
               : o.getAhead ? 'Optional — play to build a buffer' : 'An alternative committed game'}>
             <span className="dot" style={{ background: gameColor(o.id).solid }} />
             {o.bonus ? '★ ' : ''}{o.title}
@@ -676,39 +678,60 @@ function MonthGridView({ games, pace, vacations, dayOpts, streams, onPick, onTog
       }
     }
     // ---- "what can I stream today" options ----------------------------------
-    // Signal: did the plan schedule a committed stream today?
-    //  - Yes (a planned stream day) → recommend that game; resting pushes deadlines,
-    //    and any already-behind game is surfaced.
-    //  - No (the plan left today free) → recommend a REST/break day.
-    // Bonus games are listed only as "if you're ahead", never recommended.
+    // Rest is allowed whenever resting TODAY can be made up later (blocking today
+    // doesn't add any deadline slip). If it can't be made up, recommend the committed
+    // game that minimises slip. Already-behind / in-danger games are surfaced, and
+    // bonus games are never recommended — and flagged "not now" when anything is at risk.
     const tkey = dayKey(today);
     let todayOptions = [];
     if (!inVacation(today, vacations)) {
-      const recId = sbd[tkey] ? sbd[tkey].id : null; // planned committed game today
+      const recId = sbd[tkey] ? sbd[tkey].id : null;
       const cand = [];
       const soon = addDays(today, 10);
       for (const g of placeable) {
         if (g.kind === 'event') continue;
         const p = pos[g.id]; const a = anchorDate(g.release);
-        if (!a || a > today) continue;            // not yet released
-        if (p && today >= p.end) continue;        // already finished
-        const current = p && p.start <= soon;     // in progress or imminent
+        if (!a || a > today) continue;
+        if (p && today >= p.end) continue;
+        const current = p && p.start <= soon;
         if (current || g.bonus || g.id === recId) cand.push(g.id);
       }
       const committed = []; const bonusIds = []; const seen = {};
       for (const id of cand) { if (seen[id]) continue; seen[id] = 1; (gbi[id].bonus ? bonusIds : committed).push(id); }
       const isBehind = (id) => { const dl = finishBeforeDeadline(gbi[id], gbi); const p = pos[id]; return !!(dl && p && p.end > dl); };
-      const plannedDay = !!(recId && committed.includes(recId));
-      const behindTitle = (committed.find(isBehind) ? gbi[committed.find(isBehind)].title : null);
+      const inDanger = (id) => { const k = gbi[id].finishBefore; return !!(k && boosts[k]); }; // tight/boosted deadline group
+      // Anything slipping or in danger this view → bonus is "not now".
+      const pressure = committed.some((id) => isBehind(id) || inDanger(id));
+
+      // Can today be made up later this month? Block today and see if NEAR-TERM
+      // slip rises (horizon = end of next month, so the noisy far-future cascade
+      // doesn't dominate). restCost = extra near-term slip days from resting today.
+      const horizon = utc(today.getUTCFullYear(), today.getUTCMonth() + 3, 1).getTime();
+      const baseSlip = totalSlipDays(pos, placeable, horizon);
+      const restVacs = vacations.concat([{ start: today, end: addDays(today, 1) }]);
+      const restSlip = totalSlipDays(streamPlan(placeable, pace, restVacs, undefined, dayOpts).positions, placeable, horizon);
+      const restCost = Math.max(0, restSlip - baseSlip); // extra near-term slip from resting
+      const restFree = restCost <= 0;                    // makeup room exists → resting is fine
+
+      // If resting isn't free, find the committed game that minimises near-term slip.
+      let bestId = null;
+      if (!restFree) {
+        let bestSlip = Infinity;
+        for (const id of committed) {
+          const pins = { ...(dayOpts && dayOpts.dayPins), [tkey]: id };
+          const s = totalSlipDays(streamPlan(placeable, pace, vacations, undefined, { longDays: dayOpts && dayOpts.longDays, dayPins: pins }).positions, placeable, horizon);
+          if (s < bestSlip) { bestSlip = s; bestId = id; }
+        }
+      }
 
       const opts = [];
       for (const id of committed) {
-        opts.push({ id, title: gbi[id].title, bonus: false, recommended: plannedDay && id === recId,
-          behind: isBehind(id), getAhead: !plannedDay });
+        opts.push({ id, title: gbi[id].title, bonus: false, recommended: !restFree && id === bestId,
+          behind: isBehind(id), danger: inDanger(id), getAhead: restFree });
       }
-      // rest option — recommended only when the plan didn't need a stream today
-      opts.push({ rest: true, recommended: !plannedDay, behindTitle: plannedDay ? behindTitle : null });
-      for (const id of bonusIds) opts.push({ id, title: gbi[id].title, bonus: true, recommended: false });
+      opts.push({ rest: true, recommended: restFree, restCost: restFree ? 0 : restCost,
+        behindTitle: (committed.find(isBehind) ? gbi[committed.find(isBehind)].title : null) });
+      for (const id of bonusIds) opts.push({ id, title: gbi[id].title, bonus: true, recommended: false, pressure });
       opts.sort((a, b) => (b.recommended ? 1 : 0) - (a.recommended ? 1 : 0)
         || (a.bonus ? 1 : 0) - (b.bonus ? 1 : 0)
         || ((b.behind ? 1 : 0) - (a.behind ? 1 : 0))
