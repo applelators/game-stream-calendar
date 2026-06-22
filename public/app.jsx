@@ -522,7 +522,7 @@ function TodayPicker({ options, mobile, onPick, onChoose }) {
   const today = new Date();
   const label = `${MONTHS[today.getMonth()]} ${today.getDate()}`;
   return (
-    <div className={`${pfx}-today`}>
+    <div className={`${pfx}-todaybar`}>
       <span className={`${pfx}-today-h`}>▶ Today ({label}) · what are you streaming?</span>
       {options.map((o) => {
         if (o.def) {
