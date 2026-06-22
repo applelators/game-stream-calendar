@@ -189,7 +189,8 @@ function App() {
   // Choose what to stream today (pins it / marks rest / clears to plan default). Saved
   // to settings (KV), so the calendar cell reflects it everywhere and it persists.
   const chooseToday = useCallback((choice) => {
-    const iso = new Date().toISOString().slice(0, 10);
+    const d = new Date(); // local calendar day, matching the app's "today"
+    const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     setSettings((s) => {
       const dayPins = { ...(s.dayPins || {}) };
       const restDays = (s.restDays || []).filter((d) => d !== iso);
@@ -640,10 +641,13 @@ function MonthGridView({ games, pace, vacations, dayOpts, streams, onPick, onTog
   const { releasesByDay, sessionByDay, gameById, plannedByMonth, bonusByMonth, bonusPlayByDay, deadlineByDay, deadlineBracketsByMonth, slippedByMonth, todayOptions, min, max } = useMemo(() => {
     // Interleaved plan: stream sessions rotate among in-progress games; bonus games
     // fill only spare slots. Drives the calendar directly.
-    const plan = streamPlan(placeable, pace, vacations, undefined, dayOpts);
-    const pos = plan.positions, sbd = plan.sessionByDay, bpd = plan.bonusByDay, boosts = plan.boosts || {};
+    // "Today" = the user's LOCAL calendar day (not UTC) so the picker, cell highlight,
+    // and engine all agree — otherwise an ET evening (UTC already next day) pins the
+    // wrong cell. Represented as a UTC-midnight Date for the app's internal date math.
     const todayD = new Date();
-    const today = utc(todayD.getUTCFullYear(), todayD.getUTCMonth() + 1, todayD.getUTCDate());
+    const today = utc(todayD.getFullYear(), todayD.getMonth() + 1, todayD.getDate());
+    const plan = streamPlan(placeable, pace, vacations, today, dayOpts);
+    const pos = plan.positions, sbd = plan.sessionByDay, bpd = plan.bonusByDay, boosts = plan.boosts || {};
     const rbd = {}, gbi = {}, pbm = {}, bbm = {}, dbd = {};
     let mn = null, mx = null;
     for (const id in pos) { const p = pos[id]; if (!mn || p.start < mn) mn = p.start; if (!mx || p.end > mx) mx = p.end; }
@@ -735,7 +739,7 @@ function MonthGridView({ games, pace, vacations, dayOpts, streams, onPick, onTog
       const horizon = utc(today.getUTCFullYear(), today.getUTCMonth() + 2, 1).getTime();
       const baseSlip = totalSlipDays(pos, placeable, horizon);
       const restVacs = vacations.concat([{ start: today, end: addDays(today, 1) }]);
-      const restSlip = totalSlipDays(streamPlan(placeable, pace, restVacs, undefined, dayOpts).positions, placeable, horizon);
+      const restSlip = totalSlipDays(streamPlan(placeable, pace, restVacs, today, dayOpts).positions, placeable, horizon);
       const restCost = Math.max(0, restSlip - baseSlip);
       // Rest is only truly free if nothing is already slipping near-term AND resting
       // adds none. If the month is over capacity (baseSlip > 0), resting just shuffles
@@ -747,7 +751,7 @@ function MonthGridView({ games, pace, vacations, dayOpts, streams, onPick, onTog
         let bestSlip = Infinity;
         for (const id of committed) {
           const pins = { ...(dayOpts && dayOpts.dayPins), [tkey]: id };
-          const s = totalSlipDays(streamPlan(placeable, pace, vacations, undefined, { longDays: dayOpts && dayOpts.longDays, dayPins: pins, restDays: dayOpts && dayOpts.restDays }).positions, placeable, horizon);
+          const s = totalSlipDays(streamPlan(placeable, pace, vacations, today, { longDays: dayOpts && dayOpts.longDays, dayPins: pins, restDays: dayOpts && dayOpts.restDays }).positions, placeable, horizon);
           if (s < bestSlip) { bestSlip = s; bestId = id; }
         }
       }
