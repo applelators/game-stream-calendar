@@ -825,6 +825,9 @@ function MonthGridView({ games, pace, vacations, dayOpts, streams, onPick, onTog
                   {!info.vac && !info.launch && info.session && info.play && (
                     <span className="mg-strno" title={`Stream ${info.session.idx} of ${info.session.total}`}>{info.session.idx}/{info.session.total}{info.session.hours ? ` · ~${info.session.hours}h` : ''}</span>
                   )}
+                  {info.streamed && info.streamed.length > 1 && (
+                    <span className="mg-multi" title={`Multiple games: ${info.streamed.map((s) => s.name).join(', ')}`}>⊞ {info.streamed.length}</span>
+                  )}
                   {info.streamed && info.streamed.map((s, si) => (
                     <span className="mg-pill mg-done" key={si} title={`Streamed: ${s.name}`}>
                       {s.art ? <img className="mg-done-art" src={s.art} alt="" loading="lazy" /> : null}
@@ -947,6 +950,9 @@ function MonthGridView({ games, pace, vacations, dayOpts, streams, onPick, onTog
                 {!info.vac && !info.launch && info.session && info.session.hours ? (
                   <span className="gc-hrs" title={`Estimated stream length this day (${(day.getUTCDay() === 0 || day.getUTCDay() === 6) ? 'weekend' : 'weekday'} pace)`}>~{info.session.hours}h</span>
                 ) : null}
+                {info.streamed && info.streamed.length > 1 && (
+                  <span className="gc-multi" title={`Multiple games this day: ${info.streamed.map((s) => s.name).join(', ')}`}>⊞ {info.streamed.length} games</span>
+                )}
                 {info.streamed && info.streamed.map((s, si) => (
                   <div className="gc-done" key={si} title={`Streamed: ${s.name}`}>
                     {s.art ? <img className="gc-done-art" src={s.art} alt="" loading="lazy" /> : null}

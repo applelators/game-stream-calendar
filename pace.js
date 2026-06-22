@@ -90,6 +90,31 @@ export function computePace(rows, windowDays = WINDOW_DAYS) {
   };
 }
 
+// Parse SullyGnome's `gamesplayed` into [{ name, art }]. It's "Name|Slug|Art" chunks
+// joined by ",", but game NAMES can contain commas (e.g. "Nine Hours, Nine Persons,
+// Nine Doors"), so a naive comma-split is wrong. Art fields are URLs with no commas,
+// so we split on "|" and reconstruct: the first comma in an art field marks the start
+// of the next game's name.
+export function parseGames(gamesplayed) {
+  const parts = String(gamesplayed || '').split('|');
+  if (parts.length < 3) {
+    const nm = (parts[0] || '').trim();
+    return nm ? [{ name: nm, art: '' }] : [];
+  }
+  const smallArt = (a) => (a || '').replace(/-\d+x\d+\.jpg.*$/, '-72x96.jpg');
+  const games = [];
+  let name = parts[0];
+  for (let i = 2; i < parts.length; i += 2) {
+    const artField = parts[i] || '';
+    const comma = artField.indexOf(',');
+    const art = comma >= 0 ? artField.slice(0, comma) : artField;
+    if ((name || '').trim()) games.push({ name: name.trim(), art: smallArt(art) });
+    if (comma < 0) break;
+    name = artField.slice(comma + 1);
+  }
+  return games;
+}
+
 // Fetch the channel's recent completed streams, normalized for the calendar:
 //   { streams: [ { date:'YYYY-MM-DD', minutes, games:[{name, art}] } ], fetchedAt }
 // `gamesplayed` is comma-separated "Name|Slug|boxartUrl" chunks; we keep the name
@@ -117,15 +142,7 @@ export async function fetchStreams(env, days = 45) {
         // Attribute to the local stream day: a 12am–5am start counts as the prior day.
         const dd = streamDay(r.startDateTime);
         const date = dd ? dd.toISOString().slice(0, 10) : String(r.startDateTime || '').slice(0, 10);
-        const games = String(r.gamesplayed || '')
-          .split(',')
-          .map((chunk) => {
-            const p = chunk.split('|');
-            if (!p[0]) return null;
-            const art = (p[2] || '').replace(/-\d+x\d+\.jpg.*$/, '-72x96.jpg');
-            return { name: p[0], art };
-          })
-          .filter(Boolean);
+        const games = parseGames(r.gamesplayed);
         return { date, minutes: Number(r.length) || 0, games };
       })
       .filter((s) => s.date);
