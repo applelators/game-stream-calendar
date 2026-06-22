@@ -730,12 +730,17 @@ function MonthGridView({ games, pace, vacations, dayOpts, streams, onPick, onTog
       const isBehind = (id) => { const dl = finishBeforeDeadline(gbi[id], gbi); const p = pos[id]; return !!(dl && p && p.end > dl); };
       const inDanger = (id) => { const k = gbi[id].finishBefore; return !!(k && boosts[k]); };
 
-      const horizon = utc(today.getUTCFullYear(), today.getUTCMonth() + 3, 1).getTime();
+      // Scope the makeup test to THIS month's deadlines ("make it up later this month").
+      // utc() is 1-based, so +2 from a 0-based getUTCMonth() = first day of next month.
+      const horizon = utc(today.getUTCFullYear(), today.getUTCMonth() + 2, 1).getTime();
       const baseSlip = totalSlipDays(pos, placeable, horizon);
       const restVacs = vacations.concat([{ start: today, end: addDays(today, 1) }]);
       const restSlip = totalSlipDays(streamPlan(placeable, pace, restVacs, undefined, dayOpts).positions, placeable, horizon);
       const restCost = Math.max(0, restSlip - baseSlip);
-      const restFree = restCost <= 0;
+      // Rest is only truly free if nothing is already slipping near-term AND resting
+      // adds none. If the month is over capacity (baseSlip > 0), resting just shuffles
+      // which deadline slips — there's no real makeup room, so don't recommend it.
+      const restFree = restCost <= 0 && baseSlip <= 0;
 
       let bestId = null;
       if (!restFree) {
