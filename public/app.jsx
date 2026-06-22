@@ -746,19 +746,18 @@ function MonthGridView({ games, pace, vacations, dayOpts, streams, onPick, onTog
       // which deadline slips — there's no real makeup room, so don't recommend it.
       const restFree = restCost <= 0 && baseSlip <= 0;
 
-      let bestId = null;
+      // The recommendation is the PLAN's default for today (what the calendar cell
+      // shows) — the scheduled game (recId), or the most-behind committed game if the
+      // plan didn't schedule one. When today is genuinely free, rest is recommended.
+      let recommendedId = null;
       if (!restFree) {
-        let bestSlip = Infinity;
-        for (const id of committed) {
-          const pins = { ...(dayOpts && dayOpts.dayPins), [tkey]: id };
-          const s = totalSlipDays(streamPlan(placeable, pace, vacations, today, { longDays: dayOpts && dayOpts.longDays, dayPins: pins, restDays: dayOpts && dayOpts.restDays }).positions, placeable, horizon);
-          if (s < bestSlip) { bestSlip = s; bestId = id; }
-        }
+        recommendedId = (recId && committed.includes(recId)) ? recId
+          : committed.find(isBehind) || committed[0] || null;
       }
 
       const opts = [];
       for (const id of committed) {
-        opts.push({ id, title: gbi[id].title, recommended: !restFree && id === bestId,
+        opts.push({ id, title: gbi[id].title, recommended: id === recommendedId,
           chosen: chosen === id, behind: isBehind(id), danger: inDanger(id), getAhead: restFree });
       }
       opts.push({ rest: true, recommended: restFree, chosen: chosen === '__rest__', restCost });
