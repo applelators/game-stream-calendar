@@ -30,9 +30,29 @@ export const FALLBACK_PACE = {
 // SullyGnome numeric channel id for @nabunan. Overridable via env for reuse.
 const DEFAULT_SG_CHANNEL_ID = '41050006';
 
+// The streamer's local timezone — late-night streams are attributed in local time.
+const STREAM_TZ = 'America/New_York';
+
 function round(n, p = 2) {
   const f = 10 ** p;
   return Math.round(n * f) / f;
+}
+
+// Which calendar day a stream "belongs to", in the streamer's local time. A stream
+// that starts 12am–5am local counts as the PREVIOUS day (late-night session that ran
+// past midnight). Returns a UTC-midnight Date of the assigned day, or null.
+export function streamDay(startDateTime) {
+  const dt = new Date(startDateTime);
+  if (isNaN(dt.getTime())) return null;
+  const fmt = new Intl.DateTimeFormat('en-CA', {
+    timeZone: STREAM_TZ, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hour12: false,
+  });
+  const o = {};
+  for (const p of fmt.formatToParts(dt)) o[p.type] = p.value;
+  let ms = Date.UTC(Number(o.year), Number(o.month) - 1, Number(o.day));
+  const hour = Number(o.hour === '24' ? '0' : o.hour);
+  if (hour < 5) ms -= 86400000; // 12am–5am local → previous day
+  return new Date(ms);
 }
 
 // Pure: turn an array of stream rows ({ length: minutes }) into a pace object.
@@ -50,9 +70,8 @@ export function computePace(rows, windowDays = WINDOW_DAYS) {
   let wdH = 0, wdN = 0, weH = 0, weN = 0;
   for (const r of rows) {
     const h = (Number(r.length) || 0) / 60;
-    const dt = String(r.startDateTime || r.starttime || '').slice(0, 10);
-    const dd = dt ? new Date(dt + 'T00:00:00Z') : null;
-    const dow = dd && !isNaN(dd.getTime()) ? dd.getUTCDay() : null; // 0 Sun .. 6 Sat
+    const dd = streamDay(r.startDateTime || r.starttime); // local day (12am–5am → prev day)
+    const dow = dd ? dd.getUTCDay() : null; // 0 Sun .. 6 Sat
     if (dow === 0 || dow === 6) { weH += h; weN += 1; } else { wdH += h; wdN += 1; }
   }
   const overall = totalHours / numStreams;
@@ -95,7 +114,9 @@ export async function fetchStreams(env, days = 45) {
     const rows = Array.isArray(j.data) ? j.data : [];
     const streams = rows
       .map((r) => {
-        const date = String(r.startDateTime || '').slice(0, 10);
+        // Attribute to the local stream day: a 12am–5am start counts as the prior day.
+        const dd = streamDay(r.startDateTime);
+        const date = dd ? dd.toISOString().slice(0, 10) : String(r.startDateTime || '').slice(0, 10);
         const games = String(r.gamesplayed || '')
           .split(',')
           .map((chunk) => {
