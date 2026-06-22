@@ -505,18 +505,39 @@ function TodayPicker({ options, mobile, onPick }) {
   return (
     <div className={`${pfx}-today`}>
       <span className={`${pfx}-today-h`}>▶ Today ({label}) · feel like something else?</span>
-      {options.map((o) => (
-        <button key={o.id} className={`${pfx}-today-chip${o.recommended ? ' rec' : o.bonus ? ' bonus' : o.slips ? ' risk' : ' safe'}`}
-          style={{ borderColor: gameColor(o.id).solid }}
-          onClick={() => onPick(o.id)}
-          title={o.recommended ? 'Recommended — keeps every deadline on track'
-            : o.bonus ? 'Bonus — only if you’re ahead of schedule'
-            : o.slips ? 'Playing this today would push a deadline' : 'Safe — no deadline slips if you play this today'}>
-          <span className="dot" style={{ background: gameColor(o.id).solid }} />
-          {o.bonus ? '★ ' : ''}{o.title}
-          <small>{o.recommended ? '✓ recommended' : o.bonus ? 'bonus · if ahead' : o.slips ? '⚠ may slip' : '✓ no slip'}</small>
-        </button>
-      ))}
+      {options.map((o) => {
+        if (o.rest) {
+          const cls = o.recommended ? ' rec' : ' risk';
+          return (
+            <button key="__rest__" className={`${pfx}-today-chip rest${cls}`}
+              title={o.recommended ? 'The plan has today free — a good day to rest'
+                : o.behindTitle ? `Today is a scheduled stream day — resting pushes your deadlines further (${o.behindTitle} is already behind)`
+                : 'Today is a scheduled stream day — resting pushes your deadlines further'}>
+              <span className="dot" style={{ background: 'var(--muted)' }} />
+              ☕ Take a break (rest day)
+              <small>{o.recommended ? '✓ recommended · plan is free today' : '⚠ pushes deadlines'}</small>
+            </button>
+          );
+        }
+        const note = o.recommended ? (o.behind ? '✓ recommended · behind — limits slip' : '✓ recommended')
+          : o.bonus ? 'bonus · if ahead'
+          : o.behind ? '⚠ behind — slips further'
+          : o.getAhead ? 'optional · play to get ahead'
+          : 'alternative';
+        return (
+          <button key={o.id} className={`${pfx}-today-chip${o.recommended ? ' rec' : o.bonus ? ' bonus' : o.behind ? ' risk' : ' safe'}`}
+            style={{ borderColor: gameColor(o.id).solid }}
+            onClick={() => onPick(o.id)}
+            title={o.recommended ? (o.behind ? 'Recommended — already behind; play it to limit the slip' : 'Recommended — today is a scheduled stream day')
+              : o.bonus ? 'Bonus — only if you’re ahead of schedule'
+              : o.behind ? 'This game is already behind its deadline; not playing it slips it further'
+              : o.getAhead ? 'Optional — play to build a buffer' : 'An alternative committed game'}>
+            <span className="dot" style={{ background: gameColor(o.id).solid }} />
+            {o.bonus ? '★ ' : ''}{o.title}
+            <small>{note}</small>
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -655,17 +676,18 @@ function MonthGridView({ games, pace, vacations, dayOpts, streams, onPick, onTog
       }
     }
     // ---- "what can I stream today" options ----------------------------------
-    // The planned pick keeps everything on track (recommended). Alternatives are the
-    // other games in progress today (+ available bonus); each is re-simulated with a
-    // one-day pin to see whether swapping to it today would push a deadline.
+    // Signal: did the plan schedule a committed stream today?
+    //  - Yes (a planned stream day) → recommend that game; resting pushes deadlines,
+    //    and any already-behind game is surfaced.
+    //  - No (the plan left today free) → recommend a REST/break day.
+    // Bonus games are listed only as "if you're ahead", never recommended.
     const tkey = dayKey(today);
     let todayOptions = [];
     if (!inVacation(today, vacations)) {
-      const baseMissed = totalSlipDays(pos, placeable);
-      const recId = sbd[tkey] ? sbd[tkey].id : null; // today's planned pick (if any)
+      const recId = sbd[tkey] ? sbd[tkey].id : null; // planned committed game today
       const cand = [];
-      const soon = addDays(today, 10); // a game is a realistic "today" pick if it's
-      for (const g of placeable) {     // already out and in progress or starting soon
+      const soon = addDays(today, 10);
+      for (const g of placeable) {
         if (g.kind === 'event') continue;
         const p = pos[g.id]; const a = anchorDate(g.release);
         if (!a || a > today) continue;            // not yet released
@@ -673,29 +695,25 @@ function MonthGridView({ games, pace, vacations, dayOpts, streams, onPick, onTog
         const current = p && p.start <= soon;     // in progress or imminent
         if (current || g.bonus || g.id === recId) cand.push(g.id);
       }
-      const seen = {}; const order = [];
-      for (const id of [recId, ...cand]) { if (id && !seen[id]) { seen[id] = 1; order.push(id); } }
-      let optList = order.map((id) => {
-        const g = gbi[id];
-        // Bonus games are their own "if you're ahead" category — never recommended,
-        // never shown as an equal-footing safe pick.
-        if (g.bonus) return { id, title: g.title, bonus: true, recommended: false, slips: false };
-        // For committed games, test whether playing it today pushes any deadline.
-        let slips = false;
-        if (id !== recId) {
-          const pins = { ...(dayOpts && dayOpts.dayPins), [tkey]: id };
-          const sim = streamPlan(placeable, pace, vacations, undefined, { longDays: dayOpts && dayOpts.longDays, dayPins: pins });
-          slips = totalSlipDays(sim.positions, placeable) > baseMissed;
-        }
-        return { id, title: g.title, bonus: false, recommended: false, slips };
-      });
-      // recommended = today's planned (committed) pick; else the first no-slip
-      // committed game. A bonus game is never recommended (it's "if you're ahead").
-      const rec = optList.find((o) => o.id === recId && !o.bonus)
-        || optList.find((o) => !o.bonus && !o.slips)
-        || optList.find((o) => !o.bonus);
-      if (rec) rec.recommended = true;
-      todayOptions = optList;
+      const committed = []; const bonusIds = []; const seen = {};
+      for (const id of cand) { if (seen[id]) continue; seen[id] = 1; (gbi[id].bonus ? bonusIds : committed).push(id); }
+      const isBehind = (id) => { const dl = finishBeforeDeadline(gbi[id], gbi); const p = pos[id]; return !!(dl && p && p.end > dl); };
+      const plannedDay = !!(recId && committed.includes(recId));
+      const behindTitle = (committed.find(isBehind) ? gbi[committed.find(isBehind)].title : null);
+
+      const opts = [];
+      for (const id of committed) {
+        opts.push({ id, title: gbi[id].title, bonus: false, recommended: plannedDay && id === recId,
+          behind: isBehind(id), getAhead: !plannedDay });
+      }
+      // rest option — recommended only when the plan didn't need a stream today
+      opts.push({ rest: true, recommended: !plannedDay, behindTitle: plannedDay ? behindTitle : null });
+      for (const id of bonusIds) opts.push({ id, title: gbi[id].title, bonus: true, recommended: false });
+      opts.sort((a, b) => (b.recommended ? 1 : 0) - (a.recommended ? 1 : 0)
+        || (a.bonus ? 1 : 0) - (b.bonus ? 1 : 0)
+        || ((b.behind ? 1 : 0) - (a.behind ? 1 : 0))
+        || (a.rest ? 1 : 0) - (b.rest ? 1 : 0));
+      todayOptions = opts;
     }
     return { releasesByDay: rbd, sessionByDay: sbd, gameById: gbi, plannedByMonth: pbm, bonusByMonth: bbm, bonusPlayByDay: bpd, deadlineByDay: dbd, deadlineBracketsByMonth: dbm, slippedByMonth: sbm, todayOptions, min: mn, max: mx };
   }, [placeable, pace, vacations, dayOpts]);

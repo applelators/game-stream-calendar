@@ -381,6 +381,10 @@ input, select, textarea { font-family: inherit; }
 .gc-today-chip.risk small, .mg-today-chip.risk small { color: var(--danger); }
 .gc-today-chip.bonus, .mg-today-chip.bonus { border-style: dashed; }
 .gc-today-chip.bonus small, .mg-today-chip.bonus small { color: var(--warn); }
+.gc-today-chip.save small, .mg-today-chip.save small { color: var(--good); }
+.gc-today-chip.rest, .mg-today-chip.rest { border-color: var(--border-solid); }
+.gc-today-chip.rest.rec, .mg-today-chip.rest.rec { border-color: var(--good); background: #14241c; }
+.gc-today-chip.rest.rec small, .mg-today-chip.rest.rec small { color: var(--good); }
 
 /* tap-to-reveal spoiler (plot details in part goals) */
 .spoiler { background: #4a5161; color: transparent; border-radius: 4px; padding: 0 4px;
