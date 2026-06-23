@@ -605,7 +605,7 @@ function App() {
 
       {detailGame && (
         <DetailCard game={detailGame} pace={ep} vacations={normVacs} queuedPos={seqPositions[detailGame.id]}
-          onClose={() => setDetail(null)} />
+          games={effGames} onClose={() => setDetail(null)} />
       )}
       {showSettings && (
         <SettingsPanel settings={settings} pace={pace} setSettings={setSettings} setPace={setPace}
@@ -1639,68 +1639,74 @@ function ReleasesView({ games, pace, onPick }) {
 // ============================================================================
 // Detail card
 // ============================================================================
-function DetailCard({ game: g, pace, vacations, queuedPos, onClose }) {
+function DetailCard({ game: g, pace, vacations, queuedPos, games, onClose }) {
   const strk = streamsToFinish(g.hltbHours, pace);
   const wks = weeksToFinish(g.hltbHours, pace);
   const start = anchorDate(g.release);
   const earliest = start ? gameEnd(g, start, pace, vacations) : null;
   const queued = queuedPos ? queuedPos.end : null;
   const parts = queuedPos && queuedPos.segments ? queuedPos.segments.length : 1;
+  const art = isImgIcon(g.icon) ? g.icon : null;
+  // Catch-up note vs this game's finish-before deadline.
+  let paceNote = null;
+  if (g.finishBefore && g.kind !== 'event' && g.hltbHours > 0) {
+    const byId = {}; (games || []).forEach((x) => { byId[x.id] = x; });
+    const dl = finishBeforeDeadline(g, byId);
+    const n = new Date(); const today = utc(n.getFullYear(), n.getMonth() + 1, n.getDate());
+    if (dl && dl.getTime() > today.getTime()) {
+      const wl = Math.max(0.3, (dl.getTime() - today.getTime()) / 6048e5);
+      const need = g.hltbHours / wl;
+      paceNote = { need, ok: need <= (pace.hoursPerWeek || 11.52), dlText: dlLabelFor(g.finishBefore, dl, byId) };
+    }
+  }
   return (
     <div className="scrim" onClick={onClose}>
-      <div className="modal detail" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-h">
-          <div className="modal-h-title"><GameBadge game={g} size={34} /><h3>{g.title}</h3></div>
-          <button className="x" onClick={onClose}>×</button>
+      <div className="modal mdetail" onClick={(e) => e.stopPropagation()}>
+        <button className="modal-x" onClick={onClose}>×</button>
+        <div className="modal-hero">
+          {art && <div className="modal-heroart" style={{ backgroundImage: `url(${art})` }} />}
+          <div className="modal-herofade" />
         </div>
-        <div className="modal-b">
-          <span className="dt-kind"><span className="swatch" style={{ background: KIND_COLOR[g.kind] }} />
-            {KIND_LABEL[g.kind]} · {releaseLabel(g.release)}</span>
+        <div className="modal-body">
+          {art
+            ? <div className="modal-cover" style={{ backgroundImage: `url(${art})` }} />
+            : <div className="modal-cover modal-cover-mono" style={{ background: gameColor(g.id).solid }}><GameBadge game={g} size={38} /></div>}
+          <div className="modal-kind"><span className="swatch" style={{ background: gameColor(g.id).solid }} />
+            {KIND_LABEL[g.kind]}{g.bonus ? ' · Bonus' : ''}{g.backlog ? ' · Backlog' : ''} · {releaseLabel(g.release)}</div>
+          <div className="modal-title">{g.title}</div>
 
           {g.kind !== 'event' && g.hltbHours > 0 && (
-            <div className="dt-stats">
-              <div className="dt-stat"><div className="k">HowLongToBeat</div><div className="v">{g.hltbHours}<small> h</small></div></div>
-              <div className="dt-stat"><div className="k">Streams to finish</div><div className="v">{strk}</div></div>
+            <div className="modal-stats">
+              <div className="modal-stat"><div className="k">Time to beat</div><div className="v">{g.hltbHours}<small> h</small></div></div>
+              <div className="modal-stat"><div className="k">Streams to finish</div><div className="v">{strk}<small> · {wks < 1.05 ? Math.round(wks * 7) + 'd' : wks.toFixed(1) + 'w'}</small></div></div>
               {queued ? (
-                <React.Fragment>
-                  <div className="dt-stat"><div className="k">Earliest finish</div>
-                    <div className="v" style={{ fontSize: '1rem' }}>{earliest ? fmtDate(earliest) : '—'}</div>
-                    <div className="dt-sub">straight through from release</div></div>
-                  <div className="dt-stat"><div className="k">Queued finish</div>
-                    <div className="v" style={{ fontSize: '1rem' }}>{fmtDate(queued)}</div>
-                    <div className="dt-sub">release-priority{parts > 1 ? ` · ${parts} parts` : ''}</div></div>
-                </React.Fragment>
-              ) : (
-                <React.Fragment>
-                  <div className="dt-stat"><div className="k">≈ Real time</div><div className="v">{wks < 1.05 ? Math.round(wks * 7) + 'd' : wks.toFixed(1) + 'w'}</div></div>
-                  <div className="dt-stat"><div className="k">Est. finish</div><div className="v" style={{ fontSize: '1rem' }}>{earliest ? fmtDate(earliest) : '—'}</div></div>
-                </React.Fragment>
-              )}
+                <div className="modal-stat"><div className="k">Queued finish</div><div className="v" style={{ fontSize: '1.05rem' }}>{fmtDate(queued)}</div><div className="dt-sub">{parts > 1 ? parts + ' parts' : 'release-priority'}</div></div>
+              ) : earliest ? (
+                <div className="modal-stat"><div className="k">Est. finish</div><div className="v" style={{ fontSize: '1.05rem' }}>{fmtDate(earliest)}</div></div>
+              ) : null}
             </div>
           )}
 
-          <div className="dt-list">
-            {g.platforms && g.platforms.length > 0 && (
-              <div className="dt-line"><span className="k">Platforms</span>
-                <span className="tags">{g.platforms.map((p) => <span className="tag" key={p}>{p}</span>)}</span></div>
-            )}
-            {g.editions && g.editions.length > 0 && (
-              <div className="dt-line"><span className="k">Editions</span>
-                <div className="ed-list">{g.editions.map((e, i) => (
-                  <div className="e" key={i}><span>{e.name}</span>
-                    <span className="p">{e.msrpUSD ? '$' + e.msrpUSD.toFixed(2) : 'TBA'}</span></div>
-                ))}</div></div>
-            )}
-            {g.earlyAccess && <div className="dt-line"><span className="k">Early access / bonus</span>{g.earlyAccess}</div>}
-            {g.hltbNote && <div className="dt-line"><span className="k">HLTB basis</span>{labelBasis(g.hltbBasis)} — {g.hltbNote}</div>}
-            {g.partGoal && <div className="dt-line"><span className="k">Part goal</span>{renderSpoilers(g.partGoal)}</div>}
-          </div>
+          {paceNote && (
+            <div className={'modal-note ' + (paceNote.ok ? 'ok' : 'bad')}>
+              <b>{paceNote.ok ? 'On pace ✓' : 'Behind ⚠'}</b> — needs <b className="hl">{paceNote.need.toFixed(1)} h/wk</b> to finish {paceNote.dlText}; you average {Number(pace.hoursPerWeek || 0).toFixed(1)}h/wk.
+            </div>
+          )}
 
-          {g.notes && <div className="note-box">{g.notes}</div>}
-        </div>
-        <div className="modal-f">
-          <span className="hint" style={{ marginRight: 'auto' }}>Edit in games.json</span>
-          <button className="btn btn-accent" onClick={onClose}>Done</button>
+          {g.platforms && g.platforms.length > 0 && (
+            <div className="modal-line"><span className="k">Platforms</span>
+              <div className="modal-tags">{g.platforms.map((p, i) => <span className="modal-tag" key={i}>{p}</span>)}</div></div>
+          )}
+          {g.editions && g.editions.length > 0 && (
+            <div className="modal-line"><span className="k">Editions</span>
+              <div className="modal-tags">{g.editions.map((e, i) => <span className="modal-tag" key={i}>{e.name}{e.msrpUSD ? ' · $' + e.msrpUSD.toFixed(2) : ''}</span>)}</div></div>
+          )}
+          {g.earlyAccess && <div className="modal-line"><span className="k">Early access</span><span>{g.earlyAccess}</span></div>}
+          {g.hltbNote && <div className="modal-line"><span className="k">Estimate</span><span>{labelBasis(g.hltbBasis)} — {g.hltbNote}</span></div>}
+          {g.partGoal && <div className="modal-note goal"><b className="goalk">Part goal · </b>{renderSpoilers(g.partGoal)}</div>}
+          {g.notes && <div className="modal-note blue">{g.notes}</div>}
+
+          <div className="modal-foot"><span className="hint">Edit in games.json</span><button className="btn btn-accent" onClick={onClose}>Done</button></div>
         </div>
       </div>
     </div>
