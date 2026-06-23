@@ -164,6 +164,10 @@ function gameFromFile(e, i) {
   if (e.pinStart) g.pinStart = true;
   // Optional milestone: what chapter/badge/region marks this part "done".
   if (e.partGoal) g.partGoal = String(e.partGoal);
+  // Optional: name of a multi-title collection this entry belongs to (e.g. "Kingdom
+  // Hearts Collection [I–III]"). The Releases appendix collapses all members into one
+  // row (the collection, on its earliest release day). Doesn't affect scheduling.
+  if (e.collection) g.collection = String(e.collection);
   // Optional scheduling priority within a shared deadline (higher = scheduled
   // sooner): Pokémon (+1) beats long-running franchises (-1) when they contend.
   if (e.priority != null) g.priority = Number(e.priority);

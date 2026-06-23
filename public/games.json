@@ -115,7 +115,8 @@
       "earlyAccess": "",
       "notes": "First playthrough; chapters released Jun 2025.",
       "icon": "https://cdn2.steamgriddb.com/thumb/1826158ab2775c08e5fa3c729045e680.jpg",
-      "iconColor": "#4fd1ee"
+      "iconColor": "#4fd1ee",
+      "newRelease": false
     },
     {
       "title": "Deltarune — Chapter 5",
@@ -453,7 +454,7 @@
     },
     {
       "title": "Pokémon Pokopia Expansion Pass: Bubbly Basin",
-      "date": "2026-08",
+      "date": "TBD",
       "kind": "dlc",
       "hltbHours": 15,
       "basis": "estimate",
@@ -684,7 +685,8 @@
       "finishBefore": "2026-10",
       "partGoal": "Roughly the first half of the worlds — ||Destiny Islands → Traverse Town → Wonderland → Coliseum → Deep Jungle → Agrabah → Monstro||.",
       "priority": -1,
-      "backlog": true
+      "backlog": true,
+      "collection": "KINGDOM HEARTS Collection [I~III]"
     },
     {
       "title": "Kingdom Hearts Final Mix (I) — Pt. 2",
@@ -706,7 +708,8 @@
       "iconColor": "#5473e7",
       "finishBefore": "2026-11",
       "partGoal": "The remaining worlds to the finale — ||Atlantica → Halloween Town → Neverland → Hollow Bastion → End of the World||.",
-      "priority": -1
+      "priority": -1,
+      "collection": "KINGDOM HEARTS Collection [I~III]"
     },
     {
       "title": "Kingdom Hearts Re:Chain of Memories",
@@ -727,7 +730,8 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/da1dbf20ae8394f0fb70bfffa143a6b9.jpg",
       "iconColor": "#7e72c9",
       "finishBefore": "2026-12",
-      "priority": -1
+      "priority": -1,
+      "collection": "KINGDOM HEARTS Collection [I~III]"
     },
     {
       "title": "Kingdom Hearts II Final Mix — Pt. 1",
@@ -749,7 +753,8 @@
       "iconColor": "#5eb3dd",
       "finishBefore": "2027-01",
       "partGoal": "First visits to all worlds — ||through the Battle of Hollow Bastion (the '1000 Heartless' fight)||.",
-      "priority": -1
+      "priority": -1,
+      "collection": "KINGDOM HEARTS Collection [I~III]"
     },
     {
       "title": "Kingdom Hearts II Final Mix — Pt. 2",
@@ -771,7 +776,8 @@
       "iconColor": "#5eb3dd",
       "finishBefore": "2027-02",
       "partGoal": "Second visits to the finale — ||through The World That Never Was||.",
-      "priority": -1
+      "priority": -1,
+      "collection": "KINGDOM HEARTS Collection [I~III]"
     },
     {
       "title": "Kingdom Hearts 358/2 Days",
@@ -790,7 +796,8 @@
       "earlyAccess": "",
       "notes": "Game 4 of 11 — KINGDOM HEARTS marathon (cinematic, bundled in 1.5+2.5 ReMIX).",
       "finishBefore": "2027-03",
-      "priority": -1
+      "priority": -1,
+      "collection": "KINGDOM HEARTS Collection [I~III]"
     },
     {
       "title": "Kingdom Hearts Birth by Sleep Final Mix — Pt. 1",
@@ -812,7 +819,8 @@
       "iconColor": "#b572c9",
       "finishBefore": "2027-03",
       "partGoal": "The first two of three scenarios — ||Terra's and Ventus's stories||.",
-      "priority": -1
+      "priority": -1,
+      "collection": "KINGDOM HEARTS Collection [I~III]"
     },
     {
       "title": "Kingdom Hearts Birth by Sleep Final Mix — Pt. 2",
@@ -834,7 +842,8 @@
       "iconColor": "#b572c9",
       "finishBefore": "2027-04",
       "partGoal": "The final scenario + endgame — ||Aqua's scenario, the Final Episode, and secret ending||.",
-      "priority": -1
+      "priority": -1,
+      "collection": "KINGDOM HEARTS Collection [I~III]"
     },
     {
       "title": "Kingdom Hearts Re:coded",
@@ -855,7 +864,8 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/5045efd0278f9582162ce6ddd5e0eeaa.jpg",
       "iconColor": "#d9c063",
       "finishBefore": "2027-05",
-      "priority": -1
+      "priority": -1,
+      "collection": "KINGDOM HEARTS Collection [I~III]"
     },
     {
       "title": "Kingdom Hearts Dream Drop Distance HD — Pt. 1",
@@ -877,7 +887,8 @@
       "iconColor": "#c972a1",
       "finishBefore": "2027-05",
       "partGoal": "Roughly the first half of the Drop worlds — ||Traverse Town → La Cité des Cloches → The Grid (both Sora & Riku)||.",
-      "priority": -1
+      "priority": -1,
+      "collection": "KINGDOM HEARTS Collection [I~III]"
     },
     {
       "title": "Kingdom Hearts Dream Drop Distance HD — Pt. 2",
@@ -899,7 +910,8 @@
       "iconColor": "#c972a1",
       "finishBefore": "2027-06",
       "partGoal": "The remaining worlds to the finale — ||Prankster's Paradise → Country of the Musketeers → Symphony of Sorcery → The World That Never Was||.",
-      "priority": -1
+      "priority": -1,
+      "collection": "KINGDOM HEARTS Collection [I~III]"
     },
     {
       "title": "Kingdom Hearts χ Back Cover",
@@ -918,7 +930,8 @@
       "earlyAccess": "",
       "notes": "Game 8 of 11 — KINGDOM HEARTS marathon (cinematic, bundled in 2.8).",
       "finishBefore": "2027-07",
-      "priority": -1
+      "priority": -1,
+      "collection": "KINGDOM HEARTS Collection [I~III]"
     },
     {
       "title": "Kingdom Hearts 0.2 -A Fragmentary Passage-",
@@ -937,7 +950,8 @@
       "earlyAccess": "",
       "notes": "Game 9 of 11 — KINGDOM HEARTS marathon (bundled in 2.8).",
       "finishBefore": "2027-07",
-      "priority": -1
+      "priority": -1,
+      "collection": "KINGDOM HEARTS Collection [I~III]"
     },
     {
       "title": "Kingdom Hearts III + ReMind — Pt. 1",
@@ -959,7 +973,8 @@
       "iconColor": "#7284c9",
       "finishBefore": "2027-08",
       "partGoal": "Roughly the first half of the worlds — ||Olympus → Twilight Town → Toy Box → Kingdom of Corona → Monstropolis → Arendelle (Frozen)||.",
-      "priority": -1
+      "priority": -1,
+      "collection": "KINGDOM HEARTS Collection [I~III]"
     },
     {
       "title": "Kingdom Hearts III + ReMind — Pt. 2",
@@ -981,7 +996,8 @@
       "iconColor": "#7284c9",
       "finishBefore": "2027-09",
       "partGoal": "The remaining worlds to the finale, then the ReMind DLC — ||The Caribbean → San Fransokyo → the Keyblade Graveyard||.",
-      "priority": -1
+      "priority": -1,
+      "collection": "KINGDOM HEARTS Collection [I~III]"
     },
     {
       "title": "Kingdom Hearts Melody of Memory",
@@ -1007,7 +1023,8 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/3c27eff5b85b5a200dd10ace970c33c2.jpg",
       "iconColor": "#c9b472",
       "finishBefore": "2027-12",
-      "priority": -1
+      "priority": -1,
+      "newRelease": false
     },
     {
       "title": "Switch Sports Resort",

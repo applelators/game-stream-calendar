@@ -1240,29 +1240,49 @@ function ReleasesView({ games, pace, onPick }) {
     () => games.filter((g) => (g.kind === 'game' || g.kind === 'dlc') && g.newRelease !== false),
     [games]
   );
-  const groups = useMemo(() => {
+  // Collapse multi-part games ("— Pt. N") and named collections into ONE entry, shown
+  // with the full title on the day the whole thing first releases. Hours are summed
+  // across parts so the row reflects the full game/collection's time to finish.
+  const baseTitle = (t) => String(t || '').replace(/\s*—\s*pt\.?\s*\d+.*$/i, '').trim();
+  const entries = useMemo(() => {
     const m = {};
     for (const g of releases) {
-      const yr = g.release && g.release.year ? String(g.release.year) : 'TBD';
-      (m[yr] = m[yr] || []).push({ g, d: anchorDate(g.release) });
+      const key = g.collection ? 'c:' + g.collection : 'b:' + baseTitle(g.title);
+      const title = g.collection || baseTitle(g.title);
+      const d = anchorDate(g.release);
+      let e = m[key];
+      if (!e) { e = m[key] = { key, title, rep: g, d, hours: 0, parts: 0 }; }
+      e.parts += 1;
+      e.hours += Number(g.hltbHours) || 0;
+      // Representative = earliest-dated member (its date/badge/platforms drive the row).
+      if (d && (!e.d || d < e.d)) { e.d = d; e.rep = g; }
+    }
+    return Object.values(m);
+  }, [releases]);
+  const groups = useMemo(() => {
+    const m = {};
+    for (const e of entries) {
+      const yr = e.rep.release && e.rep.release.year ? String(e.rep.release.year) : 'TBD';
+      (m[yr] = m[yr] || []).push(e);
     }
     const keys = Object.keys(m).sort((a, b) =>
       a === 'TBD' ? 1 : b === 'TBD' ? -1 : Number(a) - Number(b));
     for (const k of keys) {
       m[k].sort((x, y) => {
-        if (!x.d && !y.d) return x.g.title < y.g.title ? -1 : 1;
+        if (!x.d && !y.d) return x.title < y.title ? -1 : 1;
         if (!x.d) return 1; if (!y.d) return -1;
-        return (x.d - y.d) || (x.g.title < y.g.title ? -1 : 1);
+        return (x.d - y.d) || (x.title < y.title ? -1 : 1);
       });
     }
     return keys.map((k) => ({ year: k, items: m[k] }));
-  }, [releases]);
+  }, [entries]);
 
   return (
     <div className="releases">
       <div className="rel-intro">
-        <strong>{releases.length}</strong> new releases on the slate — release date, type,
-        platforms, price, and time to finish on stream. (Replays of older games and events are
+        <strong>{entries.length}</strong> new releases on the slate — release date, type,
+        platforms, price, and time to finish on stream. Multi-part games and collections are
+        shown once, on the day the full thing releases. (Replays of older games and events are
         excluded.) Tap any row for full details.
       </div>
       {groups.map(({ year, items }) => (
@@ -1270,19 +1290,20 @@ function ReleasesView({ games, pace, onPick }) {
           <div className="rel-yr-h">{year === 'TBD' ? 'Unscheduled / TBD' : year}
             <span className="rel-yr-cnt">{items.length} title{items.length === 1 ? '' : 's'}</span></div>
           <div className="rel-tbl">
-            {items.map(({ g }) => {
-              const strk = g.kind !== 'event' && g.hltbHours > 0 ? streamsToFinish(g.hltbHours, pace) : null;
+            {items.map((e) => {
+              const g = e.rep;
+              const strk = e.hours > 0 ? streamsToFinish(e.hours, pace) : null;
               const base = g.editions && g.editions.length ? g.editions[0] : null;
               return (
-                <div className="rel-row" key={g.id} onClick={() => onPick(g.id)}>
+                <div className="rel-row" key={e.key} onClick={() => onPick(g.id)}>
                   <span className="rel-date">{releaseLabel(g.release)}</span>
                   <span className="rel-kind" style={{ background: KIND_COLOR[g.kind] }}>{KIND_LABEL[g.kind]}</span>
-                  <span className="rel-title"><GameBadge game={g} size={18} />{g.title}
+                  <span className="rel-title"><GameBadge game={g} size={18} />{e.title}
+                    {e.parts > 1 ? <span className="rel-parts">{e.parts} parts</span> : null}
                     {g.bonus ? <span className="rel-bonus">★ bonus</span> : null}</span>
                   <span className="rel-plat">{(g.platforms || []).join(', ')}</span>
                   <span className="rel-price">{base && base.msrpUSD ? '$' + base.msrpUSD.toFixed(2) : ''}</span>
-                  <span className="rel-hltb">{g.kind === 'event' ? '—'
-                    : g.hltbHours ? <React.Fragment>{g.hltbHours}h<small> · {strk} str</small></React.Fragment> : ''}</span>
+                  <span className="rel-hltb">{e.hours ? <React.Fragment>{e.hours}h<small> · {strk} str</small></React.Fragment> : ''}</span>
                 </div>
               );
             })}

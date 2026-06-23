@@ -511,6 +511,8 @@ input, select, textarea { font-family: inherit; }
   color: var(--text); min-width: 0; }
 .rel-title > :first-child { flex: none; }
 .rel-bonus { font-size: 0.62rem; font-weight: 700; color: var(--warn); margin-left: 2px; }
+.rel-parts { font-size: 0.6rem; font-weight: 700; color: var(--faint); font-family: var(--mono);
+  background: #ffffff10; border-radius: 99px; padding: 1px 7px; margin-left: 4px; white-space: nowrap; }
 .rel-plat { font-size: 0.72rem; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rel-price { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); text-align: right; }
 .rel-hltb { font-family: var(--mono); font-size: 0.78rem; font-weight: 700; color: var(--accent-2); text-align: right; white-space: nowrap; }
