@@ -612,3 +612,11 @@ input, select, textarea { font-family: inherit; }
 .q-summary { margin-top: 14px; font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
 .q-summary b { color: var(--text); }
 @media (max-width: 640px) { .q-row { grid-template-columns: 20px 1fr 84px; } .q-art, .q-sub, .q-flag { display: none; } }
+
+/* ============================================================
+   Theme accent swatches (redesign step 4)
+   ============================================================ */
+.theme-sw { display: inline-flex; gap: 6px; align-items: center; }
+.theme-sw .sw { width: 18px; height: 18px; border-radius: 99px; border: 2px solid var(--border-solid); padding: 0; cursor: pointer; transition: 0.12s; }
+.theme-sw .sw:hover { transform: scale(1.12); }
+.theme-sw .sw.on { border-color: #fff; }

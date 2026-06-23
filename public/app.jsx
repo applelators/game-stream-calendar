@@ -26,7 +26,17 @@ const DEFAULT_SETTINGS = {
   restDays: [],    // ISO dates the user chose to rest (no committed stream)
   sessionGoals: {},// { 'gameId#streamOrdinal': 'goal note' } — per-stream goals (hover)
   queue: [],       // what-if queue play order (game ids); empty = default release order
+  theme: 'purple', // accent preset (sets --acc / --acc-ink); persists in settings
 };
+
+// Accent presets — swap --acc / --acc-ink on the app wrapper. Per-game colours
+// (iconColor) are unaffected; only the global accent themes.
+const THEMES = [
+  { id: 'purple', acc: '#a970ff', ink: '#160a2b' },
+  { id: 'teal', acc: '#2bd4c0', ink: '#04201c' },
+  { id: 'amber', acc: '#f5a142', ink: '#241402' },
+  { id: 'mono', acc: '#cdd3df', ink: '#0d1118' },
+];
 
 const FALLBACK_PACE = { hoursPerStream: 5.11, hoursPerWeek: 11.52, weekdayHps: 4.0, weekendHps: 8.0, weekdayStreams: 0, weekendStreams: 0, source: 'fallback', fetchedAt: null, numStreams: 29, totalHours: 148.1, windowDays: 90 };
 
@@ -543,9 +553,10 @@ function App() {
     return merged;
   }, [effGames, settings.queue, today, doneInfo.hours]);
   const reorderQueue = useCallback((ids) => setSettings((s) => ({ ...s, queue: ids })), []);
+  const themeObj = THEMES.find((t) => t.id === settings.theme) || THEMES[0];
 
   return (
-    <div className="app">
+    <div className="app" style={{ '--acc': themeObj.acc, '--acc-ink': themeObj.ink }}>
       <header>
         <div className="hdr">
           <div>
@@ -570,6 +581,13 @@ function App() {
                 onClick={() => setSettings((s) => ({ ...s, schedMode: 'sequential' }))}>My queue</button>
             </div>
           )}
+          <div className="theme-sw" title="Accent theme">
+            {THEMES.map((t) => (
+              <button key={t.id} className={'sw' + (settings.theme === t.id ? ' on' : '')}
+                style={{ background: t.acc }} title={t.id}
+                onClick={() => setSettings((s) => ({ ...s, theme: t.id }))} />
+            ))}
+          </div>
           <button className="btn" onClick={() => setShowSettings(true)}>⚙ Settings</button>
         </div>
       </header>
