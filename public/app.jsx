@@ -110,8 +110,13 @@ const fmtMins = (m) => { const h = Math.floor((m || 0) / 60), mm = (m || 0) % 60
 // stripped, fuzzy contains). Each matching past stream's hours are allocated across
 // the game's parts in date order; we also count how many streams touched each part.
 // Returns { hours:{id:h}, counts:{id:n} }. Events/bonus games are ignored.
+// Normalize a game title/category for matching. Keep parenthetical content (e.g.
+// "(Switch 2)") — it distinguishes "Star Fox (Switch 2)" from "Star Fox Zero" — and
+// expand the NS2 abbreviation so it lines up with "Nintendo Switch 2" in real data.
+// Only the "— Pt. N" part suffix is dropped (so parts share a base).
 const stripGameName = (s) => String(s || '').toLowerCase()
-  .replace(/—\s*pt\.?\s*\d+.*$/, '').replace(/\(.*?\)/g, '')
+  .replace(/—\s*pt\.?\s*\d+.*$/, '')
+  .replace(/\bns2\b/g, 'nintendo switch 2')
   .replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
 function computeDoneInfo(games, streams) {
   const hours = {}, counts = {};
@@ -506,9 +511,11 @@ function dayInfo(day, ctx) {
   if (session) {
     // Per-session goal, numbered by ABSOLUTE stream ordinal (completed streams of this
     // game + this session's index), so "2nd stream" counts ones already streamed.
-    const ord = (ctx.doneCounts[session.id] || 0) + session.idx;
+    const doneN = ctx.doneCounts[session.id] || 0;
+    const ord = doneN + session.idx;                 // absolute stream number
+    const ordTotal = doneN + session.total;          // total streams incl. completed
     const goal = ctx.sessionGoals[`${session.id}#${ord}`] || null;
-    return { releases, play: ctx.gameById[session.id], session, goal, streamOrd: ord };
+    return { releases, play: ctx.gameById[session.id], session, goal, streamOrd: ord, streamTotal: ordTotal };
   }
   // bonus game filling a spare slot (faded).
   const bonusId = ctx.bonusPlayByDay && ctx.bonusPlayByDay[k];
@@ -883,7 +890,7 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, sessionGoa
                 <div key={d} className={cls} style={cellStyle}>
                   <span className="dnum">{d}{info.releases.length ? <span className="relstar">★</span> : null}{dl ? <span className="mg-deadflag" title={`Finish before ${dl.title}`}>⚑</span> : null}</span>
                   {!info.vac && !info.launch && info.session && info.play && (
-                    <span className="mg-strno" title={`Stream ${info.session.idx} of ${info.session.total}`}>{info.session.idx}/{info.session.total}{info.session.hours ? ` · ~${info.session.hours}h` : ''}</span>
+                    <span className="mg-strno" title={`Stream ${info.streamOrd} of ${info.streamTotal}`}>{info.streamOrd}/{info.streamTotal}{info.session.hours ? ` · ~${info.session.hours}h` : ''}</span>
                   )}
                   {info.streamed && info.streamed.reduce((n, st) => n + st.games.length, 0) > 1 && (
                     <span className="mg-multi" title={`Multiple categories: ${info.streamed.flatMap((st) => st.games.map((g) => g.name)).join(', ')}`}>⊞ {info.streamed.reduce((n, st) => n + st.games.length, 0)}</span>
@@ -1011,7 +1018,7 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, sessionGoa
                 <span className="gc-dnum" title={relTitles || undefined}>{d}{info.releases.length ? <span className="gc-relstar">★</span> : null}{dl ? <span className="gc-deadflag" title={`Finish before ${dl.title}: ${dl.games.join(', ')}`}>⚑</span> : null}</span>
                 {!info.vac && !info.launch && info.session && info.play && (
                   <span className="gc-strno" style={{ background: gameColor(info.play.id).solid, color: '#0c0c12' }}
-                    title={`Stream ${info.session.idx} of ${info.session.total}`}>{info.session.idx}/{info.session.total}</span>
+                    title={`Stream ${info.streamOrd} of ${info.streamTotal}`}>{info.streamOrd}/{info.streamTotal}</span>
                 )}
                 {!info.vac && !info.launch && info.session && info.session.hours ? (
                   <span className="gc-hrs" title={`Estimated stream length this day (${(day.getUTCDay() === 0 || day.getUTCDay() === 6) ? 'weekend' : 'weekday'} pace)`}>~{info.session.hours}h</span>
