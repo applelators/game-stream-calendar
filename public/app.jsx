@@ -972,6 +972,8 @@ function App() {
               onClick={() => setSettings((s) => ({ ...s, view: 'timeline' }))}>Timeline</button>
             <button className={settings.view === 'grid' ? 'on' : ''}
               onClick={() => setSettings((s) => ({ ...s, view: 'grid' }))}>Month grid</button>
+            <button className={settings.view === 'calendar' ? 'on' : ''}
+              onClick={() => setSettings((s) => ({ ...s, view: 'calendar' }))}>Calendar</button>
             <button className={settings.view === 'queue' ? 'on' : ''}
               onClick={() => setSettings((s) => ({ ...s, view: 'queue' }))}>Queue</button>
             <button className={settings.view === 'browse' ? 'on' : ''}
@@ -1025,6 +1027,8 @@ function App() {
         ? <SeasonView games={effGames} pace={ep} onPick={setDetail} />
         : settings.view === 'share'
         ? <ShareView games={effGames} today={today} pace={ep} />
+        : settings.view === 'calendar'
+        ? <MonthGridView games={effGames} pace={ep} vacations={normVacs} dayOpts={dayOpts} doneCounts={doneInfo.counts} streamMap={doneInfo.streamMap} sessionGoals={settings.sessionGoals || {}} streams={streams} longDayISOs={settings.longDays || []} paginated onPick={setDetail} onTogglePlan={togglePlan} onChooseToday={chooseToday} onToggleLongDay={toggleLongDay} />
         : settings.view === 'releases'
         ? <ReleasesView games={effGames} pace={ep} onPick={setDetail} />
         : <MonthGridView games={effGames} pace={ep} vacations={normVacs} dayOpts={dayOpts} doneCounts={doneInfo.counts} streamMap={doneInfo.streamMap} sessionGoals={settings.sessionGoals || {}} streams={streams} longDayISOs={settings.longDays || []} onPick={setDetail} onTogglePlan={togglePlan} onChooseToday={chooseToday} onToggleLongDay={toggleLongDay} />}
@@ -1530,10 +1534,11 @@ function RunOfShowModal({ day, isLong, onToggleLongDay, onClose, onPick }) {
   );
 }
 
-function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap, sessionGoals, streams, longDayISOs, onPick, onTogglePlan, onChooseToday, onToggleLongDay }) {
+function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap, sessionGoals, streams, longDayISOs, paginated, onPick, onTogglePlan, onChooseToday, onToggleLongDay }) {
   const isMobile = useIsMobile();
   const [pop, setPop] = useState(null); // in-app hover popup over a cell
   const [dayShow, setDayShow] = useState(null); // run-of-show day modal
+  const [calIdx, setCalIdx] = useState(null); // paginated-calendar month index (null = current)
 
   // Actual streams already done (from @nabunan's Twitch history) keyed by calendar
   // day, so past days show what really happened (✓) instead of the plan.
@@ -1833,6 +1838,85 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap,
     const el = document.getElementById(`gcm-${tY}-${tM}`);
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
+
+  // ---- paginated "Calendar" tab: one month at a time with ‹ › nav ----
+  if (paginated) {
+    const todayIdx = months.findIndex((mo) => mo.getUTCFullYear() === tY && mo.getUTCMonth() === tM);
+    const idx = calIdx == null ? Math.max(0, todayIdx) : Math.min(Math.max(0, calIdx), months.length - 1);
+    const mo = months[idx]; const y = mo.getUTCFullYear(), mon = mo.getUTCMonth();
+    const first = new Date(Date.UTC(y, mon, 1)).getUTCDay();
+    const dim = daysInMonth(mo);
+    const dows = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const pad2 = (n) => String(n).padStart(2, '0');
+    const cells = [];
+    let relCount = 0;
+    for (let p = 0; p < first; p++) cells.push(<div className="cal-cell pad" key={'p' + p} />);
+    for (let d = 1; d <= dim; d++) {
+      const day = new Date(Date.UTC(y, mon, d));
+      const info = dayInfo(day, ctx);
+      relCount += info.releases.length;
+      const isToday = y === tY && mon === tM && d === tD;
+      const dowI = (day.getUTCDay() + 6) % 7;
+      const dayObj = { num: d, iso: `${y}-${pad2(mon + 1)}-${pad2(d)}`, isToday, dateLabel: `${dows[dowI]} · ${MONTHS[mon]} ${d}`, info };
+      cells.push(
+        <div className={'cal-cell' + (isToday ? ' today' : '') + (info.vac ? ' vac' : '')} key={d}>
+          <span className="cal-dnum gc-dnum-btn" title="Open this day's run-of-show" onClick={() => setDayShow(dayObj)}>{d}</span>
+          {info.launch && <span className="cal-moon">🌙</span>}
+          {info.releases.map((r, j) => (
+            <div className="cal-rel" key={j} onClick={() => onPick(r.id)} style={{ background: gameColor(r.id).solid }}>
+              {isImgIcon(r.icon) && <span className="cal-relart" style={{ backgroundImage: `url(${r.icon})` }} />}
+              <span className="cal-reltitle">{r.title}</span>
+            </div>
+          ))}
+          {!info.vac && info.play && (
+            <div className="cal-play" onClick={() => onPick(info.play.id)}>
+              <div className="cal-playart" style={isImgIcon(info.play.icon) ? { backgroundImage: `url(${info.play.icon})` } : { background: gameColor(info.play.id).solid }} />
+              <div className="cal-playgrad" />
+              <span className="cal-playtitle">{info.play.title}</span>
+              {info.streamOrd != null && <span className="cal-playno" style={{ background: gameColor(info.play.id).solid }}>{info.streamOrd}/{info.streamTotal}</span>}
+            </div>
+          )}
+          {info.streamed && (
+            <div className="cal-play">
+              {info.streamed[0].games[0] && info.streamed[0].games[0].art && <div className="cal-playart" style={{ backgroundImage: `url(${info.streamed[0].games[0].art})` }} />}
+              <div className="cal-playgrad" />
+              <span className="cal-playtitle">✓ {info.streamed.map((st) => st.games.map((g) => g.name).join(' + ')).join(', ')}</span>
+            </div>
+          )}
+          {info.vac && info.vacRunStart && <span className="cal-vaclbl">✈ {info.vacLabel}</span>}
+        </div>
+      );
+    }
+    const planned = plannedByMonth[`${y}-${mon}`] || [];
+    return (
+      <div>
+        <div className="cal">
+          <div className="cal-bar">
+            <div className="cal-nav">
+              <button disabled={idx <= 0} onClick={() => setCalIdx(Math.max(0, idx - 1))}>‹</button>
+              <button disabled={idx >= months.length - 1} onClick={() => setCalIdx(Math.min(months.length - 1, idx + 1))}>›</button>
+            </div>
+            <div className="cal-title">{MONTHS_LONG[mon]} {y}</div>
+            <button className="cal-todaybtn" onClick={() => setCalIdx(todayIdx < 0 ? 0 : todayIdx)}>Today</button>
+            <span className="cal-cnt">{relCount} release{relCount === 1 ? '' : 's'}</span>
+          </div>
+          {planned.length > 0 && (
+            <div className="cal-planned">
+              <span className="cal-planned-h">Planned this month</span>
+              {planned.map((g) => (
+                <span className="cal-pchip" key={g.id} onClick={() => onTogglePlan(g.id)} style={{ cursor: 'pointer' }}>
+                  <span className="cal-pdot" style={{ background: gameColor(g.id).solid }} />{g.title}</span>
+              ))}
+            </div>
+          )}
+          <div className="cal-week">{DOW_FULL.map((w) => <span key={w}>{w}</span>)}</div>
+          <div className="cal-grid">{cells}</div>
+        </div>
+        {rail.length > 0 && <RailBlock rail={rail} onPick={onPick} />}
+        {dayShow && <RunOfShowModal day={dayShow} isLong={(longDayISOs || []).includes(dayShow.iso)} onToggleLongDay={onToggleLongDay} onClose={() => setDayShow(null)} onPick={(id) => { setDayShow(null); onPick(id); }} />}
+      </div>
+    );
+  }
 
   // Current Mon–Sun window (art-forward weekly strip), reusing dayInfo for each day.
   const weekDays = (() => {
