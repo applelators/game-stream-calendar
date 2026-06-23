@@ -444,6 +444,99 @@ function BrowseView({ games, onPick }) {
 }
 
 // ============================================================================
+// Season / Wrapped (redesign step 4d): aggregate stats over the slate.
+// ============================================================================
+const PALETTE = ['#a970ff', '#3b6fe0', '#34d399', '#f5b14c', '#5ed3de', '#eb51b8'];
+function SeasonView({ games, pace, onPick }) {
+  const hpw = pace.hoursPerWeek || 11.52, hps = pace.hoursPerStream || 5.11;
+  const playable = games.filter((g) => g.kind !== 'event');
+  const totalHours = playable.reduce((a, g) => a + (Number(g.hltbHours) || 0), 0);
+  const totalStreams = playable.reduce((a, g) => a + (g.hltbHours ? streamsToFinish(g.hltbHours, pace) : 0), 0);
+  const weeks = totalHours / hpw, years = weeks / 52;
+  const big = [
+    { value: String(playable.length), label: 'titles on the slate', sub: 'games, remakes, DLC & marathons', color: 'var(--acc)' },
+    { value: Math.round(totalHours).toLocaleString() + 'h', label: 'to finish everything', sub: 'summed HowLongToBeat hours', color: '#5ed3de' },
+    { value: String(totalStreams), label: 'streams to clear it', sub: `at ${hps}h per stream`, color: 'var(--accent-2)' },
+    { value: Math.round(weeks / 4.345) + ' mo', label: 'of streaming', sub: `at ${hpw}h per week`, color: 'var(--good)' },
+  ];
+  const top = playable.filter((g) => g.hltbHours > 0).slice().sort((a, b) => b.hltbHours - a.hltbHours).slice(0, 6);
+  const maxH = top.length ? top[0].hltbHours : 1;
+  const groups = [
+    { name: 'Kingdom Hearts', re: /kingdom hearts/i },
+    { name: 'Final Fantasy VII', re: /final fantasy vii/i },
+    { name: 'Pokémon', re: /pok[eé]mon/i },
+    { name: 'Xenoblade', re: /xenoblade/i },
+  ];
+  const marathons = groups.map((gr) => {
+    const items = playable.filter((g) => gr.re.test(g.title));
+    if (items.length < 2) return null;
+    const hrs = items.reduce((a, g) => a + (g.hltbHours || 0), 0);
+    const str = items.reduce((a, g) => a + (g.hltbHours ? streamsToFinish(g.hltbHours, pace) : 0), 0);
+    const lead = items.find((g) => isImgIcon(g.icon)) || items[0];
+    return { name: gr.name, count: items.length, sub: `${hrs}h · ${str} streams`, id: lead.id, art: isImgIcon(lead.icon) ? lead.icon : null, color: gameColor(lead.id).solid };
+  }).filter(Boolean).sort((a, b) => b.count - a.count);
+  const pc = {}; playable.forEach((g) => (g.platforms || []).forEach((p) => { pc[p] = (pc[p] || 0) + 1; }));
+  const plats = Object.keys(pc).map((k) => ({ name: k, count: pc[k] })).sort((a, b) => b.count - a.count).slice(0, 6);
+  const maxP = plats.length ? plats[0].count : 1;
+  const bc = {}; playable.forEach((g) => { if (g.hltbBasis) bc[g.hltbBasis] = (bc[g.hltbBasis] || 0) + 1; });
+  const basis = Object.keys(bc).map((k) => ({ name: labelBasis(k), count: bc[k] })).sort((a, b) => b.count - a.count);
+  return (
+    <div className="anim">
+      <div className="w-head"><h1>The slate in numbers</h1><span>everything queued across the next 18 months</span></div>
+      <div className="w-stats">
+        {big.map((s, i) => (
+          <div className="w-stat" key={i}><div className="big" style={{ color: s.color }}>{s.value}</div>
+            <div className="lbl">{s.label}</div><div className="sub">{s.sub}</div></div>
+        ))}
+      </div>
+      <div className="s-grid">
+        <div className="w-panel">
+          <h3>Longest hauls</h3><div className="desc">biggest playthroughs on the slate, by hours</div>
+          {top.map((g, i) => (
+            <div className="w-row" key={g.id} onClick={() => onPick(g.id)} style={{ cursor: 'pointer' }}>
+              <div className="w-rowart" style={isImgIcon(g.icon) ? { backgroundImage: `url(${g.icon})` } : { background: gameColor(g.id).solid }} />
+              <div style={{ minWidth: 0, flex: 1 }}><div className="w-rowtitle">{g.title}</div>
+                <div className="w-bar"><div style={{ width: Math.round((g.hltbHours / maxH) * 100) + '%', background: gameColor(g.id).solid }} /></div></div>
+              <div className="w-hours" style={{ color: gameColor(g.id).solid }}>{g.hltbHours}h</div>
+            </div>
+          ))}
+        </div>
+        <div className="w-panel">
+          <h3>Marathons</h3><div className="desc">multi-part series in the queue</div>
+          {marathons.map((m, i) => (
+            <div className="w-mara" key={i} onClick={() => onPick(m.id)} style={{ cursor: 'pointer' }}>
+              <div className="w-maraart" style={m.art ? { backgroundImage: `url(${m.art})` } : { background: m.color }} />
+              <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: '.84rem', fontWeight: 600 }}>{m.name}</div><div className="un-meta">{m.sub}</div></div>
+              <div style={{ textAlign: 'right', flex: 'none' }}><div className="w-maracount" style={{ color: m.color }}>{m.count}</div>
+                <div style={{ fontSize: '.58rem', color: 'var(--faint)', fontFamily: 'var(--mono)', marginTop: 2 }}>PARTS</div></div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="s-grid" style={{ marginTop: 14 }}>
+        <div className="w-panel">
+          <h3 style={{ marginBottom: 16 }}>Platforms in rotation</h3>
+          {plats.map((p, i) => (
+            <div className="w-platrow" key={i}><div className="w-platname">{p.name}</div>
+              <div className="w-platbar"><div style={{ height: '100%', borderRadius: 99, width: Math.round((p.count / maxP) * 100) + '%', background: PALETTE[i % PALETTE.length] }} /></div>
+              <div className="w-platcount">{p.count}</div></div>
+          ))}
+        </div>
+        <div className="w-panel">
+          <h3>How hours are estimated</h3><div className="desc">provenance of every HLTB figure</div>
+          {basis.map((b, i) => (
+            <div className="w-basisrow" key={i}><span style={{ width: 10, height: 10, borderRadius: 3, flex: 'none', background: PALETTE[i % PALETTE.length] }} />
+              <div style={{ flex: 1, fontSize: '.78rem', color: '#c9d2e0' }}>{b.name}</div>
+              <div style={{ fontFamily: 'var(--mono)', fontSize: '.74rem', fontWeight: 700, color: 'var(--muted)' }}>{b.count}</div></div>
+          ))}
+          <div className="w-note">At <b>{hpw} h/week</b>, clearing the whole slate end-to-end would take <b style={{ color: 'var(--acc)' }}>{Math.round(weeks)} weeks</b> — about <b>{years >= 1 ? years.toFixed(1) + ' years' : Math.round(weeks / 4.345) + ' months'}</b> of streaming.</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
 // App
 // ============================================================================
 function App() {
@@ -612,6 +705,8 @@ function App() {
               onClick={() => setSettings((s) => ({ ...s, view: 'queue' }))}>Queue</button>
             <button className={settings.view === 'browse' ? 'on' : ''}
               onClick={() => setSettings((s) => ({ ...s, view: 'browse' }))}>Browse</button>
+            <button className={settings.view === 'season' ? 'on' : ''}
+              onClick={() => setSettings((s) => ({ ...s, view: 'season' }))}>Season</button>
             <button className={settings.view === 'releases' ? 'on' : ''}
               onClick={() => setSettings((s) => ({ ...s, view: 'releases' }))}>Releases</button>
           </div>
@@ -643,6 +738,8 @@ function App() {
         ? <QueueView games={effGames} pace={ep} ids={queueIds} today={today} doneHours={doneInfo.hours} onReorder={reorderQueue} onPick={setDetail} />
         : settings.view === 'browse'
         ? <BrowseView games={effGames} onPick={setDetail} />
+        : settings.view === 'season'
+        ? <SeasonView games={effGames} pace={ep} onPick={setDetail} />
         : settings.view === 'releases'
         ? <ReleasesView games={effGames} pace={ep} onPick={setDetail} />
         : <MonthGridView games={effGames} pace={ep} vacations={normVacs} dayOpts={dayOpts} doneCounts={doneInfo.counts} streamMap={doneInfo.streamMap} sessionGoals={settings.sessionGoals || {}} streams={streams} onPick={setDetail} onTogglePlan={togglePlan} onChooseToday={chooseToday} />}
