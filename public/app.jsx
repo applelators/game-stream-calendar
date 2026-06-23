@@ -27,6 +27,7 @@ const DEFAULT_SETTINGS = {
   sessionGoals: {},// { 'gameId#streamOrdinal': 'goal note' } — per-stream goals (hover)
   queue: [],       // what-if queue play order (game ids); empty = default release order
   theme: 'purple', // accent preset (sets --acc / --acc-ink); persists in settings
+  finDismiss: '',  // id of the last dismissed "recently wrapped" celebration
 };
 
 // Accent presets — swap --acc / --acc-ink on the app wrapper. Per-game colours
@@ -158,8 +159,8 @@ const stripGameName = (s) => String(s || '').toLowerCase()
   .replace(/\bns2\b/g, 'nintendo switch 2')
   .replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
 function computeDoneInfo(games, streams) {
-  const hours = {}, counts = {}, streamMap = {}; // streamMap: `${dayKey}|${normName}` -> {id, ord}
-  if (!streams || !streams.length || !games || !games.length) return { hours, counts, streamMap };
+  const hours = {}, counts = {}, streamMap = {}, last = {}; // last: {id: 'YYYY-MM-DD'} latest credited stream
+  if (!streams || !streams.length || !games || !games.length) return { hours, counts, streamMap, last };
   const groups = {}; // base key -> [{id, hltb}] in file/part order
   const startMs = {}; // base key -> earliest scheduled start (ms); streams before it are
   //                     pre-existing progress already baked into hltbHours, so not credited.
@@ -188,7 +189,7 @@ function computeDoneInfo(games, streams) {
       const b = baseFor(norm);
       if (!b) continue;
       if (startMs[b] != null && sMs != null && sMs < startMs[b]) continue; // pre-start progress
-      (perBase[b] = perBase[b] || []).push({ hrs: per, key: dayKey ? `${dayKey}|${norm}` : null });
+      (perBase[b] = perBase[b] || []).push({ hrs: per, key: dayKey ? `${dayKey}|${norm}` : null, date: s.date });
     }
   }
   for (const base in perBase) {
@@ -206,12 +207,13 @@ function computeDoneInfo(games, streams) {
         const take = Math.min(h, cap || h); // if part has 0 cap left, still count once
         hours[parts[pi].id] = (hours[parts[pi].id] || 0) + take;
         counts[parts[pi].id] = (counts[parts[pi].id] || 0) + 1;
+        if (ev.date && (!last[parts[pi].id] || ev.date > last[parts[pi].id])) last[parts[pi].id] = ev.date;
         filled += take; h -= take;
         if (filled >= parts[pi].hltb - 0.001) { pi++; filled = 0; }
       }
     }
   }
-  return { hours, counts, streamMap };
+  return { hours, counts, streamMap, last };
 }
 function effectivePace(settings, pace) {
   if (settings.override) return { hoursPerStream: settings.hoursPerStream, hoursPerWeek: settings.hoursPerWeek, weekdayHps: settings.hoursPerStream, weekendHps: settings.hoursPerStream };
@@ -672,6 +674,20 @@ function LiveHero({ state, manualStart, games }) {
   );
 }
 
+// Recently-wrapped celebration. A game counts as wrapped if it's flagged finished in
+// games.json OR its real streamed hours have met/exceeded its HLTB estimate.
+function FinishedBanner({ game, doneHours, doneCounts, onClose, onPick }) {
+  const streams = doneCounts[game.id] || 0;
+  const hrs = Math.round(doneHours[game.id] || game.hltbHours || 0);
+  return (
+    <div className="fin-banner">
+      <span className="fin-emoji">🎉</span>
+      <div className="fin-txt"><b style={{ cursor: 'pointer' }} onClick={() => onPick(game.id)}>Wrapped {game.title}</b>{game.wrapNote ? ` — ${game.wrapNote}` : ` — ${streams ? streams + ' stream' + (streams === 1 ? '' : 's') + ' · ' : ''}${hrs}h · finished ✓`}</div>
+      <button className="fin-x" onClick={onClose}>×</button>
+    </div>
+  );
+}
+
 // ============================================================================
 // Now/Next cockpit hero + progress rings (redesign port). Progress % is derived
 // from real streamed history (doneCounts / streamsToFinish), not a sample.
@@ -935,6 +951,13 @@ function App() {
   }, [effGames, settings.queue, today, doneInfo.hours]);
   const reorderQueue = useCallback((ids) => setSettings((s) => ({ ...s, queue: ids })), []);
   const themeObj = THEMES.find((t) => t.id === settings.theme) || THEMES[0];
+  // Most-recently-wrapped game (explicit finished flag, else inferred from history).
+  const wrapped = useMemo(() => {
+    const list = effGames.filter((g) => g.kind !== 'event' &&
+      (g.finished || ((doneInfo.hours[g.id] || 0) > 0 && (Number(g.hltbHours) || 0) - (doneInfo.hours[g.id] || 0) <= 0.5)));
+    list.sort((a, b) => { const da = a.finishedDate || doneInfo.last[a.id] || ''; const db = b.finishedDate || doneInfo.last[b.id] || ''; return da < db ? 1 : -1; });
+    return list[0] || null;
+  }, [effGames, doneInfo]);
 
   return (
     <div className="app" style={{ '--acc': themeObj.acc, '--acc-ink': themeObj.ink }}>
@@ -983,6 +1006,10 @@ function App() {
         </div>
       </header>
 
+      {wrapped && settings.finDismiss !== wrapped.id && (
+        <FinishedBanner game={wrapped} doneHours={doneInfo.hours} doneCounts={doneInfo.counts}
+          onPick={setDetail} onClose={() => setSettings((s) => ({ ...s, finDismiss: wrapped.id }))} />
+      )}
       {((liveState && liveState.live) || manualLive) && <LiveHero state={liveState && liveState.live ? liveState : null} manualStart={manualStart} games={effGames} />}
       <InstrumentPanel pace={ep} source={paceSource} inFlight={inFlight} atRisk={atRisk} launch={launch} />
       {settings.view === 'grid' && <NowNextHero games={effGames} pace={ep} doneHours={doneInfo.hours} doneCounts={doneInfo.counts} today={today} onPick={setDetail} />}

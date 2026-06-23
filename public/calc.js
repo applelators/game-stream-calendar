@@ -168,6 +168,11 @@ function gameFromFile(e, i) {
   // Hearts Collection [I–III]"). The Releases appendix collapses all members into one
   // row (the collection, on its earliest release day). Doesn't affect scheduling.
   if (e.collection) g.collection = String(e.collection);
+  // Optional: a finished playthrough (drives the "recently wrapped" celebration).
+  // Completion is also inferred from real streamed hours; this is an explicit override.
+  if (e.finished) g.finished = true;
+  if (e.finishedDate) g.finishedDate = String(e.finishedDate);
+  if (e.wrapNote) g.wrapNote = String(e.wrapNote);
   // Optional scheduling priority within a shared deadline (higher = scheduled
   // sooner): Pokémon (+1) beats long-running franchises (-1) when they contend.
   if (e.priority != null) g.priority = Number(e.priority);
