@@ -103,6 +103,42 @@ function uid() { return 'g' + Math.random().toString(36).slice(2, 9); }
 const fmtDate = (d) => `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
 const shortDate = (d) => `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`;
 const fmtMins = (m) => { const h = Math.floor((m || 0) / 60), mm = (m || 0) % 60; return h ? `${h}h${mm ? ' ' + mm + 'm' : ''}` : `${mm}m`; };
+
+// Map real streamed hours onto slate games. Stream game NAMES (from SullyGnome) are
+// matched to slate titles by a normalized key (part suffix / parens / punctuation
+// stripped, fuzzy contains), and a game's hours are allocated across its parts in
+// order. Returns { [gameId]: hoursStreamed }. Events/bonus games are ignored.
+function computeDoneHours(games, streams) {
+  if (!streams || !streams.length || !games || !games.length) return {};
+  const strip = (s) => String(s || '').toLowerCase()
+    .replace(/—\s*pt\.?\s*\d+.*$/, '').replace(/\(.*?\)/g, '')
+    .replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
+  const actualByName = {};
+  for (const s of streams) {
+    const gs = s.games || [];
+    if (!gs.length) continue;
+    const per = (Number(s.minutes) || 0) / 60 / gs.length; // split a multi-game stream evenly
+    for (const g of gs) { const k = strip(g.name); if (k) actualByName[k] = (actualByName[k] || 0) + per; }
+  }
+  const groups = {}; // base key -> [{id, hltb}] in file/part order
+  for (const g of games) {
+    if (g.kind === 'event' || g.bonus) continue;
+    const base = strip(g.title); if (!base) continue;
+    (groups[base] = groups[base] || []).push({ id: g.id, hltb: Number(g.hltbHours) || 0 });
+  }
+  const done = {};
+  for (const base in groups) {
+    let total = 0;
+    for (const k in actualByName) {
+      const match = k === base || ((k.includes(base) || base.includes(k)) && Math.min(k.length, base.length) >= 8);
+      if (match) total += actualByName[k];
+    }
+    if (total <= 0) continue;
+    let rem = total;
+    for (const p of groups[base]) { if (rem <= 0) break; const a = Math.min(rem, p.hltb); if (a > 0) done[p.id] = (done[p.id] || 0) + a; rem -= a; }
+  }
+  return done;
+}
 function effectivePace(settings, pace) {
   if (settings.override) return { hoursPerStream: settings.hoursPerStream, hoursPerWeek: settings.hoursPerWeek, weekdayHps: settings.hoursPerStream, weekendHps: settings.hoursPerStream };
   return { hoursPerStream: pace.hoursPerStream, hoursPerWeek: pace.hoursPerWeek, weekdayHps: pace.weekdayHps, weekendHps: pace.weekendHps };
@@ -182,11 +218,15 @@ function App() {
   // Per-day overrides (settings store ISO dates; convert to engine day-keys):
   // longDays = days off treated as weekend-length; dayPins = force a game on a day.
   const isoToKey = (iso) => { const [y, m, d] = String(iso).split('-').map(Number); return `${y}-${m - 1}-${d}`; };
+  // Hours already streamed per game (from real Twitch/SullyGnome history), so the plan
+  // continues an in-progress game instead of re-scheduling its full length.
+  const doneHours = useMemo(() => computeDoneHours(games, streams), [games, streams]);
   const dayOpts = useMemo(() => ({
     longDays: new Set((settings.longDays || []).map(isoToKey)),
     dayPins: Object.fromEntries(Object.entries(settings.dayPins || {}).map(([iso, id]) => [isoToKey(iso), id])),
     restDays: new Set((settings.restDays || []).map(isoToKey)),
-  }), [settings.longDays, settings.dayPins, settings.restDays]);
+    doneHours,
+  }), [settings.longDays, settings.dayPins, settings.restDays, doneHours]);
   // Choose what to stream today (pins it / marks rest / clears to plan default). Saved
   // to settings (KV), so the calendar cell reflects it everywhere and it persists.
   const chooseToday = useCallback((choice) => {

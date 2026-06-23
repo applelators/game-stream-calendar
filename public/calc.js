@@ -354,13 +354,18 @@ function streamPlan(games, pace, normVacs, today, opts) {
     const start = anchorDate(g.release);
     if (!start) continue;
     if (g.kind === 'event') { const end = gameEnd(g, start, pace, normVacs); out[g.id] = { start, end, segments: [{ start, end }] }; continue; }
-    const baseStreams = streamsToFinish(g.hltbHours, pace);
+    // Credit hours already streamed (from real history) so the plan continues a game
+    // in progress instead of scheduling its full length again.
+    const done = (opts && opts.doneHours && opts.doneHours[g.id]) || 0;
+    const remaining = Math.max(0, (Number(g.hltbHours) || 0) - done);
+    if (remaining <= 0.01) continue; // already finished per actuals — nothing left to plan
+    const baseStreams = streamsToFinish(remaining, pace);
     if (!baseStreams) continue;
     const dl = g.finishBefore ? finishBeforeDeadline(g, byId) : null;
     (g.bonus ? bSpec : cSpec).push({ id: g.id, start, baseStreams, binge: !!g.binge,
       cadence: g.cadence || null, weeklyDow: (g.weeklyDow != null ? g.weeklyDow : null),
       launchHours: (g.launchHours != null ? g.launchHours : null), pinStart: !!g.pinStart, priority: Number(g.priority) || 0,
-      hltb: Number(g.hltbHours) || 0, key: g.finishBefore || null, deadlineMs: dl ? dl.getTime() : Infinity });
+      inProgress: done > 0, hltb: remaining, key: g.finishBefore || null, deadlineMs: dl ? dl.getTime() : Infinity });
   }
   if (cSpec.length === 0 && bSpec.length === 0) return { positions: out, sessionByDay: {}, bonusByDay: {}, boosts: {} };
   const launchOnDay = {};
@@ -466,7 +471,10 @@ function streamPlan(games, pace, normVacs, today, opts) {
       // Priority-weighted recency: time-since-last-played scaled by 2^priority, so a
       // higher-priority game (Pokémon, +1) comes "due" sooner and plays a larger share.
       const nowMs = day.getTime();
-      const wgap = (p) => (nowMs - (p.lastSlot === -Infinity ? p.start.getTime() - 7 * 86400000 : p.lastSlot)) * Math.pow(2, p.priority || 0);
+      // A game you're already mid-playthrough on shouldn't stay deprioritised — bump
+      // an in-progress game's effective priority to at least neutral so it keeps going.
+      const effPri = (p) => (p.inProgress ? Math.max(p.priority || 0, 0) : (p.priority || 0));
+      const wgap = (p) => (nowMs - (p.lastSlot === -Infinity ? p.start.getTime() - 7 * 86400000 : p.lastSlot)) * Math.pow(2, effPri(p));
       let pick = null;
       if (forcedId) pick = active.find((p) => p.id === forcedId) || null;
       // A due weekly game wins its one day even mid-binge, then the binge resumes.
