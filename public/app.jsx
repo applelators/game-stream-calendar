@@ -1084,12 +1084,26 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap,
                 onMouseEnter={popData ? (e) => setPop({ rect: e.currentTarget.getBoundingClientRect(), data: popData }) : undefined}
                 onMouseLeave={popData ? () => setPop(null) : undefined}>
                 <span className="gc-dnum">{d}{info.releases.length ? <span className="gc-relstar">★</span> : null}{dl ? <span className="gc-deadflag">⚑</span> : null}{!info.vac && !info.launch && info.session && info.goal ? <span className="gc-goal-inline">🎯</span> : null}</span>
-                {!info.vac && !info.launch && info.session && info.play && (
-                  <span className="gc-strno" style={{ background: gameColor(info.play.id).solid, color: '#0c0c12' }}>{info.streamOrd}/{info.streamTotal}{info.session.hours ? ` · ~${info.session.hours}h` : ''}</span>
-                )}
-                {info.streamed && (info.streamOrd != null || info.streamed.length) && (
-                  <span className="gc-strno gc-strno-done">{info.streamOrd != null ? `${info.streamOrd}/${info.streamTotal} · ` : ''}{fmtMins(info.streamed.reduce((n, st) => n + (st.minutes || 0), 0))}</span>
-                )}
+                {(() => {
+                  // Two stacked, color-coded badges (top-right): placement X/N and hours.
+                  let xn = null, xnStyle, hrs = null;
+                  if (!info.vac && !info.launch && info.session && info.play) {
+                    xn = `${info.streamOrd}/${info.streamTotal}`;
+                    xnStyle = { background: gameColor(info.play.id).solid, color: '#0c0c12' };
+                    if (info.session.hours) hrs = `~${info.session.hours}h`;
+                  } else if (info.streamed) {
+                    if (info.streamOrd != null) xn = `${info.streamOrd}/${info.streamTotal}`;
+                    const mins = info.streamed.reduce((n, st) => n + (st.minutes || 0), 0);
+                    if (mins) hrs = fmtMins(mins);
+                  }
+                  if (!xn && !hrs) return null;
+                  return (
+                    <div className="gc-badges">
+                      {xn && <span className={'gc-strno' + (info.streamed ? ' gc-strno-done' : '')} style={xnStyle}>{xn}</span>}
+                      {hrs && <span className="gc-hrsb">{hrs}</span>}
+                    </div>
+                  );
+                })()}
                 {info.streamed && info.streamed.reduce((n, st) => n + st.games.length, 0) > 1 && (
                   <span className="gc-multi">⊞ {info.streamed.reduce((n, st) => n + st.games.length, 0)} games</span>
                 )}
