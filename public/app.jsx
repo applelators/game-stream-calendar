@@ -207,6 +207,110 @@ function effectivePace(settings, pace) {
   return { hoursPerStream: pace.hoursPerStream, hoursPerWeek: pace.hoursPerWeek, weekdayHps: pace.weekdayHps, weekendHps: pace.weekendHps };
 }
 
+// Strip a "— Pt. N" multi-part suffix to the shared base title.
+function baseTitle(t) { return String(t || '').replace(/\s*—\s*pt\.?\s*\d+.*$/i, '').trim(); }
+
+// ============================================================================
+// Health instruments + deadline / catch-up gauges (redesign step 1)
+// The gauges are a presentational layer over calc's feasibility math:
+// group by finishBefore, resolve the deadline, compare needed h/wk to the pace.
+// ============================================================================
+function dlLabelFor(fb, dl, byId) {
+  const g = byId[fb];
+  if (g && g.title) return 'before ' + baseTitle(String(g.title).split(':')[0]);
+  if (/^\d{4}-\d{2}$/.test(fb)) return 'by end of ' + MONTHS[dl.getUTCMonth()];
+  return 'by ' + MONTHS[dl.getUTCMonth()] + ' ' + dl.getUTCDate();
+}
+function buildDeadlines(games, pace, doneHours, today) {
+  const byId = {}; games.forEach((g) => { byId[g.id] = g; });
+  const groups = {};
+  for (const g of games) {
+    if (!g.finishBefore || g.kind === 'event' || g.bonus) continue;
+    (groups[g.finishBefore] = groups[g.finishBefore] || []).push(g);
+  }
+  const hpw = (pace && pace.hoursPerWeek) || 11.52;
+  const out = [];
+  for (const fb in groups) {
+    const items = groups[fb];
+    const dl = finishBeforeDeadline(items[0], byId);
+    if (!dl || dl.getTime() <= today.getTime()) continue;       // already passed
+    let hours = 0;
+    for (const g of items) hours += Math.max(0, (Number(g.hltbHours) || 0) - ((doneHours && doneHours[g.id]) || 0));
+    if (hours <= 0.5) continue;                                  // group already done
+    const weeksLeft = Math.max(0.3, (dl.getTime() - today.getTime()) / 6048e5);
+    const needed = hours / weeksLeft;
+    const onTrack = needed <= hpw;
+    const tone = needed <= hpw ? 'var(--good)' : needed <= hpw * 1.4 ? 'var(--warn)' : 'var(--danger)';
+    out.push({
+      id: items[0].id, label: baseTitle(items[0].title), count: items.length,
+      hours: Math.round(hours), needed, onTrack, tone,
+      fill: Math.min(100, (needed / hpw) * 60), dlText: dlLabelFor(fb, dl, byId),
+    });
+  }
+  return out.sort((a, b) => b.needed - a.needed);
+}
+
+function NextLaunchTile({ launch }) {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
+  if (!launch) return (
+    <div className="instr-tile"><div className="it-k">NEXT LAUNCH</div>
+      <div className="it-v">—</div><div className="it-s">no dated releases ahead</div></div>
+  );
+  let diff = Math.max(0, launch.ms - now);
+  const d = Math.floor(diff / 864e5); diff -= d * 864e5;
+  const h = Math.floor(diff / 36e5); diff -= h * 36e5;
+  const m = Math.floor(diff / 6e4);
+  return (
+    <div className="instr-tile"><div className="it-k">NEXT LAUNCH</div>
+      <div className="it-v">{d}<small> d</small> {h}<small> h</small> {m}<small> m</small></div>
+      <div className="it-s" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{launch.title}</div></div>
+  );
+}
+function InstrumentPanel({ pace, source, inFlight, atRisk, launch }) {
+  const spw = pace.hoursPerStream ? pace.hoursPerWeek / pace.hoursPerStream : 0;
+  return (
+    <div className="instr">
+      <div className="instr-tile">
+        <div className="it-k">STATUS</div>
+        <div className="it-v" style={{ color: atRisk ? 'var(--warn)' : 'var(--good)' }}>{atRisk ? 'Tight' : 'On track'}</div>
+        <div className="it-s">{atRisk ? atRisk + ' deadline' + (atRisk > 1 ? 's' : '') + ' need a faster week' : 'every deadline is reachable'}</div>
+      </div>
+      <div className="instr-tile">
+        <div className="it-k">PACE</div>
+        <div className="it-v">{Number(pace.hoursPerWeek || 0).toFixed(1)}<small> h/wk</small></div>
+        <div className="it-s">{pace.hoursPerStream}h × ~{spw.toFixed(1)} streams · {source}</div>
+      </div>
+      <div className="instr-tile">
+        <div className="it-k">IN FLIGHT</div>
+        <div className="it-v">{inFlight.count}<small> game{inFlight.count === 1 ? '' : 's'}</small></div>
+        <div className="it-s" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{inFlight.names || 'nothing started yet'}</div>
+      </div>
+      <NextLaunchTile launch={launch} />
+    </div>
+  );
+}
+function DeadlinePanel({ deadlines, onPick }) {
+  if (!deadlines.length) return null;
+  return (
+    <div className="dl-panel">
+      <div className="dl-head"><span className="dl-h">Deadlines &amp; catch-up</span>
+        <span className="dl-sub">finish each before the next drops · bar = needed pace vs your weekly hours</span></div>
+      {deadlines.slice(0, 6).map((d, i) => (
+        <div className="dl-row" key={i} onClick={() => onPick(d.id)}>
+          <div style={{ minWidth: 0 }}>
+            <div className="dl-name">{d.label}</div>
+            <div className="dl-when">{d.dlText} · {d.count > 1 ? d.count + ' games · ' : ''}{d.hours}h to play</div>
+          </div>
+          <div className="dl-gauge"><div className="dl-bar"><span className="cap" /><i style={{ width: d.fill + '%', background: d.tone }} /></div></div>
+          <div className="dl-need" style={{ color: d.tone }}>{d.needed.toFixed(1)}<small> h/wk</small></div>
+          <div className="dl-flag">{d.onTrack ? '✓' : '⚠'}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ============================================================================
 // App
 // ============================================================================
@@ -318,6 +422,36 @@ function App() {
 
   const detailGame = detail ? effGames.find((g) => g.id === detail) : null;
 
+  // ---- health instruments + deadline gauges (redesign step 1) ----
+  const today = useMemo(() => { const n = new Date(); return utc(n.getFullYear(), n.getMonth() + 1, n.getDate()); }, []);
+  const deadlines = useMemo(() => buildDeadlines(effGames, ep, doneInfo.hours, today), [effGames, ep, doneInfo.hours, today]);
+  const atRisk = deadlines.filter((d) => !d.onTrack).length;
+  const inFlight = useMemo(() => {
+    const dh = doneInfo.hours || {};
+    const bases = new Map(); // base title -> true (dedupe multi-part)
+    for (const g of effGames) {
+      if (g.kind === 'event') continue;
+      const done = dh[g.id] || 0;
+      if (done > 0 && (Number(g.hltbHours) || 0) - done > 0.5) bases.set(baseTitle(g.title), true);
+    }
+    const names = [...bases.keys()];
+    return { count: names.length, names: names.slice(0, 2).join(' · ') };
+  }, [effGames, doneInfo.hours]);
+  const launch = useMemo(() => {
+    const n = new Date(); const todayLocalMs = new Date(n.getFullYear(), n.getMonth(), n.getDate()).getTime();
+    let best = null;
+    for (const g of effGames) {
+      if (g.kind === 'event' || !g.release || g.release.precision !== 'day') continue;
+      const a = new Date(g.release.year, (g.release.month || 1) - 1, g.release.day || 1).getTime();
+      if (a < todayLocalMs) continue;
+      if (!best || a < best.ms) best = { ms: a, title: g.title };
+    }
+    return best;
+  }, [effGames]);
+  const paceSource = settings.override ? 'manual'
+    : pace.source === 'sullygnome' ? 'live 90-day'
+    : pace.source === 'twitchtracker' ? 'TwitchTracker 30-day' : 'fallback';
+
   return (
     <div className="app">
       <header>
@@ -344,13 +478,10 @@ function App() {
           )}
           <button className="btn" onClick={() => setShowSettings(true)}>⚙ Settings</button>
         </div>
-        <div className="hdr-sub">
-          {games.length} titles · pace {ep.hoursPerStream}h/stream · {ep.hoursPerWeek}h/week
-          {settings.override ? ' (manual)' : ` (${pace.source === 'sullygnome' ? 'live 90-day' : pace.source === 'twitchtracker' ? 'TwitchTracker 30-day' : 'fallback'})`}
-          {normVacs.length > 0 ? ` · ${normVacs.length} break${normVacs.length === 1 ? '' : 's'} blocked off` : ''}
-          {settings.schedMode === 'sequential' && settings.view === 'timeline' ? ' · new releases first, older games split around them' : ''}
-        </div>
       </header>
+
+      <InstrumentPanel pace={ep} source={paceSource} inFlight={inFlight} atRisk={atRisk} launch={launch} />
+      {settings.view === 'grid' && <DeadlinePanel deadlines={deadlines} onPick={setDetail} />}
 
       {settings.view === 'timeline'
         ? <TimelineView games={effGames} pace={ep} mode={settings.schedMode} vacations={normVacs} onPick={setDetail} />
@@ -1243,7 +1374,6 @@ function ReleasesView({ games, pace, onPick }) {
   // Collapse multi-part games ("— Pt. N") and named collections into ONE entry, shown
   // with the full title on the day the whole thing first releases. Hours are summed
   // across parts so the row reflects the full game/collection's time to finish.
-  const baseTitle = (t) => String(t || '').replace(/\s*—\s*pt\.?\s*\d+.*$/i, '').trim();
   const entries = useMemo(() => {
     const m = {};
     for (const g of releases) {

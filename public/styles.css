@@ -533,3 +533,34 @@ input, select, textarea { font-family: inherit; }
   .rel-hltb { grid-column: 3; }
   .rel-price { grid-column: 2 / 4; justify-self: start; text-align: left; font-size: 0.72rem; color: var(--faint); }
 }
+
+/* ============================================================
+   Health instruments + deadline / catch-up gauges (redesign step 1)
+   ============================================================ */
+.instr { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 6px 0 16px; }
+.instr-tile { background: var(--s1); border: 1px solid var(--border-solid); border-radius: 14px; padding: 13px 15px; min-width: 0; }
+.it-k { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; color: var(--faint); font-family: var(--mono); }
+.it-v { font-family: var(--display); font-weight: 700; font-size: 1.5rem; line-height: 1; margin-top: 7px; }
+.it-v small { font-size: 0.7rem; color: var(--muted); font-weight: 500; font-family: var(--body); }
+.it-s { font-size: 0.66rem; color: var(--faint); margin-top: 5px; line-height: 1.3; }
+
+.dl-panel { margin-top: clamp(18px, 2.6vw, 26px); border: 1px solid var(--border-solid); background: var(--s1); border-radius: 18px; padding: clamp(15px, 2vw, 20px); }
+.dl-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+.dl-h { font-family: var(--display); font-weight: 700; font-size: 1.05rem; }
+.dl-sub { font-size: 0.7rem; color: var(--faint); font-family: var(--mono); }
+.dl-row { display: grid; grid-template-columns: 1fr 170px 80px 24px; align-items: center; gap: 14px; padding: 11px 0; border-top: 1px solid var(--hair); cursor: pointer; transition: 0.1s; }
+.dl-row:first-of-type { border-top: 0; }
+.dl-row:hover { background: #131927; }
+.dl-name { font-size: 0.86rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dl-when { font-size: 0.66rem; color: var(--faint); font-family: var(--mono); margin-top: 2px; }
+.dl-bar { position: relative; height: 8px; border-radius: 99px; background: #0c111b; overflow: visible; }
+.dl-bar > i { display: block; height: 100%; border-radius: 99px; }
+.dl-bar .cap { position: absolute; left: 60%; top: -3px; bottom: -3px; width: 2px; background: var(--muted); border-radius: 2px; }
+.dl-need { font-family: var(--mono); font-size: 0.95rem; font-weight: 700; text-align: right; }
+.dl-need small { font-size: 0.58rem; color: var(--muted); font-weight: 500; }
+.dl-flag { font-size: 0.95rem; text-align: center; }
+@media (max-width: 640px) {
+  .instr { grid-template-columns: repeat(2, 1fr); }
+  .dl-row { grid-template-columns: 1fr 64px 20px; }
+  .dl-gauge { display: none; }
+}
