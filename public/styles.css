@@ -301,6 +301,7 @@ input, select, textarea { font-family: inherit; }
 .gc-done-nm { font-size: 0.72rem; font-weight: 600; color: var(--muted); line-height: 1.2;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .gc-done-chk { color: var(--good); font-weight: 800; margin-right: 3px; }
+.gc-done-len { color: var(--faint); font-family: var(--mono); font-weight: 700; }
 .mg-pill.mg-done { background: transparent; color: var(--muted); display: flex; align-items: center;
   gap: 4px; padding: 1px 0; }
 .mg-done-art { width: 15px; height: 20px; object-fit: cover; border-radius: 2px; flex: none; }

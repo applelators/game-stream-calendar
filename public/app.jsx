@@ -102,6 +102,7 @@ function saveLocal(state) {
 function uid() { return 'g' + Math.random().toString(36).slice(2, 9); }
 const fmtDate = (d) => `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
 const shortDate = (d) => `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`;
+const fmtMins = (m) => { const h = Math.floor((m || 0) / 60), mm = (m || 0) % 60; return h ? `${h}h${mm ? ' ' + mm + 'm' : ''}` : `${mm}m`; };
 function effectivePace(settings, pace) {
   if (settings.override) return { hoursPerStream: settings.hoursPerStream, hoursPerWeek: settings.hoursPerWeek, weekdayHps: settings.hoursPerStream, weekendHps: settings.hoursPerStream };
   return { hoursPerStream: pace.hoursPerStream, hoursPerWeek: pace.hoursPerWeek, weekdayHps: pace.weekdayHps, weekendHps: pace.weekendHps };
@@ -621,14 +622,18 @@ function MonthGridView({ games, pace, vacations, dayOpts, streams, onPick, onTog
 
   // Actual streams already done (from @nabunan's Twitch history) keyed by calendar
   // day, so past days show what really happened (✓) instead of the plan.
+  // Per day, keep each stream separately with its length, so we can show the length
+  // of each category. A single-game stream → that game's exact length; a day with
+  // several separate streams → each category's exact length; only one stream that
+  // mixed categories can't be split (SullyGnome doesn't expose the per-game split),
+  // so its games share the stream's combined length.
   const streamedByDay = useMemo(() => {
     const m = {};
     for (const s of (streams || [])) {
       const [y, mo, d] = String(s.date || '').split('-').map(Number);
       if (!y || !mo || !d) continue;
       const k = `${y}-${mo - 1}-${d}`;
-      const arr = m[k] = m[k] || [];
-      for (const g of (s.games || [])) if (g && g.name && !arr.some((x) => x.name === g.name)) arr.push(g);
+      (m[k] = m[k] || []).push({ minutes: Number(s.minutes) || 0, games: (s.games || []).filter((g) => g && g.name) });
     }
     return m;
   }, [streams]);
@@ -824,15 +829,18 @@ function MonthGridView({ games, pace, vacations, dayOpts, streams, onPick, onTog
                   {!info.vac && !info.launch && info.session && info.play && (
                     <span className="mg-strno" title={`Stream ${info.session.idx} of ${info.session.total}`}>{info.session.idx}/{info.session.total}{info.session.hours ? ` · ~${info.session.hours}h` : ''}</span>
                   )}
-                  {info.streamed && info.streamed.length > 1 && (
-                    <span className="mg-multi" title={`Multiple games: ${info.streamed.map((s) => s.name).join(', ')}`}>⊞ {info.streamed.length}</span>
+                  {info.streamed && info.streamed.reduce((n, st) => n + st.games.length, 0) > 1 && (
+                    <span className="mg-multi" title={`Multiple categories: ${info.streamed.flatMap((st) => st.games.map((g) => g.name)).join(', ')}`}>⊞ {info.streamed.reduce((n, st) => n + st.games.length, 0)}</span>
                   )}
-                  {info.streamed && info.streamed.map((s, si) => (
-                    <span className="mg-pill mg-done" key={si} title={`Streamed: ${s.name}`}>
-                      {s.art ? <img className="mg-done-art" src={s.art} alt="" loading="lazy" /> : null}
-                      <span className="mg-done-nm">✓ {s.name}</span>
-                    </span>
-                  ))}
+                  {info.streamed && info.streamed.map((st, si) => {
+                    const names = st.games.map((g) => g.name).join(' + ');
+                    return (
+                      <span className="mg-pill mg-done" key={si} title={`Streamed: ${names} — ${fmtMins(st.minutes)}`}>
+                        {st.games[0] && st.games[0].art ? <img className="mg-done-art" src={st.games[0].art} alt="" loading="lazy" /> : null}
+                        <span className="mg-done-nm">✓ {names} · {fmtMins(st.minutes)}</span>
+                      </span>
+                    );
+                  })}
                   {info.vac && info.vacRunStart && <span className="mg-pill nowvac" title={info.vacLabel}>✈ {info.vacLabel}</span>}
                   {info.rest && <span className="mg-pill mg-rest" title="Rest day (you chose to rest)">☕ rest</span>}
                   {info.launch && (
@@ -949,15 +957,19 @@ function MonthGridView({ games, pace, vacations, dayOpts, streams, onPick, onTog
                 {!info.vac && !info.launch && info.session && info.session.hours ? (
                   <span className="gc-hrs" title={`Estimated stream length this day (${(day.getUTCDay() === 0 || day.getUTCDay() === 6) ? 'weekend' : 'weekday'} pace)`}>~{info.session.hours}h</span>
                 ) : null}
-                {info.streamed && info.streamed.length > 1 && (
-                  <span className="gc-multi" title={`Multiple games this day: ${info.streamed.map((s) => s.name).join(', ')}`}>⊞ {info.streamed.length} games</span>
+                {info.streamed && info.streamed.reduce((n, st) => n + st.games.length, 0) > 1 && (
+                  <span className="gc-multi" title={`Multiple categories: ${info.streamed.flatMap((st) => st.games.map((g) => g.name)).join(', ')}`}>⊞ {info.streamed.reduce((n, st) => n + st.games.length, 0)} games</span>
                 )}
-                {info.streamed && info.streamed.map((s, si) => (
-                  <div className="gc-done" key={si} title={`Streamed: ${s.name}`}>
-                    {s.art ? <img className="gc-done-art" src={s.art} alt="" loading="lazy" /> : null}
-                    <span className="gc-done-nm"><span className="gc-done-chk">✓</span>{s.name}</span>
-                  </div>
-                ))}
+                {info.streamed && info.streamed.map((st, si) => {
+                  const combined = st.games.length > 1;
+                  const names = st.games.map((g) => g.name).join(' + ');
+                  return (
+                    <div className="gc-done" key={si} title={`Streamed: ${names} — ${fmtMins(st.minutes)}${combined ? ' (combined)' : ''}`}>
+                      {st.games[0] && st.games[0].art ? <img className="gc-done-art" src={st.games[0].art} alt="" loading="lazy" /> : null}
+                      <span className="gc-done-nm"><span className="gc-done-chk">✓</span>{names}<span className="gc-done-len"> · {fmtMins(st.minutes)}{combined ? ' (comb.)' : ''}</span></span>
+                    </div>
+                  );
+                })}
                 {info.vac && info.vacRunStart && <div className="gc-away">✈ {info.vacLabel}</div>}
                 {info.rest && <div className="gc-away">☕ Rest day</div>}
                 {info.launch && (
