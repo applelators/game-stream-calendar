@@ -778,3 +778,23 @@ input, select, textarea { font-family: inherit; }
 .ros-n { width: 20px; height: 20px; border-radius: 99px; background: var(--acc); color: var(--acc-ink); font-size: 0.64rem; font-weight: 800; display: grid; place-items: center; flex: none; font-family: var(--mono); }
 .ros-note { font-size: 0.86rem; color: var(--muted); line-height: 1.5; background: var(--s3); border: 1px solid var(--hair); border-radius: 10px; padding: 13px 15px; }
 .ros-note b { color: var(--text); }
+
+/* ============================================================
+   Live "on-air" mode (redesign step 4g)
+   ============================================================ */
+@keyframes ssglow { 0%, 100% { opacity: 0.45; } 50% { opacity: 0.85; } }
+.btn.livebtn { display: inline-flex; align-items: center; gap: 8px; }
+.btn.livebtn .dot { width: 8px; height: 8px; border-radius: 99px; background: var(--faint); }
+.btn.livebtn.on { border-color: var(--danger); background: #2a1416; color: #ffb4b4; }
+.btn.livebtn.on .dot { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
+.live-hero { position: relative; border-radius: 18px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent); margin-bottom: 16px; padding: clamp(16px, 2.4vw, 24px); display: flex; align-items: center; gap: 18px; background: #160d12; }
+.live-bg { position: absolute; inset: -30px; background: #0e1320 center/cover; filter: blur(34px) saturate(1.3); opacity: 0.4; }
+.live-veil { position: absolute; inset: 0; background: linear-gradient(90deg, #120a0ee8, #120a0ea0); }
+.live-body { position: relative; flex: 1; min-width: 0; }
+.live-tag { display: inline-flex; align-items: center; gap: 7px; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.12em; font-family: var(--mono); color: #ff9d9d; }
+.live-dot2 { width: 9px; height: 9px; border-radius: 99px; background: var(--danger); box-shadow: 0 0 10px var(--danger); animation: ssglow 1.4s ease-in-out infinite; }
+.live-title { font-family: var(--display); font-weight: 700; font-size: clamp(1.2rem, 2.4vw, 1.7rem); line-height: 1.1; margin-top: 8px; }
+.live-meta { font-size: 0.8rem; color: #e0b9bd; margin-top: 6px; }
+.live-elapsed { position: relative; text-align: center; flex: none; background: #0c0709; border: 1px solid #3a1c20; border-radius: 13px; padding: 12px 18px; }
+.le-num { font-family: var(--display); font-weight: 700; font-size: 1.5rem; color: #fff; font-variant-numeric: tabular-nums; }
+.le-lbl { font-size: 0.58rem; color: #a8767a; font-family: var(--mono); letter-spacing: 0.1em; margin-top: 5px; }

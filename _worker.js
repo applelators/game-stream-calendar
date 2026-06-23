@@ -41,6 +41,40 @@ async function refreshStreams(env) {
   return data;
 }
 
+// Live "on-air" state from Twitch Helix. Needs TWITCH_CLIENT_ID + TWITCH_CLIENT_SECRET
+// (app access token via client-credentials). No creds -> { live:false, configured:false }
+// so the frontend just falls back to its manual preview toggle. Token cached per isolate.
+let _ttToken = null; // { token, exp }
+async function twitchToken(env) {
+  if (_ttToken && _ttToken.exp > Date.now() + 60000) return _ttToken.token;
+  const url = 'https://id.twitch.tv/oauth2/token?client_id=' + encodeURIComponent(env.TWITCH_CLIENT_ID) +
+    '&client_secret=' + encodeURIComponent(env.TWITCH_CLIENT_SECRET) + '&grant_type=client_credentials';
+  const r = await fetch(url, { method: 'POST' });
+  if (!r.ok) throw new Error('twitch token HTTP ' + r.status);
+  const j = await r.json();
+  _ttToken = { token: j.access_token, exp: Date.now() + (Number(j.expires_in) || 3600) * 1000 };
+  return _ttToken.token;
+}
+async function fetchLive(env) {
+  const login = (env && env.TWITCH_CHANNEL) || 'nabunan';
+  if (!env || !env.TWITCH_CLIENT_ID || !env.TWITCH_CLIENT_SECRET) {
+    return { live: false, configured: false, login, fetchedAt: new Date().toISOString() };
+  }
+  try {
+    const token = await twitchToken(env);
+    const r = await fetch('https://api.twitch.tv/helix/streams?user_login=' + encodeURIComponent(login),
+      { headers: { 'Client-ID': env.TWITCH_CLIENT_ID, Authorization: 'Bearer ' + token } });
+    if (!r.ok) throw new Error('helix HTTP ' + r.status);
+    const j = await r.json();
+    const s = (j.data && j.data[0]) || null;
+    return s
+      ? { live: true, configured: true, login, title: s.title, gameName: s.game_name, viewers: s.viewer_count, startedAt: s.started_at, fetchedAt: new Date().toISOString() }
+      : { live: false, configured: true, login, fetchedAt: new Date().toISOString() };
+  } catch (e) {
+    return { live: false, configured: true, error: String(e.message || e), login, fetchedAt: new Date().toISOString() };
+  }
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -104,6 +138,17 @@ export default {
         } catch (e) {
           return json({ streams: [], fetchedAt: null, error: String(e.message || e) });
         }
+      }
+
+      // Live on-air state (Twitch Helix). Cached ~45s in KV to avoid hammering the API.
+      if (pathname === '/api/live' && request.method === 'GET') {
+        try {
+          const raw = await env.CALENDAR_KV.get('live');
+          if (raw) { const c = JSON.parse(raw); if (c && c.fetchedAt && Date.now() - new Date(c.fetchedAt).getTime() < 45000) return json(c); }
+        } catch (e) { /* ignore */ }
+        const data = await fetchLive(env);
+        try { await env.CALENDAR_KV.put('live', JSON.stringify(data)); } catch (e) { /* ignore */ }
+        return json(data);
       }
 
       if (pathname === '/api/refresh-streams' && request.method === 'POST') {

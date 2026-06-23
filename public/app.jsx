@@ -642,6 +642,37 @@ function ShareView({ games, today, pace }) {
 }
 
 // ============================================================================
+// Live "on-air" hero (redesign step 4g): driven by /api/live (Twitch Helix), with
+// a manual preview fallback. Self-ticking uptime.
+// ============================================================================
+function LiveHero({ state, manualStart, games }) {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
+  const live = state && state.live;
+  const startMs = live && state.startedAt ? new Date(state.startedAt).getTime() : (manualStart || now);
+  let s = Math.max(0, Math.floor((now - startMs) / 1000));
+  const h = Math.floor(s / 3600); s %= 3600; const mm = Math.floor(s / 60); s %= 60;
+  const uptime = (h > 0 ? h + ':' : '') + String(mm).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  const gname = live ? state.gameName : null;
+  let g = null;
+  if (gname) { const k = gname.toLowerCase(); g = games.find((x) => x.title.toLowerCase().includes(k) || k.includes(stripGameName(x.title))) || null; }
+  const art = g && isImgIcon(g.icon) ? g.icon : null;
+  const title = (live && state.title) || (g && g.title) || gname || 'Live preview';
+  return (
+    <div className="live-hero">
+      {art && <div className="live-bg" style={{ backgroundImage: `url(${art})` }} />}
+      <div className="live-veil" />
+      <div className="live-body">
+        <div className="live-tag"><span className="live-dot2" />{live ? 'LIVE NOW' : 'PREVIEW'}</div>
+        <div className="live-title">{title}</div>
+        <div className="live-meta">{gname ? gname + ' · ' : ''}{live && state.viewers != null ? state.viewers.toLocaleString() + ' watching' : 'on @nabunan'}</div>
+      </div>
+      <div className="live-elapsed"><div className="le-num">{uptime}</div><div className="le-lbl">UPTIME</div></div>
+    </div>
+  );
+}
+
+// ============================================================================
 // App
 // ============================================================================
 function App() {
@@ -652,7 +683,17 @@ function App() {
   const [loaded, setLoaded] = useState(false);
   const [detail, setDetail] = useState(null);      // game id
   const [showSettings, setShowSettings] = useState(false);
+  const [liveState, setLiveState] = useState(null); // /api/live (Twitch Helix)
+  const [manualLive, setManualLive] = useState(false);
+  const [manualStart, setManualStart] = useState(0);
   const firstSave = useRef(true);
+  // Poll real on-air state every 60s (graceful if Twitch creds aren't configured).
+  useEffect(() => {
+    let on = true;
+    const load = () => fetch('/api/live').then((r) => r.json()).then((j) => { if (on) setLiveState(j); }).catch(() => {});
+    load(); const t = setInterval(load, 60000);
+    return () => { on = false; clearInterval(t); };
+  }, []);
 
   // Slate comes from games.json (source of truth); settings from KV; pace cached.
   useEffect(() => {
@@ -832,10 +873,15 @@ function App() {
                 onClick={() => setSettings((s) => ({ ...s, theme: t.id }))} />
             ))}
           </div>
+          <button className={'btn livebtn' + ((liveState && liveState.live) || manualLive ? ' on' : '')}
+            onClick={() => { if (manualLive) { setManualLive(false); } else { setManualLive(true); setManualStart(Date.now()); } }}
+            title={liveState && liveState.live ? 'On air now (Twitch)' : liveState && liveState.configured === false ? 'Preview the on-air hero (connect Twitch creds for the real signal)' : 'Preview the on-air hero'}>
+            <span className="dot" />{(liveState && liveState.live) ? 'On air' : manualLive ? 'End preview' : 'Go live'}</button>
           <button className="btn" onClick={() => setShowSettings(true)}>⚙ Settings</button>
         </div>
       </header>
 
+      {((liveState && liveState.live) || manualLive) && <LiveHero state={liveState && liveState.live ? liveState : null} manualStart={manualStart} games={effGames} />}
       <InstrumentPanel pace={ep} source={paceSource} inFlight={inFlight} atRisk={atRisk} launch={launch} />
       {settings.view === 'grid' && <DeadlinePanel deadlines={deadlines} onPick={setDetail} />}
 
