@@ -876,6 +876,49 @@ function bonusNoteFor(dbrackets) {
   };
 }
 
+// Art-forward Mon–Sun strip for the current week (redesign step 2). Reuses dayInfo
+// output: each day is either a planned art cell, a streamed "done" card, or empty.
+function WeekStrip({ days, onPick }) {
+  return (
+    <div className="week">
+      <div className="week-head"><span className="week-h">This week</span>
+        <span className="week-sub">Mon–Sun · tap a stream to open it</span></div>
+      <div className="week-row">
+        {days.map((wd, i) => {
+          const info = wd.info;
+          const play = (!info.vac && !info.launch && info.session && info.play) ? info.play : null;
+          const art = play && isImgIcon(play.icon) ? play.icon : null;
+          const doneArt = info.streamed && info.streamed[0] && info.streamed[0].games[0] && info.streamed[0].games[0].art;
+          return (
+            <div className={'wday' + (wd.isToday ? ' today' : '')} key={i}>
+              <div className="wday-top"><span className="wday-dow">{wd.dow}</span><span className="wday-num">{wd.num}</span></div>
+              {info.streamed ? (
+                <div className="wdone">
+                  {doneArt ? <div className="wdone-art" style={{ backgroundImage: `url(${doneArt})` }} /> : null}
+                  <small>✓ streamed</small>
+                </div>
+              ) : play ? (
+                <div className="wstream" onClick={() => onPick(play.id)} style={art ? null : { background: gameColor(play.id).solid }}>
+                  {art && <div className="wstream-art" style={{ backgroundImage: `url(${art})` }} />}
+                  {art && <div className="wstream-grad" />}
+                  {info.streamOrd != null && <span className="wstream-no" style={{ background: gameColor(play.id).solid }}>{info.streamOrd}/{info.streamTotal}</span>}
+                  <div className="wstream-title">{play.title}</div>
+                  {info.session && info.session.hours ? <div className="wstream-hrs">~{info.session.hours}h</div> : null}
+                </div>
+              ) : (
+                <div className="wempty">
+                  <span className="big">{info.launch ? '🌙' : info.vac ? '✈' : info.rest ? '☕' : '·'}</span>
+                  <small>{info.launch ? 'launch eve' : info.vac ? 'away' : info.rest ? 'rest' : 'open'}</small>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap, sessionGoals, streams, onPick, onTogglePlan, onChooseToday }) {
   const isMobile = useIsMobile();
   const [pop, setPop] = useState(null); // in-app hover popup over a cell
@@ -1179,9 +1222,27 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap,
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
+  // Current Mon–Sun window (art-forward weekly strip), reusing dayInfo for each day.
+  const weekDays = (() => {
+    const dow = new Date(Date.UTC(tY, tM, tD)).getUTCDay(); // 0 Sun..6 Sat
+    const offset = (dow + 6) % 7;                            // days back to Monday
+    const labels = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+    const out = [];
+    for (let i = 0; i < 7; i++) {
+      const day = new Date(Date.UTC(tY, tM, tD - offset + i));
+      out.push({
+        dow: labels[i], num: day.getUTCDate(),
+        isToday: day.getUTCFullYear() === tY && day.getUTCMonth() === tM && day.getUTCDate() === tD,
+        info: dayInfo(day, ctx),
+      });
+    }
+    return out;
+  })();
+
   return (
     <div>
       <TodayPicker options={todayOptions} mobile={false} onPick={onPick} onChoose={onChooseToday} />
+      <WeekStrip days={weekDays} onPick={onPick} />
       <div className="gc-bar">
         <button className="gc-today" onClick={scrollToToday}>Jump to today</button>
         <div className="gc-cnt">{totalCount} release{totalCount === 1 ? '' : 's'} · scroll for more months ↓</div>
@@ -1257,10 +1318,11 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap,
                   <div className="gc-ev gc-launch" onClick={() => onPick(info.launch.id)}>🌙</div>
                 )}
                 {!info.vac && !info.launch && info.session && info.play && (hasArt ? (
-                  <div className="gc-tile" onClick={() => onPick(info.play.id)}>
-                    <div className="gc-tileart"><img src={info.play.icon} alt="" loading="lazy" /></div>
-                    <div className="gc-tilename" style={{ background: gameColor(info.play.id).solid }}>{info.play.title}</div>
-                  </div>
+                  <React.Fragment>
+                    <div className="gc-art" style={{ backgroundImage: `url(${info.play.icon})` }} onClick={() => onPick(info.play.id)} />
+                    <div className="gc-grad" />
+                    <div className="gc-foot"><span className="gc-ftitle">{info.play.title}</span></div>
+                  </React.Fragment>
                 ) : (
                   <div className="gc-ev" style={{ background: gameColor(info.play.id).solid }} onClick={() => onPick(info.play.id)}>
                     {info.play.title}</div>
