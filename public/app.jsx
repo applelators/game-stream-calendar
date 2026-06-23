@@ -404,6 +404,46 @@ function QueueView({ games, pace, ids, today, doneHours, onReorder, onPick }) {
 }
 
 // ============================================================================
+// Browse (redesign step 4c): searchable / filterable full catalog.
+// ============================================================================
+function BrowseView({ games, onPick }) {
+  const [q, setQ] = useState('');
+  const [kind, setKind] = useState('all');
+  const filtered = games.filter((g) => {
+    if (kind !== 'all') { if (kind === 'bonus') { if (!g.bonus) return false; } else if (g.kind !== kind) return false; }
+    if (q) { const s = q.toLowerCase(); if (!(g.title.toLowerCase().includes(s) || (g.platforms || []).join(' ').toLowerCase().includes(s))) return false; }
+    return true;
+  }).slice().sort((a, b) => { const ta = anchorDate(a.release), tb = anchorDate(b.release); if (ta && tb) return ta - tb; if (ta) return -1; if (tb) return 1; return 0; });
+  return (
+    <div className="anim">
+      <div className="browse-bar">
+        <div className="browse-search"><span className="ic">⌕</span>
+          <input placeholder="Search games, platforms…" value={q} onChange={(e) => setQ(e.target.value)} /></div>
+        <div className="browse-filters">
+          {[['all', 'All'], ['game', 'Games'], ['dlc', 'DLC'], ['event', 'Events'], ['bonus', 'Bonus']].map(([k, l]) => (
+            <button key={k} className={kind === k ? 'on' : ''} onClick={() => setKind(k)}>{l}</button>
+          ))}
+        </div>
+        <span className="browse-cnt">{filtered.length} of {games.length}</span>
+      </div>
+      <div className="browse-list">
+        {filtered.length === 0 ? <div className="brow-empty">No titles match your search.</div>
+          : filtered.map((g) => (
+            <div className="brow" key={g.id} onClick={() => onPick(g.id)}>
+              <div className="brow-art" style={isImgIcon(g.icon) ? { backgroundImage: `url(${g.icon})` } : { background: gameColor(g.id).solid }} />
+              <div className="brow-title"><div className="brow-name">{g.title}</div>
+                <div className="brow-meta">{KIND_LABEL[g.kind]}{g.bonus ? ' · Bonus' : ''}{g.backlog ? ' · Backlog' : ''}{g.newRelease === false ? ' · Replay' : ''}</div></div>
+              <div className="brow-plat">{(g.platforms || []).join(', ') || '—'}</div>
+              <div className="brow-date">{releaseLabel(g.release)}</div>
+              <div className="brow-hltb">{g.hltbHours ? g.hltbHours + 'h' : '—'}</div>
+            </div>
+          ))}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
 // App
 // ============================================================================
 function App() {
@@ -570,6 +610,8 @@ function App() {
               onClick={() => setSettings((s) => ({ ...s, view: 'grid' }))}>Month grid</button>
             <button className={settings.view === 'queue' ? 'on' : ''}
               onClick={() => setSettings((s) => ({ ...s, view: 'queue' }))}>Queue</button>
+            <button className={settings.view === 'browse' ? 'on' : ''}
+              onClick={() => setSettings((s) => ({ ...s, view: 'browse' }))}>Browse</button>
             <button className={settings.view === 'releases' ? 'on' : ''}
               onClick={() => setSettings((s) => ({ ...s, view: 'releases' }))}>Releases</button>
           </div>
@@ -599,6 +641,8 @@ function App() {
         ? <TimelineView games={effGames} pace={ep} mode={settings.schedMode} vacations={normVacs} onPick={setDetail} />
         : settings.view === 'queue'
         ? <QueueView games={effGames} pace={ep} ids={queueIds} today={today} doneHours={doneInfo.hours} onReorder={reorderQueue} onPick={setDetail} />
+        : settings.view === 'browse'
+        ? <BrowseView games={effGames} onPick={setDetail} />
         : settings.view === 'releases'
         ? <ReleasesView games={effGames} pace={ep} onPick={setDetail} />
         : <MonthGridView games={effGames} pace={ep} vacations={normVacs} dayOpts={dayOpts} doneCounts={doneInfo.counts} streamMap={doneInfo.streamMap} sessionGoals={settings.sessionGoals || {}} streams={streams} onPick={setDetail} onTogglePlan={togglePlan} onChooseToday={chooseToday} />}

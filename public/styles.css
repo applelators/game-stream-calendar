@@ -658,3 +658,29 @@ input, select, textarea { font-family: inherit; }
 .modal-foot { display: flex; align-items: center; gap: 10px; margin-top: 18px; }
 .modal-foot .hint { margin-right: auto; font-size: 0.72rem; color: var(--faint); }
 @media (max-width: 560px) { .modal-stats { grid-template-columns: 1fr 1fr; } }
+
+/* ============================================================
+   Browse (redesign step 4c)
+   ============================================================ */
+.browse-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 6px 0 14px; }
+.browse-search { flex: 1; min-width: 200px; display: flex; align-items: center; gap: 9px; background: var(--s1); border: 1px solid var(--border-solid); border-radius: 11px; padding: 10px 13px; }
+.browse-search input { flex: 1; background: transparent; border: 0; color: var(--text); font-size: 0.86rem; outline: none; }
+.browse-search input::placeholder { color: var(--faint); }
+.browse-search .ic { color: var(--faint); font-size: 1rem; }
+.browse-filters { display: inline-flex; background: var(--s1); border: 1px solid var(--border-solid); border-radius: 99px; padding: 3px; flex-wrap: wrap; }
+.browse-filters button { padding: 6px 13px; border-radius: 99px; font-size: 0.76rem; font-weight: 700; background: transparent; color: var(--muted); transition: 0.12s; border: 0; }
+.browse-filters button.on { background: var(--acc); color: var(--acc-ink); }
+.browse-cnt { font-size: 0.72rem; color: var(--faint); font-family: var(--mono); }
+.browse-list { border: 1px solid var(--border-solid); border-radius: 16px; background: var(--s1); overflow: hidden; }
+.brow { display: grid; grid-template-columns: 42px 1fr 150px 110px 64px; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid #161d2a; cursor: pointer; transition: 0.1s; }
+.brow:last-child { border-bottom: 0; }
+.brow:hover { background: #161d2a; }
+.brow-art { width: 42px; height: 42px; border-radius: 8px; background: #0e1320 center/cover; box-shadow: 0 2px 6px #0008; }
+.brow-title { min-width: 0; }
+.brow-name { font-size: 0.86rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.brow-meta { font-size: 0.66rem; color: var(--faint); font-family: var(--mono); margin-top: 2px; }
+.brow-plat { font-size: 0.72rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.brow-date { font-family: var(--mono); font-size: 0.74rem; color: #9fb4d8; text-align: right; }
+.brow-hltb { font-family: var(--mono); font-size: 0.78rem; font-weight: 700; color: var(--accent-2); text-align: right; }
+.brow-empty { padding: 40px; text-align: center; color: var(--faint); font-size: 0.86rem; }
+@media (max-width: 640px) { .brow { grid-template-columns: 38px 1fr 64px; } .brow-plat, .brow-date { display: none; } }
