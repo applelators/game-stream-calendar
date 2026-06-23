@@ -399,6 +399,10 @@ input, select, textarea { font-family: inherit; }
 .gc-today-chip.chosen small, .mg-today-chip.chosen small { color: #160a2bcc; }
 .gc-today-chip.def, .mg-today-chip.def { border-style: dashed; color: var(--muted); font-size: 0.74rem; }
 .mg-pill.mg-rest { background: #1a2130; color: var(--muted); }
+/* per-stream goal marker (hover for the goal) */
+.gc-goal { position: absolute; top: 4px; right: 24px; z-index: 3; font-size: 0.72rem; cursor: help; }
+.gc-cell.hasart .gc-goal { right: 26px; }
+.mg-goal { position: absolute; top: 2px; right: 14px; z-index: 3; font-size: 0.6rem; cursor: help; }
 /* multiple game categories streamed in one day */
 .gc-multi { position: absolute; top: 5px; left: 6px; z-index: 2; font-family: var(--mono); font-size: 0.58rem;
   font-weight: 700; color: #0c0c12; background: var(--good); border-radius: 4px; padding: 0 4px; line-height: 1.45; }

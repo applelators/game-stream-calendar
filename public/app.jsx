@@ -24,6 +24,7 @@ const DEFAULT_SETTINGS = {
   longDays: [],    // ISO dates (days off) to treat as weekend-length stream days
   dayPins: {},     // { 'YYYY-MM-DD': gameId } — force a specific game on a specific day
   restDays: [],    // ISO dates the user chose to rest (no committed stream)
+  sessionGoals: {},// { 'gameId#streamOrdinal': 'goal note' } — per-stream goals (hover)
 };
 
 const FALLBACK_PACE = { hoursPerStream: 5.11, hoursPerWeek: 11.52, weekdayHps: 4.0, weekendHps: 8.0, weekdayStreams: 0, weekendStreams: 0, source: 'fallback', fetchedAt: null, numStreams: 29, totalHours: 148.1, windowDays: 90 };
@@ -104,40 +105,49 @@ const fmtDate = (d) => `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTC
 const shortDate = (d) => `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`;
 const fmtMins = (m) => { const h = Math.floor((m || 0) / 60), mm = (m || 0) % 60; return h ? `${h}h${mm ? ' ' + mm + 'm' : ''}` : `${mm}m`; };
 
-// Map real streamed hours onto slate games. Stream game NAMES (from SullyGnome) are
+// Map real streamed history onto slate games. Stream game NAMES (from SullyGnome) are
 // matched to slate titles by a normalized key (part suffix / parens / punctuation
-// stripped, fuzzy contains), and a game's hours are allocated across its parts in
-// order. Returns { [gameId]: hoursStreamed }. Events/bonus games are ignored.
-function computeDoneHours(games, streams) {
-  if (!streams || !streams.length || !games || !games.length) return {};
-  const strip = (s) => String(s || '').toLowerCase()
-    .replace(/—\s*pt\.?\s*\d+.*$/, '').replace(/\(.*?\)/g, '')
-    .replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
-  const actualByName = {};
-  for (const s of streams) {
-    const gs = s.games || [];
-    if (!gs.length) continue;
-    const per = (Number(s.minutes) || 0) / 60 / gs.length; // split a multi-game stream evenly
-    for (const g of gs) { const k = strip(g.name); if (k) actualByName[k] = (actualByName[k] || 0) + per; }
-  }
+// stripped, fuzzy contains). Each matching past stream's hours are allocated across
+// the game's parts in date order; we also count how many streams touched each part.
+// Returns { hours:{id:h}, counts:{id:n} }. Events/bonus games are ignored.
+const stripGameName = (s) => String(s || '').toLowerCase()
+  .replace(/—\s*pt\.?\s*\d+.*$/, '').replace(/\(.*?\)/g, '')
+  .replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
+function computeDoneInfo(games, streams) {
+  const hours = {}, counts = {};
+  if (!streams || !streams.length || !games || !games.length) return { hours, counts };
   const groups = {}; // base key -> [{id, hltb}] in file/part order
   for (const g of games) {
     if (g.kind === 'event' || g.bonus) continue;
-    const base = strip(g.title); if (!base) continue;
+    const base = stripGameName(g.title); if (!base) continue;
     (groups[base] = groups[base] || []).push({ id: g.id, hltb: Number(g.hltbHours) || 0 });
   }
-  const done = {};
-  for (const base in groups) {
-    let total = 0;
-    for (const k in actualByName) {
-      const match = k === base || ((k.includes(base) || base.includes(k)) && Math.min(k.length, base.length) >= 8);
-      if (match) total += actualByName[k];
-    }
-    if (total <= 0) continue;
-    let rem = total;
-    for (const p of groups[base]) { if (rem <= 0) break; const a = Math.min(rem, p.hltb); if (a > 0) done[p.id] = (done[p.id] || 0) + a; rem -= a; }
+  const baseFor = (k) => Object.keys(groups).find((b) => k === b || ((k.includes(b) || b.includes(k)) && Math.min(k.length, b.length) >= 8));
+  // per base: chronological list of { hrs } from matching past streams
+  const perBase = {};
+  const sorted = [...streams].sort((a, b) => String(a.date) < String(b.date) ? -1 : 1);
+  for (const s of sorted) {
+    const gs = s.games || [];
+    if (!gs.length) continue;
+    const per = (Number(s.minutes) || 0) / 60 / gs.length;
+    for (const g of gs) { const b = baseFor(stripGameName(g.name)); if (b) (perBase[b] = perBase[b] || []).push(per); }
   }
-  return done;
+  for (const base in perBase) {
+    const parts = groups[base];
+    let pi = 0, filled = 0;
+    for (const hrs of perBase[base]) {
+      let h = hrs;
+      while (h > 0.001 && pi < parts.length) {
+        const cap = Math.max(0, parts[pi].hltb - filled);
+        const take = Math.min(h, cap || h); // if part has 0 cap left, still count once
+        hours[parts[pi].id] = (hours[parts[pi].id] || 0) + take;
+        counts[parts[pi].id] = (counts[parts[pi].id] || 0) + 1;
+        filled += take; h -= take;
+        if (filled >= parts[pi].hltb - 0.001) { pi++; filled = 0; }
+      }
+    }
+  }
+  return { hours, counts };
 }
 function effectivePace(settings, pace) {
   if (settings.override) return { hoursPerStream: settings.hoursPerStream, hoursPerWeek: settings.hoursPerWeek, weekdayHps: settings.hoursPerStream, weekendHps: settings.hoursPerStream };
@@ -218,15 +228,15 @@ function App() {
   // Per-day overrides (settings store ISO dates; convert to engine day-keys):
   // longDays = days off treated as weekend-length; dayPins = force a game on a day.
   const isoToKey = (iso) => { const [y, m, d] = String(iso).split('-').map(Number); return `${y}-${m - 1}-${d}`; };
-  // Hours already streamed per game (from real Twitch/SullyGnome history), so the plan
-  // continues an in-progress game instead of re-scheduling its full length.
-  const doneHours = useMemo(() => computeDoneHours(games, streams), [games, streams]);
+  // Real streamed history mapped onto games: hours (so the plan continues in-progress
+  // games) + per-part completed-stream counts (for per-session goal numbering).
+  const doneInfo = useMemo(() => computeDoneInfo(games, streams), [games, streams]);
   const dayOpts = useMemo(() => ({
     longDays: new Set((settings.longDays || []).map(isoToKey)),
     dayPins: Object.fromEntries(Object.entries(settings.dayPins || {}).map(([iso, id]) => [isoToKey(iso), id])),
     restDays: new Set((settings.restDays || []).map(isoToKey)),
-    doneHours,
-  }), [settings.longDays, settings.dayPins, settings.restDays, doneHours]);
+    doneHours: doneInfo.hours,
+  }), [settings.longDays, settings.dayPins, settings.restDays, doneInfo]);
   // Choose what to stream today (pins it / marks rest / clears to plan default). Saved
   // to settings (KV), so the calendar cell reflects it everywhere and it persists.
   const chooseToday = useCallback((choice) => {
@@ -289,7 +299,7 @@ function App() {
 
       {settings.view === 'timeline'
         ? <TimelineView games={effGames} pace={ep} mode={settings.schedMode} vacations={normVacs} onPick={setDetail} />
-        : <MonthGridView games={effGames} pace={ep} vacations={normVacs} dayOpts={dayOpts} streams={streams} onPick={setDetail} onTogglePlan={togglePlan} onChooseToday={chooseToday} />}
+        : <MonthGridView games={effGames} pace={ep} vacations={normVacs} dayOpts={dayOpts} doneCounts={doneInfo.counts} sessionGoals={settings.sessionGoals || {}} streams={streams} onPick={setDetail} onTogglePlan={togglePlan} onChooseToday={chooseToday} />}
 
       {detailGame && (
         <DetailCard game={detailGame} pace={ep} vacations={normVacs} queuedPos={seqPositions[detailGame.id]}
@@ -493,7 +503,13 @@ function dayInfo(day, ctx) {
   // Show one cell per actual stream session (a game appears on exactly its
   // "streams to finish" days, at your real cadence), not every in-progress day.
   const session = ctx.sessionByDay[k];
-  if (session) return { releases, play: ctx.gameById[session.id], session };
+  if (session) {
+    // Per-session goal, numbered by ABSOLUTE stream ordinal (completed streams of this
+    // game + this session's index), so "2nd stream" counts ones already streamed.
+    const ord = (ctx.doneCounts[session.id] || 0) + session.idx;
+    const goal = ctx.sessionGoals[`${session.id}#${ord}`] || null;
+    return { releases, play: ctx.gameById[session.id], session, goal, streamOrd: ord };
+  }
   // bonus game filling a spare slot (faded).
   const bonusId = ctx.bonusPlayByDay && ctx.bonusPlayByDay[k];
   if (bonusId) {
@@ -657,7 +673,7 @@ function bonusNoteFor(dbrackets) {
   };
 }
 
-function MonthGridView({ games, pace, vacations, dayOpts, streams, onPick, onTogglePlan, onChooseToday }) {
+function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, sessionGoals, streams, onPick, onTogglePlan, onChooseToday }) {
   const isMobile = useIsMobile();
 
   // Actual streams already done (from @nabunan's Twitch history) keyed by calendar
@@ -820,7 +836,7 @@ function MonthGridView({ games, pace, vacations, dayOpts, streams, onPick, onTog
 
   const now = new Date();
   const tY = now.getFullYear(), tM = now.getMonth(), tD = now.getDate();
-  const ctx = { vacations, sessionByDay, bonusPlayByDay, gameById, releasesByDay, deadlineByDay, streamedByDay, eveByDay: eves.eveByDay, releaseDays: eves.releaseDays, restDays: dayOpts && dayOpts.restDays };
+  const ctx = { vacations, sessionByDay, bonusPlayByDay, gameById, releasesByDay, deadlineByDay, streamedByDay, eveByDay: eves.eveByDay, releaseDays: eves.releaseDays, restDays: dayOpts && dayOpts.restDays, doneCounts: doneCounts || {}, sessionGoals: sessionGoals || {} };
 
   if (!min) {
     return (
@@ -887,10 +903,13 @@ function MonthGridView({ games, pace, vacations, dayOpts, streams, onPick, onTog
                     <span className="mg-pill mg-launch" onClick={() => onPick(info.launch.id)}
                       title={`Midnight launch — ${info.launch.title}`}>🌙</span>
                   )}
+                  {!info.vac && !info.launch && info.session && info.goal && (
+                    <span className="mg-goal" title={`Goal for stream #${info.streamOrd}: ${info.goal}`}>🎯</span>
+                  )}
                   {!info.vac && !info.launch && info.play && (
                     <span className="mg-pill mg-game" style={{ background: gameColor(info.play.id).solid }}
                       onClick={() => onPick(info.play.id)}
-                      title={`${info.play.title}${info.session ? ` — stream ${info.session.idx}/${info.session.total}` : ''}`}>
+                      title={`${info.play.title}${info.session ? ` — stream ${info.session.idx}/${info.session.total}` : ''}${info.goal ? `\n🎯 Goal: ${info.goal}` : ''}`}>
                       {isImgIcon(info.play.icon) && <img className="mg-cellart" src={info.play.icon} alt="" loading="lazy" />}
                       <span className="mg-gt">{info.play.title}</span>
                     </span>
@@ -1016,15 +1035,18 @@ function MonthGridView({ games, pace, vacations, dayOpts, streams, onPick, onTog
                   <div className="gc-ev gc-launch" onClick={() => onPick(info.launch.id)}
                     title={`Midnight launch — ${info.launch.title}`}>🌙</div>
                 )}
+                {!info.vac && !info.launch && info.session && info.goal && (
+                  <span className="gc-goal" title={`Goal for stream #${info.streamOrd}: ${info.goal}`}>🎯</span>
+                )}
                 {!info.vac && !info.launch && info.session && info.play && (hasArt ? (
                   <div className="gc-tile" onClick={() => onPick(info.play.id)}
-                    title={`${info.play.title} — stream ${info.session.idx}/${info.session.total}`}>
+                    title={`${info.play.title} — stream ${info.session.idx}/${info.session.total}${info.goal ? `\n🎯 Goal: ${info.goal}` : ''}`}>
                     <div className="gc-tileart"><img src={info.play.icon} alt="" loading="lazy" /></div>
                     <div className="gc-tilename" style={{ background: gameColor(info.play.id).solid }}>{info.play.title}</div>
                   </div>
                 ) : (
                   <div className="gc-ev" style={{ background: gameColor(info.play.id).solid }} onClick={() => onPick(info.play.id)}
-                    title={`${info.play.title} — stream ${info.session.idx}/${info.session.total}`}>
+                    title={`${info.play.title} — stream ${info.session.idx}/${info.session.total}${info.goal ? `\n🎯 Goal: ${info.goal}` : ''}`}>
                     {info.play.title}</div>
                 ))}
                 {info.bonusPlay && (
