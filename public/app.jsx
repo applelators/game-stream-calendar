@@ -331,6 +331,8 @@ function App() {
               onClick={() => setSettings((s) => ({ ...s, view: 'timeline' }))}>Timeline</button>
             <button className={settings.view === 'grid' ? 'on' : ''}
               onClick={() => setSettings((s) => ({ ...s, view: 'grid' }))}>Month grid</button>
+            <button className={settings.view === 'releases' ? 'on' : ''}
+              onClick={() => setSettings((s) => ({ ...s, view: 'releases' }))}>Releases</button>
           </div>
           {settings.view === 'timeline' && (
             <div className="seg alt">
@@ -352,6 +354,8 @@ function App() {
 
       {settings.view === 'timeline'
         ? <TimelineView games={effGames} pace={ep} mode={settings.schedMode} vacations={normVacs} onPick={setDetail} />
+        : settings.view === 'releases'
+        ? <ReleasesView games={effGames} pace={ep} onPick={setDetail} />
         : <MonthGridView games={effGames} pace={ep} vacations={normVacs} dayOpts={dayOpts} doneCounts={doneInfo.counts} streamMap={doneInfo.streamMap} sessionGoals={settings.sessionGoals || {}} streams={streams} onPick={setDetail} onTogglePlan={togglePlan} onChooseToday={chooseToday} />}
 
       {detailGame && (
@@ -1221,6 +1225,62 @@ function RailBlock({ rail, onPick }) {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// Releases appendix — every title the calendar knows about, grouped by year
+// ============================================================================
+function ReleasesView({ games, pace, onPick }) {
+  const groups = useMemo(() => {
+    const m = {};
+    for (const g of games) {
+      const yr = g.release && g.release.year ? String(g.release.year) : 'TBD';
+      (m[yr] = m[yr] || []).push({ g, d: anchorDate(g.release) });
+    }
+    const keys = Object.keys(m).sort((a, b) =>
+      a === 'TBD' ? 1 : b === 'TBD' ? -1 : Number(a) - Number(b));
+    for (const k of keys) {
+      m[k].sort((x, y) => {
+        if (!x.d && !y.d) return x.g.title < y.g.title ? -1 : 1;
+        if (!x.d) return 1; if (!y.d) return -1;
+        return (x.d - y.d) || (x.g.title < y.g.title ? -1 : 1);
+      });
+    }
+    return keys.map((k) => ({ year: k, items: m[k] }));
+  }, [games]);
+
+  return (
+    <div className="releases">
+      <div className="rel-intro">
+        All <strong>{games.length}</strong> titles Stream Slate knows about — release date, type,
+        platforms, price, and time to finish on stream. Tap any row for full details.
+      </div>
+      {groups.map(({ year, items }) => (
+        <div className="rel-yr" key={year}>
+          <div className="rel-yr-h">{year === 'TBD' ? 'Unscheduled / TBD' : year}
+            <span className="rel-yr-cnt">{items.length} title{items.length === 1 ? '' : 's'}</span></div>
+          <div className="rel-tbl">
+            {items.map(({ g }) => {
+              const strk = g.kind !== 'event' && g.hltbHours > 0 ? streamsToFinish(g.hltbHours, pace) : null;
+              const base = g.editions && g.editions.length ? g.editions[0] : null;
+              return (
+                <div className="rel-row" key={g.id} onClick={() => onPick(g.id)}>
+                  <span className="rel-date">{releaseLabel(g.release)}</span>
+                  <span className="rel-kind" style={{ background: KIND_COLOR[g.kind] }}>{KIND_LABEL[g.kind]}</span>
+                  <span className="rel-title"><GameBadge game={g} size={18} />{g.title}
+                    {g.bonus ? <span className="rel-bonus">★ bonus</span> : null}</span>
+                  <span className="rel-plat">{(g.platforms || []).join(', ')}</span>
+                  <span className="rel-price">{base && base.msrpUSD ? '$' + base.msrpUSD.toFixed(2) : ''}</span>
+                  <span className="rel-hltb">{g.kind === 'event' ? '—'
+                    : g.hltbHours ? <React.Fragment>{g.hltbHours}h<small> · {strk} str</small></React.Fragment> : ''}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

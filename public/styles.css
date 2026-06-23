@@ -486,3 +486,40 @@ input, select, textarea { font-family: inherit; }
 .vac-row input:focus { outline: none; border-color: var(--accent); }
 .vac-row input[type=date] { color-scheme: dark; }
 .vac-to { color: var(--faint); }
+
+/* ============================================================
+   Releases appendix — full catalog of known titles
+   ============================================================ */
+.releases { max-width: 1080px; margin: 0 auto; }
+.rel-intro { color: var(--muted); font-size: 0.86rem; line-height: 1.5; margin: 4px 2px 18px;
+  border-left: 2px solid var(--accent); padding-left: 12px; }
+.rel-intro strong { color: var(--text); }
+.rel-yr { margin-bottom: 22px; }
+.rel-yr-h { display: flex; align-items: baseline; gap: 10px; font-family: var(--mono);
+  font-size: 1.02rem; font-weight: 700; color: var(--text); padding: 0 2px 8px;
+  border-bottom: 1px solid var(--border-solid); margin-bottom: 4px; }
+.rel-yr-cnt { font-size: 0.72rem; font-weight: 600; color: var(--faint); font-family: var(--font); }
+.rel-tbl { display: flex; flex-direction: column; }
+.rel-row { display: grid; grid-template-columns: 130px 92px minmax(0, 1fr) 150px 72px 96px;
+  align-items: center; gap: 10px; padding: 8px 8px; border-radius: var(--radius-sm);
+  cursor: pointer; transition: background 0.12s; border-bottom: 1px solid #ffffff08; }
+.rel-row:hover { background: #ffffff0a; }
+.rel-date { font-family: var(--mono); font-size: 0.76rem; color: var(--muted); }
+.rel-kind { justify-self: start; font-size: 0.62rem; font-weight: 700; color: #0c0c12;
+  border-radius: 99px; padding: 1px 9px; line-height: 1.5; white-space: nowrap; }
+.rel-title { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 600;
+  color: var(--text); min-width: 0; }
+.rel-title > :first-child { flex: none; }
+.rel-bonus { font-size: 0.62rem; font-weight: 700; color: var(--warn); margin-left: 2px; }
+.rel-plat { font-size: 0.72rem; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rel-price { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); text-align: right; }
+.rel-hltb { font-family: var(--mono); font-size: 0.78rem; font-weight: 700; color: var(--accent-2); text-align: right; white-space: nowrap; }
+.rel-hltb small { color: var(--faint); font-weight: 600; }
+@media (max-width: 720px) {
+  .rel-row { grid-template-columns: 84px minmax(0, 1fr) 70px; row-gap: 2px; }
+  .rel-kind, .rel-plat { display: none; }
+  .rel-date { grid-column: 1; }
+  .rel-title { grid-column: 2; }
+  .rel-hltb { grid-column: 3; }
+  .rel-price { grid-column: 2 / 4; justify-self: start; text-align: left; font-size: 0.72rem; color: var(--faint); }
+}
