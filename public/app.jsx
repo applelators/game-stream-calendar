@@ -673,6 +673,101 @@ function LiveHero({ state, manualStart, games }) {
 }
 
 // ============================================================================
+// Now/Next cockpit hero + progress rings (redesign port). Progress % is derived
+// from real streamed history (doneCounts / streamsToFinish), not a sample.
+// ============================================================================
+function ProgressRing({ pct, tone }) {
+  const deg = Math.max(0, Math.min(100, pct)) * 3.6;
+  return (
+    <div className="ring" style={{ background: `conic-gradient(${tone} ${deg}deg, rgba(255,255,255,.08) 0)` }}>
+      <div className="ring-inner">{pct}%</div>
+    </div>
+  );
+}
+function LaunchCountdown({ launch }) {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
+  if (!launch) return <div className="cd-none">No dated launch on the horizon.</div>;
+  let diff = Math.max(0, launch.ms - now);
+  const d = Math.floor(diff / 864e5); diff -= d * 864e5;
+  const h = Math.floor(diff / 36e5); diff -= h * 36e5;
+  const m = Math.floor(diff / 6e4); diff -= m * 6e4;
+  const s = Math.floor(diff / 1e3);
+  const cell = (n, l) => <div className="cd-cell"><div className="cd-num">{n}</div><div className="cd-lbl">{l}</div></div>;
+  return <div className="cd-grid">{cell(d, 'DAYS')}{cell(h, 'HRS')}{cell(m, 'MIN')}{cell(s, 'SEC')}</div>;
+}
+function NowNextHero({ games, pace, doneHours, doneCounts, today, onPick }) {
+  const inProgress = games.filter((g) => g.kind !== 'event' && (doneHours[g.id] || 0) > 0 && (Number(g.hltbHours) || 0) - (doneHours[g.id] || 0) > 0.5)
+    .map((g) => {
+      const total = Math.max(1, streamsToFinish(g.hltbHours, pace));
+      const done = doneCounts[g.id] || 0;
+      const remaining = Math.max(0, Math.round((Number(g.hltbHours) || 0) - (doneHours[g.id] || 0)));
+      return { g, total, done, remaining, pct: Math.min(100, Math.round((done / total) * 100)) };
+    }).slice(0, 2);
+  const upcoming = games
+    .filter((g) => g.kind !== 'event' && isPlaceable(g.release) && anchorDate(g.release) && anchorDate(g.release).getTime() >= today.getTime())
+    .sort((a, b) => anchorDate(a.release) - anchorDate(b.release));
+  const launchG = upcoming.find((g) => g.release.precision === 'day') || null;
+  const launchMs = launchG ? new Date(launchG.release.year, (launchG.release.month || 1) - 1, launchG.release.day || 1).getTime() : null;
+  const upNext = upcoming.filter((g) => !launchG || g.id !== launchG.id).slice(0, 4);
+  const launchArt = launchG && isImgIcon(launchG.icon) ? launchG.icon : null;
+  return (
+    <div className="hero-grid">
+      <div className="panel">
+        <div className="eyebrow" style={{ color: '#cdb6ff' }}><span className="live-dot" />NOW STREAMING</div>
+        {inProgress.length ? (
+          <div className="np-cards">
+            {inProgress.map((p) => {
+              const art = isImgIcon(p.g.icon) ? p.g.icon : null;
+              const tone = gameColor(p.g.id).solid;
+              const gp = p.g.partGoal;
+              return (
+                <div className="np-card" key={p.g.id} onClick={() => onPick(p.g.id)} style={{ borderColor: tone + '44', cursor: 'pointer' }}>
+                  <div className="np-top">
+                    <div className="np-art" style={art ? { backgroundImage: `url(${art})` } : { background: tone }} />
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div className="np-title">{p.g.title}</div>
+                      <div className="np-status" style={{ background: '#13201a', color: 'var(--good)' }}>In progress</div>
+                    </div>
+                  </div>
+                  <div className="np-prog">
+                    <ProgressRing pct={p.pct} tone={tone} />
+                    <div><div className="np-done">Stream {p.done} of {p.total}</div>
+                      <div className="np-left">{Math.max(0, p.total - p.done)} left · ~{p.remaining}h to go</div></div>
+                  </div>
+                  {gp && <div className="goal"><span className="lbl">GOAL · </span>{renderSpoilers(gp)}</div>}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="np-empty">Between games — nothing in progress right now. Your next pick is in <b>Tonight</b> below, and the next release is on the right.</div>
+        )}
+      </div>
+      <div className="panel">
+        <div className="cd-head"><b>NEXT LAUNCH</b></div>
+        {launchG ? (
+          <div className="cd-game">
+            <div className="cd-gameart" style={launchArt ? { backgroundImage: `url(${launchArt})` } : { background: gameColor(launchG.id).solid }} />
+            <div><div className="cd-gametitle">{launchG.title}</div><div className="cd-gamedate">{releaseLabel(launchG.release)}</div></div>
+          </div>
+        ) : null}
+        <LaunchCountdown launch={launchMs ? { ms: launchMs } : null} />
+        {upNext.length > 0 && <div className="upnext-h">UP NEXT</div>}
+        {upNext.map((g) => (
+          <div className="un-row" key={g.id} onClick={() => onPick(g.id)} style={{ cursor: 'pointer' }}>
+            <div className="un-art" style={isImgIcon(g.icon) ? { backgroundImage: `url(${g.icon})` } : { background: gameColor(g.id).solid }} />
+            <div style={{ minWidth: 0, flex: 1 }}><div className="un-title">{g.title}</div>
+              <div className="un-meta">{releaseLabel(g.release)}{g.hltbHours ? ` · ${streamsToFinish(g.hltbHours, pace)} streams` : ''}</div></div>
+            <span className="un-dot" style={{ background: gameColor(g.id).solid }} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
 // App
 // ============================================================================
 function App() {
@@ -890,6 +985,7 @@ function App() {
 
       {((liveState && liveState.live) || manualLive) && <LiveHero state={liveState && liveState.live ? liveState : null} manualStart={manualStart} games={effGames} />}
       <InstrumentPanel pace={ep} source={paceSource} inFlight={inFlight} atRisk={atRisk} launch={launch} />
+      {settings.view === 'grid' && <NowNextHero games={effGames} pace={ep} doneHours={doneInfo.hours} doneCounts={doneInfo.counts} today={today} onPick={setDetail} />}
       {settings.view === 'grid' && <DeadlinePanel deadlines={deadlines} onPick={setDetail} />}
 
       {settings.view === 'timeline'
