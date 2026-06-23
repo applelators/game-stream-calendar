@@ -1233,10 +1233,11 @@ function RailBlock({ rail, onPick }) {
 // Releases appendix — every title the calendar knows about, grouped by year
 // ============================================================================
 function ReleasesView({ games, pace, onPick }) {
-  // Actual new releases only: real new games/DLC. Exclude events (not releases) and
-  // replays (games that came out in a prior year — just being started on stream now).
+  // Actual new releases only: real new games/DLC newly launching (incl. remasters,
+  // collections, Switch 2 editions). Exclude events, and older games you already own
+  // that are just being started on stream now (newRelease:false in games.json).
   const releases = useMemo(
-    () => games.filter((g) => g.kind === 'game' || g.kind === 'dlc'),
+    () => games.filter((g) => (g.kind === 'game' || g.kind === 'dlc') && g.newRelease !== false),
     [games]
   );
   const groups = useMemo(() => {

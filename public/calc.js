@@ -126,7 +126,11 @@ function gameFromFile(e, i) {
     title: e.title || 'Untitled',
     release,
     kind: e.kind || 'game',
-    backlog: !!e.backlog,   // catalog game scheduled at a planned start (not a new release)
+    backlog: !!e.backlog,   // catalog game scheduled at a planned start (suppresses midnight-launch eve)
+    // Is this a genuinely new release (incl. remasters/collections/Switch 2 editions launching
+    // in 2026+)? Default true. Set "newRelease": false for an older game you already own and are
+    // just now playing on stream (so the Releases appendix excludes it). Distinct from `backlog`.
+    newRelease: e.newRelease !== false,
     bonus: !!e.bonus,       // optional "if there's time" game — excluded from the committed schedule
     binge: !!e.binge,       // play start-to-finish without interleaving (default: interleave)
     hltbHours: Number(e.hltbHours) || 0,

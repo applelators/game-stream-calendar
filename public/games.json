@@ -92,7 +92,8 @@
       "notes": "First playthrough; originally released Mar 2010.",
       "icon": "https://cdn2.steamgriddb.com/thumb/bb05ae57de563e3e8a035537cd5fa9ee.jpg",
       "iconColor": "#eec94f",
-      "priority": 1
+      "priority": 1,
+      "newRelease": false
     },
     {
       "title": "Deltarune Chapters 3+4",
@@ -183,7 +184,8 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/ba3072daa7d54d117b22019c3974b0fe.jpg",
       "iconColor": "#eeb94f",
       "partGoal": "Badges 1–4: Stone (Roxanne), Knuckle (Brawly), Dynamo (Wattson), Heat (Flannery) — Rustboro to Lavaridge.",
-      "priority": 1
+      "priority": 1,
+      "newRelease": false
     },
     {
       "title": "Pokémon Omega Ruby — Pt. 2",
@@ -203,7 +205,8 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/ba3072daa7d54d117b22019c3974b0fe.jpg",
       "iconColor": "#eeb94f",
       "partGoal": "Badges 5–8 (Norman → Winona → Tate&Liza → Wallace), the Elite Four/Champion, + ||the Delta Episode||.",
-      "priority": 1
+      "priority": 1,
+      "newRelease": false
     },
     {
       "title": "Rhythm Heaven Groove",
@@ -270,7 +273,8 @@
       "notes": "First playthrough; originally released Jun 2018. Finish before the July 21 vacation.",
       "icon": "https://cdn.dekudeals.com/images/e8f7cfe5e1786410d6ead1e241deace6ee33b321/w500.jpg",
       "iconColor": "#5d63e0",
-      "binge": true
+      "binge": true,
+      "newRelease": false
     },
     {
       "title": "Splatoon 3",
@@ -289,7 +293,8 @@
       "notes": "First playthrough; originally released Sep 2022. Finish before the July 21 vacation.",
       "icon": "https://cdn.dekudeals.com/images/30946c8b3b47637626805e12f242bb71b4cd74d5/w500.jpg",
       "iconColor": "#eb51b8",
-      "binge": true
+      "binge": true,
+      "newRelease": false
     },
     {
       "title": "Splatoon 3: Side Order",
@@ -308,7 +313,8 @@
       "notes": "First playthrough; originally released Feb 2024. Finish before the July 21 vacation.",
       "icon": "https://cdn.dekudeals.com/images/c178eb9e18768f4b5e2b506c998811630b114b88/w500.jpg",
       "iconColor": "#96ee4f",
-      "binge": true
+      "binge": true,
+      "newRelease": false
     },
     {
       "title": "Halo: Campaign Evolved",
@@ -422,7 +428,8 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/ce89d7d8c6c4c0f6b4dab0a8606d2d68.jpg",
       "iconColor": "#b65fdd",
       "finishBefore": "2026-08",
-      "partGoal": "Chapters 1–13 ||(through the mid-game reversal)||."
+      "partGoal": "Chapters 1–13 ||(through the mid-game reversal)||.",
+      "newRelease": false
     },
     {
       "title": "Fire Emblem Engage — Pt. 2",
@@ -441,7 +448,8 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/ce89d7d8c6c4c0f6b4dab0a8606d2d68.jpg",
       "iconColor": "#b65fdd",
       "finishBefore": "fire-emblem-fortune-s-weave",
-      "partGoal": "Chapters 14–26 ||(the endgame to the finale)||."
+      "partGoal": "Chapters 14–26 ||(the endgame to the finale)||.",
+      "newRelease": false
     },
     {
       "title": "Pokémon Pokopia Expansion Pass: Bubbly Basin",
@@ -483,7 +491,8 @@
       "earlyAccess": "",
       "notes": "Live-service MMO; adjust hours to the content you'll stream.",
       "icon": "https://cdn.dekudeals.com/images/7dd2b8547dd0e83c4609e0032de5be924c7048ce/w500.jpg",
-      "iconColor": "#cf876e"
+      "iconColor": "#cf876e",
+      "newRelease": false
     },
     {
       "title": "Pokémon Mystery Dungeon: Rescue Team DX",
@@ -502,7 +511,8 @@
       "icon": "https://cdn.dekudeals.com/images/b25e938e729e663863dec4a3e20c928e4c244b8d/w500.jpg",
       "iconColor": "#cfa16e",
       "finishBefore": "2026-09",
-      "priority": 1
+      "priority": 1,
+      "newRelease": false
     },
     {
       "title": "Orbitals",
@@ -604,7 +614,8 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/91f618d4453134d636932694dcb160f9.jpg",
       "iconColor": "#dd8d60",
       "partGoal": "Badges 1–3: Coal (Roark), Forest (Gardenia), Cobble (Maylene) — Oreburgh to Veilstone.",
-      "priority": 1
+      "priority": 1,
+      "newRelease": false
     },
     {
       "title": "Pokémon Platinum — Pt. 2",
@@ -624,7 +635,8 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/91f618d4453134d636932694dcb160f9.jpg",
       "iconColor": "#dd8d60",
       "partGoal": "Badges 4–6: Fen (Crasher Wake), Relic (Fantina), Mine (Byron) — Pastoria to Canalave.",
-      "priority": 1
+      "priority": 1,
+      "newRelease": false
     },
     {
       "title": "Pokémon Platinum — Pt. 3",
@@ -644,7 +656,8 @@
       "icon": "https://cdn2.steamgriddb.com/thumb/91f618d4453134d636932694dcb160f9.jpg",
       "iconColor": "#dd8d60",
       "partGoal": "Badges 7–8 (Candice, Volkner), the Elite Four/Champion, + ||the Distortion World / Giratina||.",
-      "priority": 1
+      "priority": 1,
+      "newRelease": false
     },
     {
       "title": "Kingdom Hearts Final Mix (I) — Pt. 1",
@@ -1201,7 +1214,8 @@
       "notes": "First playthrough; originally released Feb 2024.",
       "icon": "https://cdn.dekudeals.com/images/e68fbad88926a5a858429bd346a967bedb250bd5/w500.jpg",
       "iconColor": "#4fa7ee",
-      "finishBefore": "2027-01"
+      "finishBefore": "2027-01",
+      "newRelease": false
     },
     {
       "title": "Stranger Than Heaven — Pt. 1",
@@ -1323,7 +1337,8 @@
       "finishBefore": "2027-03",
       "icon": "https://cdn2.steamgriddb.com/thumb/1dda5bc8b529f9dc6719c341656a8e4e.png",
       "iconColor": "#cb56e6",
-      "priority": 1
+      "priority": 1,
+      "newRelease": false
     },
     {
       "title": "Pokémon Black 2",
@@ -1342,7 +1357,8 @@
       "finishBefore": "2027-04",
       "icon": "https://cdn2.steamgriddb.com/thumb/1d178bbecb5fe472eabd360fd56134c6.jpg",
       "iconColor": "#53c4e9",
-      "priority": 1
+      "priority": 1,
+      "newRelease": false
     },
     {
       "title": "Pokémon Mystery Dungeon: Explorers of Sky",
@@ -1361,7 +1377,8 @@
       "finishBefore": "2027-05",
       "icon": "https://cdn2.steamgriddb.com/thumb/208ef41fb9dc674c9ff340fc0e4e7dab.jpg",
       "iconColor": "#5be1bf",
-      "priority": 1
+      "priority": 1,
+      "newRelease": false
     },
     {
       "title": "Pokémon Ultra Sun",
@@ -1380,7 +1397,8 @@
       "finishBefore": "2027-06",
       "icon": "https://cdn2.steamgriddb.com/thumb/0cc963329f477f669d4cdbef1217ed5d.png",
       "iconColor": "#ec9c50",
-      "priority": 1
+      "priority": 1,
+      "newRelease": false
     },
     {
       "title": "Final Fantasy VII Remake Intergrade — Pt. 1",
@@ -1401,7 +1419,8 @@
       "iconColor": "#a964d8",
       "finishBefore": "2026-07",
       "partGoal": "Chapters 1–6 ||(Reactor 1 bombing through the Mako Reactor 5 escape)||.",
-      "priority": -1
+      "priority": -1,
+      "newRelease": false
     },
     {
       "title": "Final Fantasy VII Remake Intergrade — Pt. 2",
@@ -1422,7 +1441,8 @@
       "iconColor": "#a964d8",
       "finishBefore": "2026-08",
       "partGoal": "Chapters 7–12 ||(Wall Market through the collapsed expressway / train graveyard)||.",
-      "priority": -1
+      "priority": -1,
+      "newRelease": false
     },
     {
       "title": "Final Fantasy VII Remake Intergrade — Pt. 3",
@@ -1443,7 +1463,8 @@
       "iconColor": "#a964d8",
       "finishBefore": "2026-09",
       "partGoal": "Chapters 13–18 ||(Sector 7 plate through Shinra HQ & the finale)|| + the INTERmission (Yuffie) episode.",
-      "priority": -1
+      "priority": -1,
+      "newRelease": false
     },
     {
       "title": "Crisis Core: Final Fantasy VII Reunion",
@@ -1465,7 +1486,8 @@
       "icon": "https://cdn.dekudeals.com/images/9ea134a0656dce08d503a1f4e50bca31ae340307/w500.jpg",
       "iconColor": "#63bad9",
       "finishBefore": "2026-10",
-      "priority": -1
+      "priority": -1,
+      "newRelease": false
     },
     {
       "title": "Final Fantasy VII Rebirth — Pt. 1",
@@ -1488,7 +1510,8 @@
       "iconColor": "#de825e",
       "finishBefore": "2026-11",
       "partGoal": "Chapters 1–3 ||(Nibelheim flashback, Kalm, the Grasslands)||.",
-      "priority": -1
+      "priority": -1,
+      "newRelease": false
     },
     {
       "title": "Final Fantasy VII Rebirth — Pt. 2",
@@ -1511,7 +1534,8 @@
       "iconColor": "#de825e",
       "finishBefore": "2026-12",
       "partGoal": "Chapters 4–6 ||(Junon → Costa del Sol → Corel region)||.",
-      "priority": -1
+      "priority": -1,
+      "newRelease": false
     },
     {
       "title": "Final Fantasy VII Rebirth — Pt. 3",
@@ -1534,7 +1558,8 @@
       "iconColor": "#de825e",
       "finishBefore": "2027-01",
       "partGoal": "Chapters 7–9 ||(Gongaga → Cosmo Canyon → Nibelheim)||.",
-      "priority": -1
+      "priority": -1,
+      "newRelease": false
     },
     {
       "title": "Final Fantasy VII Rebirth — Pt. 4",
@@ -1557,7 +1582,8 @@
       "iconColor": "#de825e",
       "finishBefore": "2027-02",
       "partGoal": "Chapters 10–12 ||(the Temple of the Ancients arc)||.",
-      "priority": -1
+      "priority": -1,
+      "newRelease": false
     },
     {
       "title": "Final Fantasy VII Rebirth — Pt. 5",
@@ -1580,7 +1606,8 @@
       "iconColor": "#de825e",
       "finishBefore": "2027-03",
       "partGoal": "Chapters 13–14 ||(the Forgotten Capital to the finale)||.",
-      "priority": -1
+      "priority": -1,
+      "newRelease": false
     },
     {
       "title": "Final Fantasy VII Revelation — Pt. 1",
@@ -1695,7 +1722,8 @@
       "iconColor": "#63c4d9",
       "finishBefore": "2027-07",
       "partGoal": "Badges 1–4: Grass (Milo), Water (Nessa), Fire (Kabu), Fighting (Bea) — Turffield to Stow-on-Side.",
-      "priority": 1
+      "priority": 1,
+      "newRelease": false
     },
     {
       "title": "Pokémon Sword — Pt. 2",
@@ -1715,7 +1743,8 @@
       "iconColor": "#63c4d9",
       "finishBefore": "new-pok-mon-snap",
       "partGoal": "Badges 5–8 (Opal, Gordie, Piers, Raihan) + the Champion Cup finale.",
-      "priority": 1
+      "priority": 1,
+      "newRelease": false
     },
     {
       "title": "New Pokémon Snap",
@@ -1733,7 +1762,8 @@
       "notes": "First playthrough; originally released Apr 2021.",
       "icon": "https://cdn.dekudeals.com/images/fb37e68b34f61d6beeca1552234c5c6d45a5c862/w500.jpg",
       "iconColor": "#8ddb61",
-      "finishBefore": "2027-08"
+      "finishBefore": "2027-08",
+      "newRelease": false
     },
     {
       "title": "Pokémon Violet",
@@ -1752,7 +1782,8 @@
       "icon": "https://cdn.dekudeals.com/images/4de144fe89642562a1364c89fb8f6ea9efc3b8cb/w500.jpg",
       "iconColor": "#db61db",
       "finishBefore": "2027-09",
-      "priority": 1
+      "priority": 1,
+      "newRelease": false
     },
     {
       "title": "Pokémon Legends: Z-A",
@@ -1776,7 +1807,8 @@
       "notes": "Set in Lumiose City; latest Legends entry.",
       "icon": "https://cdn.dekudeals.com/images/5d0a4118faf51d4be2c2ae54850ff8a79319d68d/w500.jpg",
       "iconColor": "#6e8ecf",
-      "priority": 1
+      "priority": 1,
+      "newRelease": false
     },
     {
       "title": "Pokémon Winds and Waves",
