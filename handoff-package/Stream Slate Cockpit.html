@@ -1,0 +1,1236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Stream Slate · Cockpit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  *{box-sizing:border-box;}
+  body{margin:0;background:#0a0d14;color:#e8edf5;font-family:'DM Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+  button{cursor:pointer;font-family:inherit;border:0;}
+  ::-webkit-scrollbar{width:9px;height:9px;}
+  ::-webkit-scrollbar-thumb{background:#2b3548;border-radius:99px;}
+  ::-webkit-scrollbar-track{background:#0a0d14;}
+  @keyframes ssfade{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+  @keyframes ssglow{0%,100%{opacity:.45;}50%{opacity:.72;}}
+  .anim{animation:ssfade .4s ease both;}
+
+  .app-bg{min-height:100vh;background:radial-gradient(1200px 620px at 72% -12%, #1a1530aa, transparent 60%), #0a0d14;}
+  .wrap{max-width:1480px;margin:0 auto;padding:clamp(14px,2.2vw,26px) clamp(12px,2.2vw,30px) 90px;}
+
+  .topbar{display:flex;align-items:center;gap:14px;margin-bottom:clamp(16px,2.6vw,26px);}
+  .brand{display:flex;align-items:center;gap:11px;}
+  .logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#a970ff,#3b6fe0);display:grid;place-items:center;font-family:'Space Grotesk';font-weight:700;font-size:1.15rem;color:#fff;box-shadow:0 6px 18px #a970ff44;}
+  .brand-name{font-family:'Space Grotesk';font-weight:700;font-size:1.18rem;letter-spacing:-.01em;line-height:1;}
+  .brand-sub{font-size:.7rem;color:#5c6678;font-family:'JetBrains Mono';margin-top:3px;}
+  .spacer{flex:1;}
+  .nav{display:inline-flex;background:#10141d;border:1px solid #283245;border-radius:99px;padding:3px;}
+  .nav button{padding:7px 17px;border-radius:99px;font-size:.82rem;font-weight:700;background:transparent;color:#8b97ab;transition:.12s;}
+  .nav button.on{background:#a970ff;color:#160a2b;}
+  .toggle{border:1px solid #283245;background:#10141d;color:#e8edf5;padding:7px 14px;border-radius:99px;font-size:.78rem;font-weight:600;display:inline-flex;align-items:center;gap:8px;transition:.12s;}
+  .toggle.bold{border-color:#a970ff;background:#1b1430;}
+  .toggle .dot{width:8px;height:8px;border-radius:99px;background:#5c6678;}
+  .toggle.bold .dot{background:#a970ff;box-shadow:0 0 8px #a970ff;}
+
+  .healthbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
+  .health-pill{display:inline-flex;align-items:center;gap:8px;background:#13201a;border:1px solid #1f3a2c;border-radius:99px;padding:6px 13px;}
+  .health-pill .pulse{width:8px;height:8px;border-radius:99px;background:#34d399;box-shadow:0 0 8px #34d399;}
+  .health-pill b{font-size:.8rem;font-weight:700;color:#34d399;}
+  .health-detail{font-size:.8rem;color:#8b97ab;}
+  .pace{font-size:.72rem;color:#5c6678;font-family:'JetBrains Mono';}
+
+  .hero-grid{display:grid;gap:16px;grid-template-columns:1.42fr 1fr;align-items:stretch;}
+  .panel{position:relative;border-radius:18px;border:1px solid #283245;background:linear-gradient(180deg,#141a26,#0f131c);padding:clamp(16px,2vw,22px);overflow:hidden;}
+  .eyebrow{display:flex;align-items:center;gap:8px;font-size:.7rem;font-weight:700;letter-spacing:.14em;font-family:'JetBrains Mono';}
+  .live-dot{width:7px;height:7px;border-radius:99px;background:#f87171;box-shadow:0 0 8px #f87171;}
+
+  .hero-blur{position:absolute;inset:-50px;background-size:cover;background-position:center;filter:blur(46px) saturate(1.5);opacity:.4;}
+  .hero-glowlayer{position:absolute;inset:0;animation:ssglow 4s ease-in-out infinite;}
+  .hero-veil{position:absolute;inset:0;background:linear-gradient(180deg,#0e131caa,#0e131ce6);}
+
+  .np-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:13px;position:relative;}
+  .np-card{background:#0d1320;border:1px solid #283245;border-radius:14px;padding:13px;display:flex;flex-direction:column;gap:11px;}
+  .np-top{display:flex;gap:12px;align-items:flex-start;}
+  .np-art{position:relative;width:62px;height:62px;border-radius:10px;overflow:hidden;flex:none;background:#0e1320 center/cover;box-shadow:0 3px 12px #0008;}
+  .np-title{font-family:'Space Grotesk';font-weight:600;font-size:.92rem;line-height:1.18;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .np-status{display:inline-flex;align-items:center;gap:5px;margin-top:6px;border-radius:99px;padding:2px 9px;font-size:.66rem;font-weight:700;}
+  .np-prog{display:flex;align-items:center;gap:12px;}
+  .ring{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;flex:none;}
+  .ring-inner{width:34px;height:34px;border-radius:50%;background:#0d1320;display:grid;place-items:center;font-family:'JetBrains Mono';font-size:.62rem;font-weight:700;}
+  .np-done{font-size:.74rem;color:#e8edf5;font-weight:600;}
+  .np-left{font-size:.66rem;color:#5c6678;font-family:'JetBrains Mono';margin-top:2px;}
+  .goal{font-size:.72rem;color:#8b97ab;line-height:1.4;border-top:1px solid #1b2433;padding-top:9px;cursor:pointer;}
+  .goal .lbl{color:#5c6678;font-weight:700;font-family:'JetBrains Mono';font-size:.62rem;letter-spacing:.04em;}
+  .spoiler{background:#444b59;color:#444b59;border-radius:4px;padding:0 3px;filter:blur(4px);transition:.15s;}
+  .spoiler.show{background:#ffffff10;color:#cdd3df;filter:none;}
+
+  .cd-head{display:flex;align-items:center;gap:9px;}
+  .cd-head b{font-size:.7rem;font-weight:700;letter-spacing:.14em;color:#9fb4d8;font-family:'JetBrains Mono';}
+  .cd-game{display:flex;gap:13px;align-items:center;margin-top:14px;position:relative;}
+  .cd-gameart{position:relative;width:58px;height:58px;border-radius:11px;overflow:hidden;flex:none;background:#0e1320 center/cover;box-shadow:0 4px 16px #0009;}
+  .cd-gametitle{font-family:'Space Grotesk';font-weight:700;font-size:1.02rem;line-height:1.15;}
+  .cd-gamedate{font-size:.74rem;color:#9fb4d8;margin-top:4px;}
+  .cd-grid{display:flex;gap:8px;margin-top:18px;position:relative;}
+  .cd-cell{flex:1;text-align:center;background:#0c111b;border:1px solid #243049;border-radius:12px;padding:12px 4px;}
+  .cd-num{font-family:'Space Grotesk';font-weight:700;font-size:clamp(1.5rem,3.2vw,2.1rem);line-height:1;color:#eaf1ff;}
+  .cd-lbl{font-size:.6rem;color:#5c6678;font-family:'JetBrains Mono';letter-spacing:.1em;margin-top:6px;}
+  .upnext-h{font-size:.66rem;font-weight:700;letter-spacing:.12em;color:#5c6678;font-family:'JetBrains Mono';margin:20px 0 4px;}
+  .un-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid #1b2433;}
+  .un-art{width:32px;height:32px;border-radius:7px;flex:none;background:#0e1320 center/cover;box-shadow:0 1px 5px #0007;}
+  .un-title{font-size:.78rem;font-weight:600;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .un-meta{font-size:.66rem;color:#5c6678;font-family:'JetBrains Mono';margin-top:2px;}
+  .un-dot{width:8px;height:8px;border-radius:99px;flex:none;}
+
+  .month{margin-top:clamp(18px,2.6vw,26px);border:1px solid #283245;border-radius:18px;background:#10141d;overflow:hidden;}
+  .m-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid #1b2433;background:#131927;flex-wrap:wrap;}
+  .m-head h2{font-family:'Space Grotesk';font-weight:700;font-size:1.15rem;margin:0;}
+  .m-legend{display:flex;align-items:center;gap:14px;font-size:.7rem;color:#8b97ab;font-family:'JetBrains Mono';flex-wrap:wrap;}
+  .m-legend span{display:inline-flex;align-items:center;gap:6px;}
+  .m-week{display:grid;grid-template-columns:repeat(7,1fr);padding:10px 10px 0;}
+  .m-week span{padding-left:4px;font-size:.62rem;letter-spacing:.09em;color:#5c6678;font-weight:700;}
+  .m-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;padding:8px 10px 14px;}
+  .m-cell{position:relative;aspect-ratio:1/1;border-radius:10px;overflow:hidden;background:#0d121c;border:1px solid #1b2433;}
+  .m-cell.pad{background:#0a0d14;border-color:#0a0d14;}
+  .m-cell.today{background:#19142b;border-color:#a970ff;}
+  .m-art{position:absolute;inset:0;background:#0e1320 center/cover;}
+  .m-grad{position:absolute;inset:0;background:linear-gradient(180deg,#0a0d1420 28%,#0a0d14e8);}
+  .m-day{position:absolute;top:5px;left:7px;font-family:'JetBrains Mono';font-size:.64rem;font-weight:700;color:#fff;text-shadow:0 1px 3px #000;}
+  .m-day.plain{color:#8b97ab;text-shadow:none;}
+  .m-day.todaynum{color:#cdb6ff;}
+  .m-day.streamednum{color:#34d399;}
+  .m-badge{position:absolute;top:5px;right:6px;font-family:'JetBrains Mono';font-size:.56rem;font-weight:700;color:#0c0c12;border-radius:4px;padding:0 4px;}
+  .m-foot{position:absolute;left:6px;right:6px;bottom:5px;}
+  .m-title{font-size:.6rem;font-weight:700;color:#fff;line-height:1.12;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-shadow:0 1px 3px #000;}
+  .m-hrs{font-size:.55rem;color:#c9d2e0;font-family:'JetBrains Mono';margin-top:1px;text-shadow:0 1px 2px #000;}
+  .m-moon{position:absolute;inset:0;display:grid;place-items:center;font-size:1.1rem;opacity:.85;}
+  .m-evelbl{position:absolute;left:6px;right:6px;bottom:5px;font-size:.5rem;color:#9fb4d8;font-family:'JetBrains Mono';text-align:center;}
+  .m-check{position:absolute;inset:0;display:grid;place-items:center;color:#34d399;opacity:.4;font-size:1rem;font-weight:800;}
+
+  .w-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:6px;}
+  .w-head h1{font-family:'Space Grotesk';font-weight:700;font-size:clamp(1.4rem,3vw,2rem);letter-spacing:-.01em;margin:0;}
+  .w-head span{font-size:.8rem;color:#8b97ab;}
+  .w-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:16px 0 22px;}
+  .w-stat{background:linear-gradient(180deg,#141a26,#0f131c);border:1px solid #283245;border-radius:16px;padding:clamp(14px,1.6vw,20px);}
+  .w-stat .big{font-family:'Space Grotesk';font-weight:700;font-size:clamp(1.7rem,3.4vw,2.5rem);line-height:1;}
+  .w-stat .lbl{font-size:.78rem;font-weight:600;color:#e8edf5;margin-top:8px;}
+  .w-stat .sub{font-size:.68rem;color:#5c6678;margin-top:3px;line-height:1.3;}
+  .w-panel{background:#10141d;border:1px solid #283245;border-radius:16px;padding:clamp(16px,2vw,22px);}
+  .w-panel h3{font-family:'Space Grotesk';font-weight:700;font-size:1.05rem;margin:0 0 4px;}
+  .w-panel .desc{font-size:.72rem;color:#5c6678;margin-bottom:16px;}
+  .w-row{display:flex;align-items:center;gap:12px;margin-bottom:13px;}
+  .w-rowart{width:38px;height:38px;border-radius:8px;flex:none;background:#0e1320 center/cover;box-shadow:0 2px 8px #0007;}
+  .w-rowtitle{font-size:.82rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .w-bar{height:7px;border-radius:99px;background:#0c111b;margin-top:6px;overflow:hidden;}
+  .w-bar > div{height:100%;border-radius:99px;}
+  .w-hours{font-family:'JetBrains Mono';font-size:.82rem;font-weight:700;flex:none;}
+  .w-mara{display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid #1b2433;}
+  .w-maraart{width:40px;height:40px;border-radius:8px;flex:none;background:#0e1320 center/cover;box-shadow:0 2px 8px #0007;}
+  .w-maracount{font-family:'Space Grotesk';font-weight:700;font-size:1.25rem;line-height:1;}
+  .w-platrow{display:flex;align-items:center;gap:12px;margin-bottom:11px;}
+  .w-platname{width:84px;flex:none;font-size:.76rem;color:#c9d2e0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .w-platbar{flex:1;height:9px;border-radius:99px;background:#0c111b;overflow:hidden;}
+  .w-platcount{width:26px;text-align:right;font-family:'JetBrains Mono';font-size:.74rem;font-weight:700;color:#8b97ab;flex:none;}
+  .w-basisrow{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+  .w-note{margin-top:16px;padding-top:14px;border-top:1px solid #1b2433;font-size:.74rem;color:#8b97ab;line-height:1.5;}
+
+  .month.boldcal .m-head{background:linear-gradient(90deg,#1b1430,#131927);}
+
+  /* expanded calendar */
+  .cal{border:1px solid #283245;border-radius:18px;background:#10141d;overflow:hidden;}
+  .cal.boldcal .cal-bar{background:linear-gradient(90deg,#1b1430,#131927);}
+  .cal-bar{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #1b2433;background:#131927;flex-wrap:wrap;}
+  .cal-nav{display:inline-flex;gap:5px;}
+  .cal-nav button{width:34px;height:34px;border-radius:9px;border:1px solid #283245;background:#10141d;color:#9fb4d8;font-size:1.05rem;line-height:1;transition:.12s;}
+  .cal-nav button:hover{background:#1a2130;color:#fff;border-color:#34415a;}
+  .cal-title{font-family:'Space Grotesk';font-weight:700;font-size:1.25rem;letter-spacing:-.01em;min-width:170px;}
+  .cal-todaybtn{border:1px solid #283245;background:#10141d;color:#e8edf5;border-radius:9px;padding:7px 14px;font-size:.78rem;font-weight:600;transition:.12s;}
+  .cal-todaybtn:hover{background:#1a2130;border-color:#34415a;}
+  .cal-cnt{margin-left:auto;font-size:.72rem;color:#5c6678;font-family:'JetBrains Mono';}
+  .cal-planned{display:flex;flex-wrap:wrap;gap:7px;align-items:center;padding:9px 16px;border-bottom:1px solid #1b2433;background:#0f1420;}
+  .cal-planned-h{font-size:.62rem;letter-spacing:.05em;text-transform:uppercase;color:#5c6678;font-family:'JetBrains Mono';margin-right:2px;}
+  .cal-pchip{display:inline-flex;align-items:center;gap:6px;border:1px dashed #2c3a52;border-radius:99px;padding:3px 11px;font-size:.74rem;font-weight:600;color:#c9d2e0;}
+  .cal-pdot{width:8px;height:8px;border-radius:99px;flex:none;}
+  .cal-week{display:grid;grid-template-columns:repeat(7,1fr);background:#0f1420;border-bottom:1px solid #1b2433;}
+  .cal-week span{padding:8px 12px;font-size:.64rem;letter-spacing:.09em;color:#5c6678;font-weight:700;}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:120px;}
+  .cal-cell{position:relative;border-right:1px solid #161d2a;border-bottom:1px solid #161d2a;padding:6px 7px;display:flex;flex-direction:column;gap:4px;overflow:hidden;}
+  .cal-cell:nth-child(7n){border-right:0;}
+  .cal-cell.pad{background:#0b0f18;}
+  .cal-cell.today{background:#140f24;}
+  .cal-dnum{align-self:flex-start;font-family:'JetBrains Mono';font-size:.76rem;font-weight:700;color:#c9d2e0;padding:1px 2px;}
+  .cal-cell.today .cal-dnum{background:#a970ff;color:#160a2b;border-radius:99px;min-width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;padding:0 6px;}
+  .cal-moon{position:absolute;top:6px;right:8px;font-size:.85rem;opacity:.82;}
+  .cal-rel{display:flex;align-items:center;gap:5px;border-radius:6px;padding:2px 6px;font-size:.64rem;font-weight:700;color:#0c0c12;}
+  .cal-relart{width:15px;height:15px;border-radius:3px;background:#0e1320 center/cover;flex:none;box-shadow:0 1px 2px #0007;}
+  .cal-reltitle{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .cal-play{margin-top:auto;position:relative;border-radius:8px;overflow:hidden;min-height:34px;display:flex;align-items:center;gap:7px;padding:5px 7px;}
+  .cal-playart{position:absolute;inset:0;background:#0e1320 center/cover;}
+  .cal-playgrad{position:absolute;inset:0;background:linear-gradient(90deg,#0a0d14d8,#0a0d1488);}
+  .cal-playtitle{position:relative;font-size:.62rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;text-shadow:0 1px 2px #000;}
+  .cal-playno{position:relative;font-family:'JetBrains Mono';font-size:.56rem;font-weight:700;color:#0c0c12;border-radius:4px;padding:0 4px;flex:none;}
+
+  /* share cards */
+  .share-stage{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start;margin-top:18px;}
+  .share-col{display:flex;flex-direction:column;gap:10px;}
+  .share-cap{font-size:.72rem;color:#5c6678;font-family:'JetBrains Mono';}
+  .card-v{width:340px;border-radius:20px;overflow:hidden;background:linear-gradient(180deg,#141a26,#0b0f18);border:1px solid #283245;box-shadow:0 24px 60px #0009;}
+  .cardv-top{position:relative;display:flex;align-items:center;justify-content:space-between;padding:16px 18px;background:linear-gradient(120deg,#a970ff,#3b6fe0);}
+  .cardv-brandname{font-family:'Space Grotesk';font-weight:700;font-size:.95rem;color:#fff;line-height:1;}
+  .cardv-brandsub{font-size:.66rem;color:#ffffffcc;font-family:'JetBrains Mono';margin-top:3px;}
+  .cardv-tag{font-size:.6rem;font-weight:700;letter-spacing:.12em;color:#ffffffe0;font-family:'JetBrains Mono';}
+  .cardv-next{display:flex;gap:13px;align-items:center;padding:18px;}
+  .cardv-nextart{width:66px;height:66px;border-radius:12px;background:#0e1320 center/cover;flex:none;box-shadow:0 6px 18px #000a;}
+  .cardv-eyebrow{font-size:.6rem;font-weight:700;letter-spacing:.1em;color:#9fb4d8;font-family:'JetBrains Mono';}
+  .cardv-title{font-family:'Space Grotesk';font-weight:700;font-size:1.1rem;line-height:1.12;margin-top:5px;}
+  .cardv-date{font-size:.72rem;color:#cdb6ff;font-family:'JetBrains Mono';margin-top:5px;}
+  .cardv-list{padding:4px 18px 6px;}
+  .cardv-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid #1b2433;}
+  .cardv-chip{font-family:'JetBrains Mono';font-size:.6rem;font-weight:700;color:#9fb4d8;background:#0c111b;border:1px solid #243049;border-radius:5px;padding:3px 5px;width:54px;text-align:center;flex:none;}
+  .cardv-rowart{width:30px;height:30px;border-radius:6px;background:#0e1320 center/cover;flex:none;box-shadow:0 1px 4px #0007;}
+  .cardv-rowtitle{flex:1;min-width:0;font-size:.78rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .cardv-rowstr{font-family:'JetBrains Mono';font-size:.62rem;color:#5c6678;flex:none;}
+  .cardv-foot{padding:13px 18px;background:#0b0f18;border-top:1px solid #1b2433;font-size:.64rem;color:#5c6678;font-family:'JetBrains Mono';text-align:center;}
+  .card-w{width:680px;max-width:100%;display:flex;border-radius:20px;overflow:hidden;background:linear-gradient(180deg,#141a26,#0b0f18);border:1px solid #283245;box-shadow:0 24px 60px #0009;}
+  .cardw-left{position:relative;width:300px;flex:none;min-height:300px;}
+  .cardw-leftart{position:absolute;inset:0;background:#0e1320 center/cover;}
+  .cardw-leftveil{position:absolute;inset:0;background:linear-gradient(180deg,#0a0d1420,#0a0d14f2);}
+  .cardw-leftbody{position:absolute;left:0;right:0;bottom:0;padding:20px;}
+  .cardw-eyebrow{font-size:.62rem;font-weight:700;letter-spacing:.12em;color:#cdb6ff;font-family:'JetBrains Mono';}
+  .cardw-title{font-family:'Space Grotesk';font-weight:700;font-size:1.5rem;line-height:1.08;margin-top:7px;text-shadow:0 2px 8px #000;}
+  .cardw-date{font-size:.78rem;color:#e8edf5;font-family:'JetBrains Mono';margin-top:8px;}
+  .cardw-right{flex:1;min-width:0;display:flex;flex-direction:column;padding:18px 20px;}
+  .cardw-brand{display:flex;align-items:center;gap:9px;margin-bottom:10px;}
+  .cardw-foot{margin-top:auto;font-size:.64rem;color:#5c6678;font-family:'JetBrains Mono';padding-top:12px;border-top:1px solid #1b2433;}
+
+  /* tonight picker */
+  .tonight{border:1px solid #283245;background:linear-gradient(180deg,#141a26,#0f131c);border-radius:18px;padding:clamp(15px,2vw,20px);margin-bottom:16px;}
+  .tonight-head{display:flex;align-items:baseline;gap:10px;margin-bottom:13px;flex-wrap:wrap;}
+  .tonight-h{font-family:'Space Grotesk';font-weight:700;font-size:1.08rem;}
+  .tonight-date{font-size:.72rem;color:#8b97ab;font-family:'JetBrains Mono';}
+  .tonight-note{margin-left:auto;font-size:.66rem;color:#5c6678;font-family:'JetBrains Mono';letter-spacing:.02em;}
+  .tonight-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+  .opt{position:relative;text-align:left;background:#0d1320;border:1px solid #283245;border-radius:13px;padding:12px;display:flex;flex-direction:column;gap:10px;transition:.13s;color:#e8edf5;}
+  .opt:hover{border-color:#34415a;transform:translateY(-2px);}
+  .opt.rec{border-color:#34d39955;background:#101b16;}
+  .opt.sel{border-color:#a970ff;background:#16122a;box-shadow:0 0 0 1px #a970ff,0 10px 24px #a970ff22;}
+  .opt-top{display:flex;align-items:center;gap:10px;}
+  .opt-art{width:42px;height:42px;border-radius:9px;background:#0e1320 center/cover;flex:none;box-shadow:0 2px 8px #0008;}
+  .opt-art.rest{display:grid;place-items:center;font-size:1.25rem;color:#9fb4d8;background:#161d2a;box-shadow:none;}
+  .opt-name{font-size:.82rem;font-weight:700;line-height:1.15;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .opt-tag{align-self:flex-start;font-size:.62rem;font-weight:700;font-family:'JetBrains Mono';border-radius:99px;padding:2px 9px;}
+  .opt-check{position:absolute;top:10px;right:10px;width:18px;height:18px;border-radius:99px;color:#160a2b;font-size:.66rem;font-weight:800;display:grid;place-items:center;}
+  .tonight-foot{display:flex;align-items:center;gap:11px;margin-top:14px;padding-top:13px;border-top:1px solid #1b2433;}
+  .tonight-foot-pill{font-size:.6rem;font-weight:800;font-family:'JetBrains Mono';letter-spacing:.08em;border-radius:6px;padding:3px 8px;flex:none;}
+  .tonight-foot-txt{font-size:.8rem;color:#8b97ab;line-height:1.4;}
+  .tonight-foot-txt b{color:#e8edf5;}
+  @media (max-width:700px){ .tonight-grid{grid-template-columns:repeat(2,1fr);} }
+
+  /* detail modal */
+  .scrim{position:fixed;inset:0;background:#04060bcc;backdrop-filter:blur(3px);z-index:90;display:flex;align-items:flex-start;justify-content:center;padding:48px 16px;overflow-y:auto;animation:ssfade .18s ease both;}
+  .modal{width:100%;max-width:440px;background:#121722;border:1px solid #283245;border-radius:18px;overflow:hidden;box-shadow:0 30px 80px #000c;}
+  .modal-hero{position:relative;height:118px;overflow:hidden;}
+  .modal-heroart{position:absolute;inset:0;background:#0e1320 center/cover;filter:saturate(1.1);}
+  .modal-herofade{position:absolute;inset:0;background:linear-gradient(180deg,#12172230,#121722);}
+  .modal-x{position:absolute;top:12px;right:12px;z-index:3;width:30px;height:30px;border-radius:8px;background:#0a0d14aa;color:#e8edf5;font-size:1.2rem;line-height:1;display:grid;place-items:center;}
+  .modal-x:hover{background:#0a0d14;}
+  .modal-body{padding:0 20px 20px;margin-top:-32px;position:relative;}
+  .modal-cover{width:70px;height:70px;border-radius:12px;background:#0e1320 center/cover;box-shadow:0 8px 24px #000a;border:2px solid #121722;}
+  .modal-kind{display:inline-flex;align-items:center;gap:6px;font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#8b97ab;margin-top:10px;}
+  .modal-title{font-family:'Space Grotesk';font-weight:700;font-size:1.3rem;line-height:1.12;margin-top:4px;}
+  .modal-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;}
+  .modal-stat{background:#0d1320;border:1px solid #1b2433;border-radius:11px;padding:11px 13px;}
+  .modal-stat .k{font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:#5c6678;font-weight:700;}
+  .modal-stat .v{font-family:'Space Grotesk';font-size:1.25rem;font-weight:700;margin-top:3px;}
+  .modal-stat .v small{font-size:.66rem;color:#8b97ab;font-weight:500;}
+  .modal-line{display:flex;gap:8px;font-size:.82rem;margin-top:11px;align-items:baseline;}
+  .modal-line .k{color:#5c6678;font-weight:600;min-width:74px;flex:none;}
+  .modal-tags{display:flex;flex-wrap:wrap;gap:6px;}
+  .modal-tag{background:#222c3d;border-radius:6px;padding:2px 9px;font-size:.74rem;color:#c9d2e0;}
+  .modal-note{background:#0d1320;border:1px solid #1b2433;border-left:3px solid #f5b14c;border-radius:9px;padding:10px 12px;font-size:.8rem;color:#8b97ab;line-height:1.45;margin-top:14px;}
+  .savebtn{display:inline-flex;align-items:center;gap:6px;font-size:.7rem;font-weight:700;color:#160a2b;background:#a970ff;border-radius:7px;padding:5px 11px;}
+  .savebtn:hover{filter:brightness(1.08);}
+  .savebtn.ghost{background:#10141d;color:#cdb6ff;border:1px solid #2c3a52;}
+
+  /* week strip */
+  .week{margin-top:clamp(18px,2.6vw,26px);}
+  .week-head{display:flex;align-items:baseline;gap:10px;margin-bottom:11px;}
+  .week-h{font-family:'Space Grotesk';font-weight:700;font-size:1.05rem;}
+  .week-sub{font-size:.72rem;color:#5c6678;font-family:'JetBrains Mono';}
+  .week-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;}
+  .wday{flex:1 0 124px;min-width:124px;background:#10141d;border:1px solid #283245;border-radius:14px;padding:11px;display:flex;flex-direction:column;gap:9px;min-height:150px;}
+  .wday.today{border-color:#a970ff;background:#160f26;box-shadow:0 0 0 1px #a970ff55;}
+  .wday-top{display:flex;align-items:baseline;justify-content:space-between;}
+  .wday-dow{font-size:.62rem;font-weight:700;font-family:'JetBrains Mono';letter-spacing:.08em;color:#5c6678;}
+  .wday.today .wday-dow{color:#cdb6ff;}
+  .wday-num{font-family:'Space Grotesk';font-weight:700;font-size:1.05rem;color:#c9d2e0;}
+  .wday.today .wday-num{color:#fff;}
+  .wstream{position:relative;flex:1;border-radius:10px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;padding:8px;cursor:pointer;min-height:84px;}
+  .wstream-art{position:absolute;inset:0;background:#0e1320 center/cover;}
+  .wstream-grad{position:absolute;inset:0;background:linear-gradient(180deg,#0a0d1430 30%,#0a0d14ee);}
+  .wstream-no{position:absolute;top:6px;right:6px;font-family:'JetBrains Mono';font-size:.56rem;font-weight:700;color:#0c0c12;border-radius:4px;padding:0 4px;}
+  .wstream-title{position:relative;font-size:.68rem;font-weight:700;color:#fff;line-height:1.15;text-shadow:0 1px 3px #000;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .wstream-hrs{position:relative;font-size:.56rem;color:#c9d2e0;font-family:'JetBrains Mono';margin-top:2px;text-shadow:0 1px 2px #000;}
+  .wempty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:1px dashed #243049;border-radius:10px;color:#5c6678;min-height:84px;}
+  .wempty .big{font-size:1.4rem;opacity:.8;}
+  .wempty small{font-size:.6rem;font-family:'JetBrains Mono';}
+  .wdone{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border-radius:10px;background:#0e1622;min-height:84px;}
+  .wdone-art{width:34px;height:34px;border-radius:6px;background:#0e1320 center/cover;box-shadow:0 2px 6px #0008;}
+  .wdone small{font-size:.58rem;font-family:'JetBrains Mono';color:#34d399;font-weight:700;}
+
+  /* browse */
+  .browse-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:16px 0 14px;}
+  .browse-search{flex:1;min-width:200px;display:flex;align-items:center;gap:9px;background:#10141d;border:1px solid #283245;border-radius:11px;padding:10px 13px;}
+  .browse-search input{flex:1;background:transparent;border:0;color:#e8edf5;font-size:.86rem;outline:none;}
+  .browse-search input::placeholder{color:#5c6678;}
+  .browse-search .ic{color:#5c6678;font-size:1rem;}
+  .browse-filters{display:inline-flex;background:#10141d;border:1px solid #283245;border-radius:99px;padding:3px;flex-wrap:wrap;}
+  .browse-filters button{padding:6px 13px;border-radius:99px;font-size:.76rem;font-weight:700;background:transparent;color:#8b97ab;transition:.12s;}
+  .browse-filters button.on{background:#a970ff;color:#160a2b;}
+  .browse-list{border:1px solid #283245;border-radius:16px;background:#10141d;overflow:hidden;}
+  .brow{display:grid;grid-template-columns:42px 1fr 120px 96px 70px;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid #161d2a;cursor:pointer;transition:.1s;}
+  .brow:last-child{border-bottom:0;}
+  .brow:hover{background:#161d2a;}
+  .brow-art{width:42px;height:42px;border-radius:8px;background:#0e1320 center/cover;box-shadow:0 2px 6px #0008;}
+  .brow-title{min-width:0;}
+  .brow-name{font-size:.86rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .brow-meta{font-size:.66rem;color:#5c6678;font-family:'JetBrains Mono';margin-top:2px;}
+  .brow-plat{font-size:.72rem;color:#8b97ab;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .brow-date{font-family:'JetBrains Mono';font-size:.74rem;color:#9fb4d8;text-align:right;}
+  .brow-hltb{font-family:'JetBrains Mono';font-size:.78rem;font-weight:700;color:#5ed3de;text-align:right;}
+  .brow-empty{padding:40px;text-align:center;color:#5c6678;font-size:.86rem;}
+  @media (max-width:640px){ .brow{grid-template-columns:38px 1fr 64px;} .brow-plat,.brow-date{display:none;} }
+
+  /* instrument panel */
+  .instr{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+  .instr-tile{background:#10141d;border:1px solid #283245;border-radius:14px;padding:13px 15px;min-width:0;}
+  .it-k{font-size:.6rem;font-weight:700;letter-spacing:.1em;color:#5c6678;font-family:'JetBrains Mono';}
+  .it-v{font-family:'Space Grotesk';font-weight:700;font-size:1.5rem;line-height:1;margin-top:7px;}
+  .it-v small{font-size:.7rem;color:#8b97ab;font-weight:500;font-family:'DM Sans';}
+  .it-s{font-size:.66rem;color:#5c6678;margin-top:5px;line-height:1.3;}
+
+  /* deadlines & catch-up */
+  .dl-panel{margin-top:clamp(18px,2.6vw,26px);border:1px solid #283245;background:#10141d;border-radius:18px;padding:clamp(15px,2vw,20px);}
+  .dl-head{display:flex;align-items:baseline;gap:10px;margin-bottom:8px;flex-wrap:wrap;}
+  .dl-h{font-family:'Space Grotesk';font-weight:700;font-size:1.05rem;}
+  .dl-sub{font-size:.7rem;color:#5c6678;font-family:'JetBrains Mono';}
+  .dl-row{display:grid;grid-template-columns:1fr 170px 80px 24px;align-items:center;gap:14px;padding:11px 0;border-top:1px solid #1b2433;cursor:pointer;transition:.1s;}
+  .dl-row:hover{background:#131927;}
+  .dl-name{font-size:.86rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .dl-when{font-size:.66rem;color:#5c6678;font-family:'JetBrains Mono';margin-top:2px;}
+  .dl-bar{position:relative;height:8px;border-radius:99px;background:#0c111b;overflow:visible;}
+  .dl-bar > i{display:block;height:100%;border-radius:99px;}
+  .dl-bar .cap{position:absolute;left:60%;top:-3px;bottom:-3px;width:2px;background:#8b97ab;border-radius:2px;}
+  .dl-need{font-family:'JetBrains Mono';font-size:.95rem;font-weight:700;text-align:right;}
+  .dl-need small{font-size:.58rem;color:#8b97ab;font-weight:500;}
+  .dl-flag{font-size:.95rem;text-align:center;}
+  @media(max-width:640px){ .instr{grid-template-columns:repeat(2,1fr);} .dl-row{grid-template-columns:1fr 64px 20px;} .dl-gauge{display:none;} }
+
+  /* theme accent overrides */
+  .logo{background:linear-gradient(135deg,var(--acc,#a970ff),#3b6fe0)!important;}
+  .nav button.on,.browse-filters button.on{background:var(--acc,#a970ff)!important;color:var(--acc-ink,#160a2b)!important;}
+  .toggle.bold{border-color:var(--acc,#a970ff)!important;background:#1b1430!important;}
+  .toggle.bold .dot{background:var(--acc,#a970ff)!important;box-shadow:0 0 8px var(--acc,#a970ff)!important;}
+  .opt.sel{border-color:var(--acc,#a970ff)!important;box-shadow:0 0 0 1px var(--acc,#a970ff)!important;}
+  .wday.today{border-color:var(--acc,#a970ff)!important;}
+  .m-cell.today{border-color:var(--acc,#a970ff)!important;}
+  .cal-cell.today .cal-dnum{background:var(--acc,#a970ff)!important;color:var(--acc-ink,#160a2b)!important;}
+  .savebtn:not(.ghost){background:var(--acc,#a970ff)!important;color:var(--acc-ink,#160a2b)!important;}
+  .theme-sw{display:inline-flex;gap:6px;align-items:center;}
+  .theme-sw .sw{width:18px;height:18px;border-radius:99px;border:2px solid #2c3a52;padding:0;cursor:pointer;}
+  .theme-sw .sw.on{border-color:#fff;}
+
+  /* live on-air */
+  .toggle.livebtn{border-color:#f87171;background:#2a1416;color:#ffb4b4;}
+  .toggle.livebtn .dot{background:#f87171;box-shadow:0 0 8px #f87171;}
+  .live-hero{position:relative;border-radius:18px;overflow:hidden;border:1px solid #f8717155;margin-bottom:16px;padding:clamp(16px,2.4vw,24px);display:flex;align-items:center;gap:18px;background:#160d12;}
+  .live-bg{position:absolute;inset:-30px;background:#0e1320 center/cover;filter:blur(34px) saturate(1.3);opacity:.4;}
+  .live-veil{position:absolute;inset:0;background:linear-gradient(90deg,#120a0ee8,#120a0ea0);}
+  .live-body{position:relative;flex:1;min-width:0;}
+  .live-tag{display:inline-flex;align-items:center;gap:7px;font-size:.68rem;font-weight:800;letter-spacing:.12em;font-family:'JetBrains Mono';color:#ff9d9d;}
+  .live-dot2{width:9px;height:9px;border-radius:99px;background:#f87171;box-shadow:0 0 10px #f87171;animation:ssglow 1.4s ease-in-out infinite;}
+  .live-title{font-family:'Space Grotesk';font-weight:700;font-size:clamp(1.2rem,2.4vw,1.7rem);line-height:1.1;margin-top:8px;}
+  .live-meta{font-size:.8rem;color:#e0b9bd;margin-top:6px;}
+  .live-elapsed{position:relative;text-align:center;flex:none;background:#0c0709;border:1px solid #3a1c20;border-radius:13px;padding:12px 18px;}
+  .le-num{font-family:'Space Grotesk';font-weight:700;font-size:1.5rem;color:#fff;font-variant-numeric:tabular-nums;}
+  .le-lbl{font-size:.58rem;color:#a8767a;font-family:'JetBrains Mono';letter-spacing:.1em;margin-top:5px;}
+
+  /* finished celebration */
+  .fin-banner{display:flex;align-items:center;gap:13px;background:linear-gradient(90deg,#13201a,#10141d);border:1px solid #1f3a2c;border-radius:14px;padding:12px 16px;margin-bottom:16px;}
+  .fin-emoji{font-size:1.4rem;}
+  .fin-txt{flex:1;font-size:.84rem;color:#a7c3b3;line-height:1.4;}
+  .fin-txt b{color:#e8edf5;}
+  .fin-x{background:transparent;border:0;color:#5c6678;font-size:1.2rem;line-height:1;padding:4px 8px;border-radius:7px;}
+  .fin-x:hover{background:#16241c;color:#e8edf5;}
+
+  /* what-if queue */
+  .q-list{border:1px solid #283245;border-radius:16px;background:#10141d;overflow:hidden;margin-top:16px;}
+  .q-row{display:grid;grid-template-columns:24px 40px 1fr 120px 96px;align-items:center;gap:13px;padding:11px 14px;border-top:1px solid #161d2a;background:#10141d;}
+  .q-row:first-child{border-top:0;}
+  .q-row.drag{opacity:.35;}
+  .q-row.over{box-shadow:inset 0 2px 0 var(--acc,#a970ff);}
+  .q-handle{color:#5c6678;font-size:1.15rem;text-align:center;cursor:grab;}
+  .q-art{width:40px;height:40px;border-radius:8px;background:#0e1320 center/cover;box-shadow:0 2px 6px #0008;cursor:pointer;}
+  .q-name{font-size:.86rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .q-sub{font-size:.66rem;color:#5c6678;font-family:'JetBrains Mono';margin-top:2px;}
+  .q-fin{font-family:'JetBrains Mono';font-size:.82rem;text-align:right;color:#c9d2e0;}
+  .q-fin small{font-size:.58rem;color:#5c6678;display:block;margin-top:2px;}
+  .q-flag{font-family:'JetBrains Mono';font-size:.66rem;font-weight:700;text-align:right;}
+  .q-summary{margin-top:14px;font-size:.82rem;color:#8b97ab;line-height:1.5;}
+  .q-summary b{color:#e8edf5;}
+  @media(max-width:640px){ .q-row{grid-template-columns:20px 1fr 84px;} .q-art,.q-sub,.q-flag{display:none;} }
+
+  /* run of show */
+  .ros-head{padding:18px 20px 0;}
+  .ros-date{font-family:'Space Grotesk';font-weight:700;font-size:1.3rem;}
+  .ros-tag{font-size:.66rem;font-weight:700;font-family:'JetBrains Mono';text-transform:uppercase;letter-spacing:.05em;margin-top:4px;}
+  .ros-game{display:flex;gap:13px;align-items:center;margin-bottom:14px;}
+  .ros-art{width:56px;height:56px;border-radius:10px;background:#0e1320 center/cover;box-shadow:0 4px 14px #0009;flex:none;}
+  .ros-title{font-family:'Space Grotesk';font-weight:700;font-size:1.02rem;line-height:1.15;}
+  .ros-sub{font-size:.74rem;color:#9fb4d8;font-family:'JetBrains Mono';margin-top:4px;}
+  .ros-steps{display:flex;flex-direction:column;gap:8px;}
+  .ros-step{display:flex;gap:11px;align-items:flex-start;font-size:.82rem;color:#c9d2e0;line-height:1.4;background:#0d1320;border:1px solid #1b2433;border-radius:10px;padding:9px 11px;}
+  .ros-n{width:20px;height:20px;border-radius:99px;background:var(--acc,#a970ff);color:var(--acc-ink,#160a2b);font-size:.64rem;font-weight:800;display:grid;place-items:center;flex:none;font-family:'JetBrains Mono';}
+  .ros-note{font-size:.86rem;color:#8b97ab;line-height:1.5;background:#0d1320;border:1px solid #1b2433;border-radius:10px;padding:13px 15px;}
+  .ros-note b{color:#e8edf5;}
+
+  @media (max-width:920px){ .hero-grid{grid-template-columns:1fr;} }
+  @media (max-width:720px){ .card-w{flex-direction:column;width:340px;} .cardw-left{width:100%;min-height:180px;} }
+  @media (max-width:560px){ .np-cards{grid-template-columns:1fr;} .w-stats{grid-template-columns:repeat(2,1fr);} .topbar{flex-wrap:wrap;} .brand{order:1;} .cal-grid{grid-auto-rows:94px;} .cal-title{font-size:1.05rem;min-width:0;} .card-v,.card-w{width:100%;} }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>/* Generated from games.json — slim dataset for the redesign concept. */
+window.SLATE_GAMES = [{"id":"dk-challenge","title":"DK Challenge","date":"2026-06-09","dateLabel":"Jun 9 – Sep 1, 2026","endDate":"2026-09-01","kind":"event","hours":0,"streams":0,"basis":"estimate","platforms":[],"price":null,"icon":"","color":"","binge":false,"bonus":false,"backlog":false,"finishBefore":"","partGoal":"","notes":"Self-set challenge (Jun 9 6PM PT – Sep 1 12:59AM PT).","earlyAccess":"","hltbNote":"Fixed personal stream-challenge window, not an HLTB playthrough."},{"id":"xenoblade-chronicles-definitive-edition-ns2-pt-1","title":"Xenoblade Chronicles: Definitive Edition (NS2) — Pt. 1","date":"2026-06-09","dateLabel":"","endDate":"","kind":"game","hours":25,"streams":5,"basis":"calibrated","platforms":["Switch 2"],"price":null,"icon":"https://cdn.dekudeals.com/images/14a9585aef502398de4d06d44d8709f1de6f26b4/w500.jpg","color":"#5ed3de","binge":false,"bonus":false,"backlog":false,"finishBefore":"2026-06","partGoal":"About the first third of the story — ||through Prison Island (1st visit): Colony 9 → Eryth Sea/Alcamoth, reaching Valak Mountain||.","notes":"","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (you sidequest RPGs; cf. FireRed). Pt 1 of 3 of XC1 DE (M+E ~75h total, spread Jun–Aug)."},{"id":"xenoblade-chronicles-definitive-edition-ns2-pt-2","title":"Xenoblade Chronicles: Definitive Edition (NS2) — Pt. 2","date":"2026-07","dateLabel":"","endDate":"","kind":"game","hours":25,"streams":5,"basis":"calibrated","platforms":["Switch 2"],"price":null,"icon":"https://cdn.dekudeals.com/images/14a9585aef502398de4d06d44d8709f1de6f26b4/w500.jpg","color":"#5ed3de","binge":false,"bonus":false,"backlog":true,"finishBefore":"2026-07","partGoal":"The middle third — ||Valak Mountain through the Mechonis landing: Sword Valley, Galahad Fortress, the Fallen Arm, up to Agniratha||.","notes":"","earlyAccess":"","hltbNote":"Calibrated → Main+Extra. Pt 2 of 3 of XC1 DE (M+E ~75h total, spread Jun–Aug)."},{"id":"xenoblade-chronicles-definitive-edition-ns2-pt-3","title":"Xenoblade Chronicles: Definitive Edition (NS2) — Pt. 3","date":"2026-08","dateLabel":"","endDate":"","kind":"game","hours":25,"streams":5,"basis":"calibrated","platforms":["Switch 2"],"price":null,"icon":"https://cdn.dekudeals.com/images/14a9585aef502398de4d06d44d8709f1de6f26b4/w500.jpg","color":"#5ed3de","binge":false,"bonus":false,"backlog":true,"finishBefore":"2026-08","partGoal":"The final third — ||Agniratha & the Mechonis Core through the Bionis interior to the ending||.","notes":"","earlyAccess":"","hltbNote":"Calibrated → Main+Extra. Pt 3 of 3 of XC1 DE (M+E ~75h total, spread Jun–Aug)."},{"id":"pok-mon-heartgold","title":"Pokémon HeartGold","date":"2026-06-21","dateLabel":"","endDate":"","kind":"game","hours":24,"streams":5,"basis":"calibrated","platforms":["Nintendo DS"],"price":null,"icon":"https://cdn2.steamgriddb.com/thumb/bb05ae57de563e3e8a035537cd5fa9ee.jpg","color":"#eec94f","binge":false,"bonus":false,"backlog":true,"newRelease":false,"finishBefore":"2026-06","partGoal":"","notes":"First playthrough; originally released Mar 2010.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (all Pokémon = M+E per your rule). Remaining ~half of M+E (~45h). Was 18h."},{"id":"deltarune-chapters-3-4","title":"Deltarune Chapters 3+4","date":"2026-06-22","dateLabel":"","endDate":"","kind":"dlc","hours":9,"streams":2,"basis":"series-avg","platforms":["Switch","Switch 2","PS4","PS5","PC"],"price":null,"icon":"https://cdn2.steamgriddb.com/thumb/1826158ab2775c08e5fa3c729045e680.jpg","color":"#4fd1ee","binge":false,"bonus":true,"backlog":true,"newRelease":false,"finishBefore":"","partGoal":"","notes":"First playthrough; chapters released Jun 2025.","earlyAccess":"","hltbNote":"Bonus/story — no completion grind; ~M+E already. ~Two Deltarune chapters (~4–5h each)."},{"id":"deltarune-chapter-5","title":"Deltarune — Chapter 5","date":"2026-06-24","dateLabel":"","endDate":"","kind":"dlc","hours":4,"streams":1,"basis":"series-avg","platforms":["Switch","Switch 2","PS4","PS5","PC"],"price":null,"icon":"https://cdn2.steamgriddb.com/thumb/1826158ab2775c08e5fa3c729045e680.jpg","color":"#4fd1ee","binge":false,"bonus":true,"backlog":false,"finishBefore":"","partGoal":"","notes":"Free chapter update for existing owners.","earlyAccess":"","hltbNote":"Bonus/story — no completion grind. Avg of Deltarune Chapters 1–4 (~3–4h each)."},{"id":"star-fox-switch-2","title":"Star Fox (Switch 2)","date":"2026-06-25","dateLabel":"","endDate":"","kind":"game","hours":9,"streams":2,"basis":"calibrated","platforms":["Switch 2"],"price":69.99,"icon":"https://cdn.dekudeals.com/images/6bb970fe5eeef1abdec039d8f9353aaa7ef654c2/w500.jpg","color":"#ee914f","binge":true,"bonus":false,"backlog":false,"finishBefore":"2026-06","partGoal":"","notes":"Velan Studios remake of Star Fox 64.","earlyAccess":"Free demo available.","hltbNote":"Calibrated → 100% (short, arcade, replayable branches — cheap completion tax). Star Fox 64 100% ~9h. Was 6h."},{"id":"pok-mon-omega-ruby-pt-1","title":"Pokémon Omega Ruby — Pt. 1","date":"2026-07","dateLabel":"","endDate":"","kind":"game","hours":18,"streams":4,"basis":"calibrated","platforms":["Nintendo 3DS"],"price":null,"icon":"https://cdn2.steamgriddb.com/thumb/ba3072daa7d54d117b22019c3974b0fe.jpg","color":"#eeb94f","binge":false,"bonus":false,"backlog":true,"newRelease":false,"finishBefore":"2026-07","partGoal":"Badges 1–4: Stone (Roxanne), Knuckle (Brawly), Dynamo (Wattson), Heat (Flannery) — Rustboro to Lavaridge.","notes":"First playthrough; originally released Nov 2014.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (all Pokémon = M+E). Pt 1 of 2, spread Jul–Aug. Was 36h single-month."},{"id":"pok-mon-omega-ruby-pt-2","title":"Pokémon Omega Ruby — Pt. 2","date":"2026-08","dateLabel":"","endDate":"","kind":"game","hours":18,"streams":4,"basis":"calibrated","platforms":["Nintendo 3DS"],"price":null,"icon":"https://cdn2.steamgriddb.com/thumb/ba3072daa7d54d117b22019c3974b0fe.jpg","color":"#eeb94f","binge":false,"bonus":false,"backlog":true,"newRelease":false,"finishBefore":"2026-08","partGoal":"Badges 5–8 (Norman → Winona → Tate&Liza → Wallace), the Elite Four/Champion, + ||the Delta Episode||.","notes":"First playthrough; originally released Nov 2014.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra. Pt 2 of 2, spread Jul–Aug."},{"id":"rhythm-heaven-groove","title":"Rhythm Heaven Groove","date":"2026-07-02","dateLabel":"","endDate":"","kind":"game","hours":12,"streams":3,"basis":"calibrated","platforms":["Switch"],"price":49.99,"icon":"https://cdn2.steamgriddb.com/thumb/0600f316d09754e8ad2d5327ad60eb51.jpg","color":"#eee54f","binge":true,"bonus":false,"backlog":false,"finishBefore":"2026-07","partGoal":"","notes":"First new Rhythm Heaven in over a decade.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (clear all stages, not perfect-everything). ~Rhythm Heaven Megamix completion (~10–12h)."},{"id":"splatoon-raiders","title":"Splatoon Raiders","date":"2026-08-04","dateLabel":"","endDate":"","kind":"game","hours":13,"streams":3,"basis":"calibrated","platforms":["Switch 2"],"price":59.99,"icon":"https://cdn.dekudeals.com/images/7a30dd9a431ec4c530654e9cccbdb224ccff497a/w500.jpg","color":"#cade5e","binge":true,"bonus":false,"backlog":true,"finishBefore":"2026-08","partGoal":"","notes":"Single-player-focused Splatoon spin-off; backlog binge from Aug 4 (after vacation; released Jul 23, not a midnight launch) to completion.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (estimate). From Splatoon campaigns (~8h), scaled up. Was 12h."},{"id":"splatoon-2-octo-expansion","title":"Splatoon 2: Octo Expansion","date":"2026-07","dateLabel":"","endDate":"","kind":"dlc","hours":8,"streams":2,"basis":"calibrated","platforms":["Switch"],"price":null,"icon":"https://cdn.dekudeals.com/images/e8f7cfe5e1786410d6ead1e241deace6ee33b321/w500.jpg","color":"#5d63e0","binge":true,"bonus":false,"backlog":true,"newRelease":false,"finishBefore":"2026-07-20","partGoal":"","notes":"First playthrough; originally released Jun 2018. Finish before the July 21 vacation.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (clear all stations; skip 100% the toughest dev-test grind)"},{"id":"splatoon-3","title":"Splatoon 3","date":"2026-07","dateLabel":"","endDate":"","kind":"game","hours":11,"streams":3,"basis":"calibrated","platforms":["Switch"],"price":null,"icon":"https://cdn.dekudeals.com/images/30946c8b3b47637626805e12f242bb71b4cd74d5/w500.jpg","color":"#eb51b8","binge":true,"bonus":false,"backlog":true,"newRelease":false,"finishBefore":"2026-07-20","partGoal":"","notes":"First playthrough; originally released Sep 2022. Finish before the July 21 vacation.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra. Story mode: Return of the Mammalians (~9h main)."},{"id":"splatoon-3-side-order","title":"Splatoon 3: Side Order","date":"2026-07","dateLabel":"","endDate":"","kind":"dlc","hours":9,"streams":2,"basis":"calibrated","platforms":["Switch"],"price":null,"icon":"https://cdn.dekudeals.com/images/c178eb9e18768f4b5e2b506c998811630b114b88/w500.jpg","color":"#96ee4f","binge":true,"bonus":false,"backlog":true,"newRelease":false,"finishBefore":"2026-07-20","partGoal":"","notes":"First playthrough; originally released Feb 2024. Finish before the July 21 vacation.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (clear all palettes; skip full 100%)"},{"id":"halo-campaign-evolved","title":"Halo: Campaign Evolved","date":"2026-08-05","dateLabel":"","endDate":"","kind":"game","hours":12,"streams":3,"basis":"calibrated","platforms":["PS5","Xbox Series","PC","Game Pass"],"price":49.99,"icon":"https://cdn.dekudeals.com/images/59dd1f879b1b663b9d3b19813f9f17fc927b3b39/w500.jpg","color":"#6ec3cf","binge":false,"bonus":false,"backlog":true,"finishBefore":"","partGoal":"","notes":"Day one on Game Pass; playing it weekly on Fridays from Aug 5 (after the July vacation).","earlyAccess":"Premium & Collector's: up to 5 days early (from Jul 23) + Alpha Halo Armory Pack.","hltbNote":"Calibrated → 100% (FPS campaign — you 100%'d ODST). Halo CE 100% ~11–12h + added content. Was 11h."},{"id":"xenoblade-chronicles-2-ns2-pt-1","title":"Xenoblade Chronicles 2 (NS2) — Pt. 1","date":"2026-09","dateLabel":"","endDate":"","kind":"game","hours":29,"streams":6,"basis":"calibrated","platforms":["Switch 2"],"price":null,"icon":"https://cdn.dekudeals.com/images/e2119fd96155112a20b409962b182dbee4b0e8f1/w500.jpg","color":"#5bb1e1","binge":false,"bonus":false,"backlog":true,"finishBefore":"2026-09","partGoal":"Chapters 1–4 ||(Gormott → Uraya → reach Mor Ardain)||.","notes":"","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (long JRPG; you sidequest). Pt 1 of 3 of XC2 (M+E ~86h total, spread Sep–Nov)."},{"id":"xenoblade-chronicles-2-ns2-pt-2","title":"Xenoblade Chronicles 2 (NS2) — Pt. 2","date":"2026-10","dateLabel":"","endDate":"","kind":"game","hours":29,"streams":6,"basis":"calibrated","platforms":["Switch 2"],"price":null,"icon":"https://cdn.dekudeals.com/images/e2119fd96155112a20b409962b182dbee4b0e8f1/w500.jpg","color":"#5bb1e1","binge":false,"bonus":false,"backlog":true,"finishBefore":"2026-10","partGoal":"Chapters 5–7 ||(Tantal, Leftheria, Indol / Spirit Crucible setup)||.","notes":"","earlyAccess":"","hltbNote":"Calibrated → Main+Extra. Pt 2 of 3 of XC2 (M+E ~86h total, spread Sep–Nov)."},{"id":"xenoblade-chronicles-2-ns2-pt-3","title":"Xenoblade Chronicles 2 (NS2) — Pt. 3","date":"2026-11","dateLabel":"","endDate":"","kind":"game","hours":28,"streams":6,"basis":"calibrated","platforms":["Switch 2"],"price":null,"icon":"https://cdn.dekudeals.com/images/e2119fd96155112a20b409962b182dbee4b0e8f1/w500.jpg","color":"#5bb1e1","binge":false,"bonus":false,"backlog":true,"finishBefore":"2026-11","partGoal":"Chapters 8–10 ||(Spirit Crucible to the finale)||.","notes":"","earlyAccess":"","hltbNote":"Calibrated → Main+Extra. Pt 3 of 3 of XC2 (M+E ~86h total, spread Sep–Nov)."},{"id":"fire-emblem-engage-pt-1","title":"Fire Emblem Engage — Pt. 1","date":"2026-08","dateLabel":"","endDate":"","kind":"game","hours":23,"streams":5,"basis":"calibrated","platforms":["Switch"],"price":null,"icon":"https://cdn2.steamgriddb.com/thumb/ce89d7d8c6c4c0f6b4dab0a8606d2d68.jpg","color":"#b65fdd","binge":false,"bonus":false,"backlog":true,"newRelease":false,"finishBefore":"2026-08","partGoal":"Chapters 1–13 ||(through the mid-game reversal)||.","notes":"First playthrough; originally released Jan 2023.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (SRPG). Pt 1 of 2, spread Aug–Sep. Was 45h single-month."},{"id":"fire-emblem-engage-pt-2","title":"Fire Emblem Engage — Pt. 2","date":"2026-09","dateLabel":"","endDate":"","kind":"game","hours":22,"streams":5,"basis":"calibrated","platforms":["Switch"],"price":null,"icon":"https://cdn2.steamgriddb.com/thumb/ce89d7d8c6c4c0f6b4dab0a8606d2d68.jpg","color":"#b65fdd","binge":false,"bonus":false,"backlog":true,"newRelease":false,"finishBefore":"fire-emblem-fortune-s-weave","partGoal":"Chapters 14–26 ||(the endgame to the finale)||.","notes":"First playthrough; originally released Jan 2023.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra. Pt 2 of 2; finishes before Fire Emblem: Fortune's Weave (Sep 17)."},{"id":"pok-mon-pokopia-expansion-pass-bubbly-basin","title":"Pokémon Pokopia Expansion Pass: Bubbly Basin","date":"TBD","dateLabel":"","endDate":"","kind":"dlc","hours":15,"streams":3,"basis":"estimate","platforms":["Switch 2"],"price":24.99,"icon":"https://cdn2.steamgriddb.com/thumb/dd343c779597afece742459153202eb6.jpg","color":"#96dc60","binge":false,"bonus":false,"backlog":false,"finishBefore":"2026-08","partGoal":"","notes":"Date per your note (August); some reports peg the DLC to Q1 2027.","earlyAccess":"","hltbNote":"Estimate for a sizeable Pokémon expansion (unreleased — no HLTB yet)."},{"id":"final-fantasy-xiv","title":"Final Fantasy XIV","date":"2026-08","dateLabel":"","endDate":"","kind":"game","hours":40,"streams":8,"basis":"estimate","platforms":["PS5","PC","Xbox Series"],"price":null,"icon":"https://cdn.dekudeals.com/images/7dd2b8547dd0e83c4609e0032de5be924c7048ce/w500.jpg","color":"#cf876e","binge":false,"bonus":true,"backlog":false,"newRelease":false,"finishBefore":"","partGoal":"","notes":"Live-service MMO; adjust hours to the content you'll stream.","earlyAccess":"","hltbNote":"Bonus/MMO — no fixed length; estimate for the content you plan to stream (calibration N/A)."},{"id":"pok-mon-mystery-dungeon-rescue-team-dx","title":"Pokémon Mystery Dungeon: Rescue Team DX","date":"2026-09","dateLabel":"","endDate":"","kind":"game","hours":25,"streams":5,"basis":"calibrated","platforms":["Switch"],"price":null,"icon":"https://cdn.dekudeals.com/images/b25e938e729e663863dec4a3e20c928e4c244b8d/w500.jpg","color":"#cfa16e","binge":false,"bonus":false,"backlog":true,"newRelease":false,"finishBefore":"2026-09","partGoal":"","notes":"First playthrough; originally released Mar 2020.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (all Pokémon = M+E; some post-game). Was 18h (main)."},{"id":"orbitals","title":"Orbitals","date":"2026-09-03","dateLabel":"","endDate":"","kind":"game","hours":12,"streams":3,"basis":"estimate","platforms":["Switch 2"],"price":39.99,"icon":"","color":"","binge":false,"bonus":true,"backlog":false,"finishBefore":"","partGoal":"","notes":"Two-player co-op sci-fi adventure.","earlyAccess":"Deluxe Edition adds extra in-game content.","hltbNote":"Calibrated → Main+Extra (estimate; new IP, no HLTB yet). Was 10h."},{"id":"marvel-s-wolverine","title":"Marvel's Wolverine","date":"2026-09-15","dateLabel":"","endDate":"","kind":"game","hours":24,"streams":5,"basis":"calibrated","platforms":["PS5"],"price":69.99,"icon":"https://cdn2.steamgriddb.com/thumb/7943d3a10ac2f59ec51d0d060e6f88cb.jpg","color":"#eec44f","binge":true,"bonus":false,"backlog":false,"finishBefore":"2026-09","partGoal":"","notes":"PS5 exclusive, Insomniac Games.","earlyAccess":"Pre-order: Classic Brown suit + Reflective Claws (early unlock), 1 Technique Point, 4 avatars.","hltbNote":"Calibrated → Main+Extra (Insomniac action-adventure; side content). Spider-Man games ~17h main, ~24h M+E. Was 18h."},{"id":"fire-emblem-fortune-s-weave","title":"Fire Emblem: Fortune's Weave","date":"2026-09-17","dateLabel":"","endDate":"","kind":"game","hours":55,"streams":11,"basis":"calibrated","platforms":["Switch 2"],"price":69.99,"icon":"https://cdn.dekudeals.com/images/946c11337a71895a9def9a330c604c7c602d98ca/w500.jpg","color":"#cf776e","binge":true,"bonus":false,"backlog":false,"finishBefore":"2026-10","partGoal":"","notes":"Switch 2 exclusive.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (SRPG, estimate). Between Engage (~35h) & Three Houses (~50h/route), +extras. Was 45h."},{"id":"pok-mon-platinum-pt-1","title":"Pokémon Platinum — Pt. 1","date":"2026-10","dateLabel":"","endDate":"","kind":"game","hours":15,"streams":3,"basis":"calibrated","platforms":["Nintendo DS"],"price":null,"icon":"https://cdn2.steamgriddb.com/thumb/91f618d4453134d636932694dcb160f9.jpg","color":"#dd8d60","binge":false,"bonus":false,"backlog":true,"newRelease":false,"finishBefore":"2026-10","partGoal":"Badges 1–3: Coal (Roark), Forest (Gardenia), Cobble (Maylene) — Oreburgh to Veilstone.","notes":"First playthrough; originally released Mar 2009.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (all Pokémon = M+E). Pt 1 of 3, spread Oct–Dec. Was 45h single-month."},{"id":"pok-mon-platinum-pt-2","title":"Pokémon Platinum — Pt. 2","date":"2026-11","dateLabel":"","endDate":"","kind":"game","hours":15,"streams":3,"basis":"calibrated","platforms":["Nintendo DS"],"price":null,"icon":"https://cdn2.steamgriddb.com/thumb/91f618d4453134d636932694dcb160f9.jpg","color":"#dd8d60","binge":false,"bonus":false,"backlog":true,"newRelease":false,"finishBefore":"2026-11","partGoal":"Badges 4–6: Fen (Crasher Wake), Relic (Fantina), Mine (Byron) — Pastoria to Canalave.","notes":"First playthrough; originally released Mar 2009.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra. Pt 2 of 3, spread Oct–Dec."},{"id":"pok-mon-platinum-pt-3","title":"Pokémon Platinum — Pt. 3","date":"2026-12","dateLabel":"","endDate":"","kind":"game","hours":15,"streams":3,"basis":"calibrated","platforms":["Nintendo DS"],"price":null,"icon":"https://cdn2.steamgriddb.com/thumb/91f618d4453134d636932694dcb160f9.jpg","color":"#dd8d60","binge":false,"bonus":false,"backlog":true,"newRelease":false,"finishBefore":"2026-12","partGoal":"Badges 7–8 (Candice, Volkner), the Elite Four/Champion, + ||the Distortion World / Giratina||.","notes":"First playthrough; originally released Mar 2009.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra. Pt 3 of 3, spread Oct–Dec."},{"id":"kingdom-hearts-final-mix-i-pt-1","title":"Kingdom Hearts Final Mix (I) — Pt. 1","date":"2026-10-08","dateLabel":"","endDate":"","kind":"game","hours":21,"streams":5,"basis":"calibrated","platforms":["Switch 2","PS5","Xbox Series"],"price":79.99,"icon":"https://cdn2.steamgriddb.com/thumb/66f6fcf0292987eee074f469c452ff0d.jpg","color":"#5473e7","binge":false,"bonus":false,"backlog":true,"finishBefore":"2026-10","partGoal":"Roughly the first half of the worlds — ||Destiny Islands → Traverse Town → Wonderland → Coliseum → Deep Jungle → Agrabah → Monstro||.","notes":"Game 1 of 11 — KINGDOM HEARTS marathon ($79.99 bundle: HD 1.5+2.5 ReMIX, 2.8, KH3 + ReMind). Play in order; finish each before the next.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra. KH Final Mix Pt 1 of 2 (M+E ~42h). HLTB: Main ~29h / M+E ~42h / 100% ~62h."},{"id":"kingdom-hearts-final-mix-i-pt-2","title":"Kingdom Hearts Final Mix (I) — Pt. 2","date":"2026-11","dateLabel":"","endDate":"","kind":"game","hours":21,"streams":5,"basis":"calibrated","platforms":["Switch 2","PS5","Xbox Series"],"price":null,"icon":"https://cdn2.steamgriddb.com/thumb/66f6fcf0292987eee074f469c452ff0d.jpg","color":"#5473e7","binge":false,"bonus":false,"backlog":true,"finishBefore":"2026-11","partGoal":"The remaining worlds to the finale — ||Atlantica → Halloween Town → Neverland → Hollow Bastion → End of the World||.","notes":"Game 1 of 11 — KINGDOM HEARTS marathon (bundled).","earlyAccess":"","hltbNote":"Calibrated → Main+Extra. KH Final Mix Pt 2 of 2 (M+E ~42h)."},{"id":"kingdom-hearts-re-chain-of-memories","title":"Kingdom Hearts Re:Chain of Memories","date":"2026-12","dateLabel":"","endDate":"","kind":"game","hours":31,"streams":7,"basis":"calibrated","platforms":["Switch 2","PS5","Xbox Series"],"price":null,"icon":"https://cdn2.steamgriddb.com/thumb/da1dbf20ae8394f0fb70bfffa143a6b9.jpg","color":"#7e72c9","binge":false,"bonus":false,"backlog":true,"finishBefore":"2026-12","partGoal":"","notes":"Game 2 of 11 — KINGDOM HEARTS marathon (bundled).","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (Sora + Riku). HLTB: Main ~24h / M+E ~31h / 100% ~42h."},{"id":"kingdom-hearts-ii-final-mix-pt-1","title":"Kingdom Hearts II Final Mix — Pt. 1","date":"2027-01","dateLabel":"","endDate":"","kind":"game","hours":24,"streams":5,"basis":"calibrated","platforms":["Switch 2","PS5","Xbox Series"],"price":null,"icon":"https://cdn2.steamgriddb.com/thumb/76e60d6d85f4a00c7ccbdbe98e172179.jpg","color":"#5eb3dd","binge":false,"bonus":false,"backlog":true,"finishBefore":"2027-01","partGoal":"First visits to all worlds — ||through the Battle of Hollow Bastion (the '1000 Heartless' fight)||.","notes":"Game 3 of 11 — KINGDOM HEARTS marathon (bundled).","earlyAccess":"","hltbNote":"Calibrated → Main+Extra. KH II Pt 1 of 2 (M+E ~48h). HLTB: Main ~35h / M+E ~48h / 100% ~67h."},{"id":"kingdom-hearts-ii-final-mix-pt-2","title":"Kingdom Hearts II Final Mix — Pt. 2","date":"2027-02","dateLabel":"","endDate":"","kind":"game","hours":24,"streams":5,"basis":"calibrated","platforms":["Switch 2","PS5","Xbox Series"],"price":null,"icon":"https://cdn2.steamgriddb.com/thumb/76e60d6d85f4a00c7ccbdbe98e172179.jpg","color":"#5eb3dd","binge":false,"bonus":false,"backlog":true,"finishBefore":"2027-02","partGoal":"Second visits to the finale — ||through The World That Never Was||.","notes":"Game 3 of 11 — KINGDOM HEARTS marathon (bundled).","earlyAccess":"","hltbNote":"Calibrated → Main+Extra. KH II Pt 2 of 2 (M+E ~48h)."},{"id":"kingdom-hearts-358-2-days","title":"Kingdom Hearts 358/2 Days","date":"2027-03","dateLabel":"","endDate":"","kind":"game","hours":3,"streams":1,"basis":"estimate","platforms":["Switch 2","PS5","Xbox Series"],"price":null,"icon":"","color":"","binge":false,"bonus":false,"backlog":true,"finishBefore":"2027-03","partGoal":"","notes":"Game 4 of 11 — KINGDOM HEARTS marathon (cinematic, bundled in 1.5+2.5 ReMIX).","earlyAccess":"","hltbNote":"Cinematic (HD movie, no gameplay) — ~3h runtime to watch."},{"id":"kingdom-hearts-birth-by-sleep-final-mix-pt-1","title":"Kingdom Hearts Birth by Sleep Final Mix — Pt. 1","date":"2027-03","dateLabel":"","endDate":"","kind":"game","hours":22,"streams":5,"basis":"calibrated","platforms":["Switch 2","PS5","Xbox Series"],"price":null,"icon":"https://cdn2.steamgriddb.com/thumb/30b3841e8543e1995128f44fde0fe712.jpg","color":"#b572c9","binge":false,"bonus":false,"backlog":true,"finishBefore":"2027-03","partGoal":"The first two of three scenarios — ||Terra's and Ventus's stories||.","notes":"Game 5 of 11 — KINGDOM HEARTS marathon (bundled).","earlyAccess":"","hltbNote":"Calibrated → Main+Extra. BBS Pt 1 of 2 (M+E ~43h). HLTB: Main ~27h / M+E ~43h / 100% ~62h."},{"id":"kingdom-hearts-birth-by-sleep-final-mix-pt-2","title":"Kingdom Hearts Birth by Sleep Final Mix — Pt. 2","date":"2027-04","dateLabel":"","endDate":"","kind":"game","hours":21,"streams":5,"basis":"calibrated","platforms":["Switch 2","PS5","Xbox Series"],"price":null,"icon":"https://cdn2.steamgriddb.com/thumb/30b3841e8543e1995128f44fde0fe712.jpg","color":"#b572c9","binge":false,"bonus":false,"backlog":true,"finishBefore":"2027-04","partGoal":"The final scenario + endgame — ||Aqua's scenario, the Final Episode, and secret ending||.","notes":"Game 5 of 11 — KINGDOM HEARTS marathon (bundled).","earlyAccess":"","hltbNote":"Calibrated → Main+Extra. BBS Pt 2 of 2 (M+E ~43h)."},{"id":"kingdom-hearts-re-coded","title":"Kingdom Hearts Re:coded","date":"2027-05","dateLabel":"","endDate":"","kind":"game","hours":3,"streams":1,"basis":"estimate","platforms":["Switch 2","PS5","Xbox Series"],"price":null,"icon":"https://cdn2.steamgriddb.com/thumb/5045efd0278f9582162ce6ddd5e0eeaa.jpg","color":"#d9c063","binge":false,"bonus":false,"backlog":true,"finishBefore":"2027-05","partGoal":"","notes":"Game 6 of 11 — KINGDOM HEARTS marathon (cinematic, bundled in 1.5+2.5 ReMIX).","earlyAccess":"","hltbNote":"Cinematic (HD movie, no gameplay) — ~3h runtime to watch."},{"id":"kingdom-hearts-dream-drop-distance-hd-pt-1","title":"Kingdom Hearts Dream Drop Distance HD — Pt. 1","date":"2027-05","dateLabel":"","endDate":"","kind":"game","hours":17,"streams":4,"basis":"calibrated","platforms":["Switch 2","PS5","Xbox Series"],"price":null,"icon":"https://cdn2.steamgriddb.com/thumb/f07056820e9ef297061d86c0c4c45737.jpg","color":"#c972a1","binge":false,"bonus":false,"backlog":true,"finishBefore":"2027-05","partGoal":"Roughly the first half of the Drop worlds — ||Traverse Town → La Cité des Cloches → The Grid (both Sora & Riku)||.","notes":"Game 7 of 11 — KINGDOM HEARTS marathon (bundled in 2.8).","earlyAccess":"","hltbNote":"Calibrated → Main+Extra. DDD Pt 1 of 2 (M+E ~34h). HLTB: Main ~26h / M+E ~34h / 100% ~45h."},{"id":"kingdom-hearts-dream-drop-distance-hd-pt-2","title":"Kingdom Hearts Dream Drop Distance HD — Pt. 2","date":"2027-06","dateLabel":"","endDate":"","kind":"game","hours":17,"streams":4,"basis":"calibrated","platforms":["Switch 2","PS5","Xbox Series"],"price":null,"icon":"https://cdn2.steamgriddb.com/thumb/f07056820e9ef297061d86c0c4c45737.jpg","color":"#c972a1","binge":false,"bonus":false,"backlog":true,"finishBefore":"2027-06","partGoal":"The remaining worlds to the finale — ||Prankster's Paradise → Country of the Musketeers → Symphony of Sorcery → The World That Never Was||.","notes":"Game 7 of 11 — KINGDOM HEARTS marathon (bundled in 2.8).","earlyAccess":"","hltbNote":"Calibrated → Main+Extra. DDD Pt 2 of 2 (M+E ~34h)."},{"id":"kingdom-hearts-back-cover","title":"Kingdom Hearts χ Back Cover","date":"2027-07","dateLabel":"","endDate":"","kind":"game","hours":1,"streams":1,"basis":"estimate","platforms":["Switch 2","PS5","Xbox Series"],"price":null,"icon":"","color":"","binge":false,"bonus":false,"backlog":true,"finishBefore":"2027-07","partGoal":"","notes":"Game 8 of 11 — KINGDOM HEARTS marathon (cinematic, bundled in 2.8).","earlyAccess":"","hltbNote":"Cinematic (movie, no gameplay) — ~1h runtime to watch."},{"id":"kingdom-hearts-0-2-a-fragmentary-passage","title":"Kingdom Hearts 0.2 -A Fragmentary Passage-","date":"2027-07","dateLabel":"","endDate":"","kind":"game","hours":5,"streams":1,"basis":"calibrated","platforms":["Switch 2","PS5","Xbox Series"],"price":null,"icon":"","color":"","binge":false,"bonus":false,"backlog":true,"finishBefore":"2027-07","partGoal":"","notes":"Game 9 of 11 — KINGDOM HEARTS marathon (bundled in 2.8).","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (short prologue). HLTB: Main ~3h / M+E ~5h / 100% ~9h."},{"id":"kingdom-hearts-iii-remind-pt-1","title":"Kingdom Hearts III + ReMind — Pt. 1","date":"2027-08","dateLabel":"","endDate":"","kind":"game","hours":26,"streams":6,"basis":"calibrated","platforms":["Switch 2","PS5","Xbox Series"],"price":null,"icon":"https://cdn2.steamgriddb.com/thumb/18b9bdc56c4268c709fab4763719bbe4.jpg","color":"#7284c9","binge":false,"bonus":false,"backlog":true,"finishBefore":"2027-08","partGoal":"Roughly the first half of the worlds — ||Olympus → Twilight Town → Toy Box → Kingdom of Corona → Monstropolis → Arendelle (Frozen)||.","notes":"Game 10 of 11 — KINGDOM HEARTS marathon (bundled).","earlyAccess":"","hltbNote":"Calibrated → Main+Extra. KH III + ReMind Pt 1 of 2 (M+E ~52h). HLTB: Main ~32h / M+E ~52h / 100% ~78h."},{"id":"kingdom-hearts-iii-remind-pt-2","title":"Kingdom Hearts III + ReMind — Pt. 2","date":"2027-09","dateLabel":"","endDate":"","kind":"game","hours":26,"streams":6,"basis":"calibrated","platforms":["Switch 2","PS5","Xbox Series"],"price":null,"icon":"https://cdn2.steamgriddb.com/thumb/18b9bdc56c4268c709fab4763719bbe4.jpg","color":"#7284c9","binge":false,"bonus":false,"backlog":true,"finishBefore":"2027-09","partGoal":"The remaining worlds to the finale, then the ReMind DLC — ||The Caribbean → San Fransokyo → the Keyblade Graveyard||.","notes":"Game 10 of 11 — KINGDOM HEARTS marathon (bundled).","earlyAccess":"","hltbNote":"Calibrated → Main+Extra. KH III + ReMind Pt 2 of 2 (M+E ~52h)."},{"id":"kingdom-hearts-melody-of-memory","title":"Kingdom Hearts Melody of Memory","date":"2027-12","dateLabel":"","endDate":"","kind":"game","hours":13,"streams":3,"basis":"calibrated","platforms":["Switch","PS4","Xbox One"],"price":59.99,"icon":"https://cdn2.steamgriddb.com/thumb/3c27eff5b85b5a200dd10ace970c33c2.jpg","color":"#c9b472","binge":false,"bonus":false,"backlog":true,"newRelease":false,"finishBefore":"2027-12","partGoal":"","notes":"Game 11 of 11 — KINGDOM HEARTS marathon (owned separately, not in the collection). Finish by end of 2027.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (rhythm, clear all tracks). HLTB: Main ~8h / M+E ~13h / 100% ~30h."},{"id":"switch-sports-resort","title":"Switch Sports Resort","date":"2026-10-22","dateLabel":"","endDate":"","kind":"game","hours":8,"streams":2,"basis":"calibrated","platforms":["Switch 2"],"price":49.99,"icon":"","color":"","binge":true,"bonus":false,"backlog":false,"finishBefore":"","partGoal":"","notes":"Wuhu Island; sequel to Nintendo Switch Sports.","earlyAccess":"","hltbNote":"Calibrated → 100% (party game — 'do all the sports', cheap completion). Was 6h."},{"id":"grand-theft-auto-vi","title":"Grand Theft Auto VI","date":"2026-11-19","dateLabel":"","endDate":"","kind":"game","hours":50,"streams":10,"basis":"calibrated","platforms":["PS5","Xbox Series"],"price":79.99,"icon":"https://cdn2.steamgriddb.com/thumb/ee07f017862fef0aeb071675794e0b7a.jpg","color":"#d666a7","binge":true,"bonus":false,"backlog":false,"finishBefore":"2026-12","partGoal":"","notes":"Editions/pricing not fully confirmed.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (huge open world — you won't 100%). GTA V M+E ~48h, scaled up. Was 40h."},{"id":"xenoblade-chronicles-3-nintendo-switch-2-edition-pt-1","title":"Xenoblade Chronicles 3 — Nintendo Switch 2 Edition — Pt. 1","date":"2026-12-03","dateLabel":"","endDate":"","kind":"game","hours":29,"streams":6,"basis":"calibrated","platforms":["Switch 2"],"price":null,"icon":"https://cdn.dekudeals.com/images/f995e12bf4034326f6a3ad1a227f24f2b5397ec6/w500.jpg","color":"#60bcdc","binge":false,"bonus":false,"backlog":false,"finishBefore":"2026-12","partGoal":"Chapters 1–2 ||(through entering Swordmarch / Origin setup)||.","notes":"First playthrough.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (~87h total; long JRPG, you sidequest). Pt 1 of 3, spread Dec–Feb (before Persona 4 Revival)."},{"id":"xenoblade-chronicles-3-nintendo-switch-2-edition-pt-2","title":"Xenoblade Chronicles 3 — Nintendo Switch 2 Edition — Pt. 2","date":"2027-01","dateLabel":"","endDate":"","kind":"game","hours":29,"streams":6,"basis":"calibrated","platforms":["Switch 2"],"price":null,"icon":"https://cdn.dekudeals.com/images/f995e12bf4034326f6a3ad1a227f24f2b5397ec6/w500.jpg","color":"#60bcdc","binge":false,"bonus":false,"backlog":true,"finishBefore":"2027-01","partGoal":"Chapters 3–5 ||(the Captain Jin / Moebius mid-game arc)||.","notes":"First playthrough.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (~87h total). Pt 2 of 3, spread Dec–Feb (before Persona 4 Revival)."},{"id":"xenoblade-chronicles-3-nintendo-switch-2-edition-pt-3","title":"Xenoblade Chronicles 3 — Nintendo Switch 2 Edition — Pt. 3","date":"2027-02","dateLabel":"","endDate":"","kind":"game","hours":29,"streams":6,"basis":"calibrated","platforms":["Switch 2"],"price":null,"icon":"https://cdn.dekudeals.com/images/f995e12bf4034326f6a3ad1a227f24f2b5397ec6/w500.jpg","color":"#60bcdc","binge":false,"bonus":false,"backlog":true,"finishBefore":"persona-4-revival","partGoal":"Chapters 6–7 ||(the march on Origin to the ending)||.","notes":"First playthrough.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (~87h total). Pt 3 of 3, spread Dec–Feb; finishes before Persona 4 Revival (Feb 18 2027)."},{"id":"the-legend-of-zelda-ocarina-of-time-nintendo-switch-2","title":"The Legend of Zelda: Ocarina of Time — Nintendo Switch 2","date":"2026","dateLabel":"2026 (date TBA)","endDate":"","kind":"game","hours":31,"streams":7,"basis":"calibrated","platforms":["Switch 2"],"price":69.99,"icon":"https://cdn2.steamgriddb.com/thumb/15194f712be2d4926ef5c906765d709c.png","color":"#e755bf","binge":true,"bonus":false,"backlog":false,"finishBefore":"","partGoal":"","notes":"Announced for later 2026, no firm date yet.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (Zelda — you landed M+E on Link's Awakening). OoT M+E ~31h. Was 27h (main)."},{"id":"the-wolf-among-us-remastered","title":"The Wolf Among Us Remastered","date":"Holiday 2026","dateLabel":"","endDate":"","kind":"game","hours":8,"streams":2,"basis":"calibrated","platforms":["PC","PS5","Xbox Series"],"price":24.99,"icon":"https://cdn.dekudeals.com/images/29a1cfdf0916d07c75c925e54c5f34336d0dadc0/w500.jpg","color":"#d06c8b","binge":false,"bonus":false,"backlog":false,"finishBefore":"","partGoal":"","notes":"Remaster with 1h+ bonus content.","earlyAccess":"","hltbNote":"Calibrated → 100% (linear narrative — one playthrough ≈ complete). Original ~8h. Unchanged."},{"id":"among-us-story-on-guard","title":"Among Us Story: On Guard","date":"2026","dateLabel":"2026 (date TBA)","endDate":"","kind":"game","hours":5,"streams":1,"basis":"calibrated","platforms":["PC","Switch","Switch 2"],"price":null,"icon":"","color":"","binge":true,"bonus":false,"backlog":false,"finishBefore":"","partGoal":"","notes":"Standalone narrative spin-off; no firm date.","earlyAccess":"","hltbNote":"Calibrated → 100% (short narrative — cheap completion). Estimate ~5h. Unchanged."},{"id":"the-duskbloods","title":"The Duskbloods","date":"TBD","dateLabel":"TBA (late 2026?)","endDate":"","kind":"game","hours":30,"streams":6,"basis":"estimate","platforms":["Switch 2"],"price":null,"icon":"","color":"","binge":false,"bonus":false,"backlog":false,"finishBefore":"","partGoal":"","notes":"FromSoftware Switch 2 exclusive, up to 8 players. No date.","earlyAccess":"Closed Network Test this summer.","hltbNote":"Multiplayer FromSoftware — no campaign length; calibration N/A. Rough estimate."},{"id":"persona-3-reload","title":"Persona 3 Reload","date":"2027-01","dateLabel":"","endDate":"","kind":"game","hours":25,"streams":5,"basis":"calibrated","platforms":["PS5","Xbox Series","PC","Game Pass"],"price":null,"icon":"https://cdn.dekudeals.com/images/e68fbad88926a5a858429bd346a967bedb250bd5/w500.jpg","color":"#4fa7ee","binge":false,"bonus":false,"backlog":true,"newRelease":false,"finishBefore":"2027-01","partGoal":"","notes":"First playthrough; originally released Feb 2024.","earlyAccess":"","hltbNote":"Calibrated → remaining time. ~106h already logged (2025, on 11/29 first playthrough, ~79% through); ~125–130h total, so…"},{"id":"stranger-than-heaven-pt-1","title":"Stranger Than Heaven — Pt. 1","date":"2027-01-15","dateLabel":"","endDate":"","kind":"game","hours":26,"streams":6,"basis":"calibrated","platforms":["PS5","Xbox Series","PC","Game Pass"],"price":69.99,"icon":"","color":"","binge":false,"bonus":false,"backlog":false,"finishBefore":"2027-01","partGoal":"Milestones TBD — RGG Studio title (Jan 2027); will split by chapter at launch.","notes":"RGG Studio (Project Century). Day one on Game Pass.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (RGG side content). Pt 1 of 2, spread Jan–Feb. Was 52h single-month."},{"id":"stranger-than-heaven-pt-2","title":"Stranger Than Heaven — Pt. 2","date":"2027-02","dateLabel":"","endDate":"","kind":"game","hours":26,"streams":6,"basis":"calibrated","platforms":["PS5","Xbox Series","PC","Game Pass"],"price":69.99,"icon":"","color":"","binge":false,"bonus":false,"backlog":false,"finishBefore":"persona-4-revival","partGoal":"Milestones TBD — second half; will split by chapter at launch.","notes":"RGG Studio (Project Century). Day one on Game Pass.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra. Pt 2 of 2; finishes before Persona 4 Revival (Feb 18)."},{"id":"tomb-raider-legacy-of-atlantis","title":"Tomb Raider: Legacy of Atlantis","date":"2027-02-12","dateLabel":"","endDate":"","kind":"game","hours":16,"streams":4,"basis":"calibrated","platforms":["PC","Xbox Series","PS5","Switch 2"],"price":69.99,"icon":"https://cdn.dekudeals.com/images/ee4bc711f641a150fefdc08242f9b62f74ca8d15/w500.jpg","color":"#68d4cd","binge":true,"bonus":false,"backlog":false,"finishBefore":"persona-4-revival","partGoal":"","notes":"Unreal Engine 5 full remake of Tomb Raider (1996).","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (action-adventure collectibles). Original TR (1996) ~12h main. Was 12h."},{"id":"persona-4-revival","title":"Persona 4 Revival","date":"2027-02-18","dateLabel":"","endDate":"","kind":"game","hours":70,"streams":14,"basis":"calibrated","platforms":["PS5","Xbox Series","PC","Game Pass"],"price":69.99,"icon":"https://cdn.dekudeals.com/images/eaa46dc1f6dede6e119446c992edb6d1c1508c2e/w500.jpg","color":"#78ee4f","binge":true,"bonus":false,"backlog":false,"finishBefore":"","partGoal":"","notes":"Eight editions; physical PS5 only. Day one on Game Pass.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (JRPG social links + dungeons). Persona 4 Golden ~55h main, ~70h M+E. Was 55h."},{"id":"pok-mon-black","title":"Pokémon Black","date":"2027-03","dateLabel":"","endDate":"","kind":"game","hours":42,"streams":9,"basis":"calibrated","platforms":["Nintendo DS"],"price":null,"icon":"https://cdn2.steamgriddb.com/thumb/1dda5bc8b529f9dc6719c341656a8e4e.png","color":"#cb56e6","binge":false,"bonus":false,"backlog":true,"newRelease":false,"finishBefore":"2027-03","partGoal":"","notes":"First playthrough; originally released Mar 2011.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (all Pokémon = M+E). Was 30h (main)."},{"id":"pok-mon-black-2","title":"Pokémon Black 2","date":"2027-04","dateLabel":"","endDate":"","kind":"game","hours":42,"streams":9,"basis":"calibrated","platforms":["Nintendo DS"],"price":null,"icon":"https://cdn2.steamgriddb.com/thumb/1d178bbecb5fe472eabd360fd56134c6.jpg","color":"#53c4e9","binge":false,"bonus":false,"backlog":true,"newRelease":false,"finishBefore":"2027-04","partGoal":"","notes":"First playthrough; originally released Oct 2012.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (all Pokémon = M+E). Was 30h (main)."},{"id":"pok-mon-mystery-dungeon-explorers-of-sky","title":"Pokémon Mystery Dungeon: Explorers of Sky","date":"2027-05","dateLabel":"","endDate":"","kind":"game","hours":42,"streams":9,"basis":"calibrated","platforms":["Nintendo DS"],"price":null,"icon":"https://cdn2.steamgriddb.com/thumb/208ef41fb9dc674c9ff340fc0e4e7dab.jpg","color":"#5be1bf","binge":false,"bonus":false,"backlog":true,"newRelease":false,"finishBefore":"2027-05","partGoal":"","notes":"First playthrough; originally released Oct 2009.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (all Pokémon = M+E; long post-game). Was 30h (main+epilogue)."},{"id":"pok-mon-ultra-sun","title":"Pokémon Ultra Sun","date":"2027-06","dateLabel":"","endDate":"","kind":"game","hours":45,"streams":9,"basis":"calibrated","platforms":["Nintendo 3DS"],"price":null,"icon":"https://cdn2.steamgriddb.com/thumb/0cc963329f477f669d4cdbef1217ed5d.png","color":"#ec9c50","binge":false,"bonus":false,"backlog":true,"newRelease":false,"finishBefore":"2027-06","partGoal":"","notes":"First playthrough; originally released Nov 2017.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (all Pokémon = M+E). Was 32h (main)."},{"id":"final-fantasy-vii-remake-intergrade-pt-1","title":"Final Fantasy VII Remake Intergrade — Pt. 1","date":"2026-07","dateLabel":"","endDate":"","kind":"game","hours":15,"streams":3,"basis":"calibrated","platforms":["PS5","PC"],"price":null,"icon":"https://cdn.dekudeals.com/images/021d61f43b2a9ae995539745052b73bc9c0e127f/w500.jpg","color":"#a964d8","binge":false,"bonus":false,"backlog":true,"newRelease":false,"finishBefore":"2026-07","partGoal":"Chapters 1–6 ||(Reactor 1 bombing through the Mako Reactor 5 escape)||.","notes":"FFVII saga 1 of 4 — play in order, finish each before the next. Pt 1 of 3.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (~44h total). HLTB: Main ~33h / M+E ~49h / 100% ~82h."},{"id":"final-fantasy-vii-remake-intergrade-pt-2","title":"Final Fantasy VII Remake Intergrade — Pt. 2","date":"2026-08","dateLabel":"","endDate":"","kind":"game","hours":15,"streams":3,"basis":"calibrated","platforms":["PS5","PC"],"price":null,"icon":"https://cdn.dekudeals.com/images/021d61f43b2a9ae995539745052b73bc9c0e127f/w500.jpg","color":"#a964d8","binge":false,"bonus":false,"backlog":true,"newRelease":false,"finishBefore":"2026-08","partGoal":"Chapters 7–12 ||(Wall Market through the collapsed expressway / train graveyard)||.","notes":"FFVII saga 1 of 4. Pt 2 of 3.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (~44h total)."},{"id":"final-fantasy-vii-remake-intergrade-pt-3","title":"Final Fantasy VII Remake Intergrade — Pt. 3","date":"2026-09","dateLabel":"","endDate":"","kind":"game","hours":14,"streams":3,"basis":"calibrated","platforms":["PS5","PC"],"price":null,"icon":"https://cdn.dekudeals.com/images/021d61f43b2a9ae995539745052b73bc9c0e127f/w500.jpg","color":"#a964d8","binge":false,"bonus":false,"backlog":true,"newRelease":false,"finishBefore":"2026-09","partGoal":"Chapters 13–18 ||(Sector 7 plate through Shinra HQ & the finale)|| + the INTERmission (Yuffie) episode.","notes":"FFVII saga 1 of 4. Pt 3 of 3.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (~44h total; incl. Yuffie episode)."},{"id":"crisis-core-final-fantasy-vii-reunion","title":"Crisis Core: Final Fantasy VII Reunion","date":"2026-10","dateLabel":"","endDate":"","kind":"game","hours":18,"streams":4,"basis":"calibrated","platforms":["PS5","Switch","PC","Xbox Series"],"price":null,"icon":"https://cdn.dekudeals.com/images/9ea134a0656dce08d503a1f4e50bca31ae340307/w500.jpg","color":"#63bad9","binge":false,"bonus":false,"backlog":true,"newRelease":false,"finishBefore":"2026-10","partGoal":"","notes":"FFVII saga 2 of 4 — single month.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra. HLTB: Main ~14h / M+E ~18h / 100% ~28h."},{"id":"final-fantasy-vii-rebirth-pt-1","title":"Final Fantasy VII Rebirth — Pt. 1","date":"2026-11","dateLabel":"","endDate":"","kind":"game","hours":19,"streams":4,"basis":"calibrated","platforms":["PS5","Switch 2","Xbox Series","PC"],"price":null,"icon":"https://cdn.dekudeals.com/images/1c13f2cbb7a62c0d11ff5d0e5adb9cebc0b8ee9b/w500.jpg","color":"#de825e","binge":false,"bonus":false,"backlog":true,"newRelease":false,"finishBefore":"2026-11","partGoal":"Chapters 1–3 ||(Nibelheim flashback, Kalm, the Grasslands)||.","notes":"FFVII saga 3 of 4 — spread Nov '26 → Mar '27 (5 parts). Pt 1 of 5.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (~95h total). HLTB: Main ~70h / M+E ~100h / 100% ~150h."},{"id":"final-fantasy-vii-rebirth-pt-2","title":"Final Fantasy VII Rebirth — Pt. 2","date":"2026-12","dateLabel":"","endDate":"","kind":"game","hours":19,"streams":4,"basis":"calibrated","platforms":["PS5","Switch 2","Xbox Series","PC"],"price":null,"icon":"https://cdn.dekudeals.com/images/1c13f2cbb7a62c0d11ff5d0e5adb9cebc0b8ee9b/w500.jpg","color":"#de825e","binge":false,"bonus":false,"backlog":true,"newRelease":false,"finishBefore":"2026-12","partGoal":"Chapters 4–6 ||(Junon → Costa del Sol → Corel region)||.","notes":"FFVII saga 3 of 4. Pt 2 of 5.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (~95h total)."},{"id":"final-fantasy-vii-rebirth-pt-3","title":"Final Fantasy VII Rebirth — Pt. 3","date":"2027-01","dateLabel":"","endDate":"","kind":"game","hours":19,"streams":4,"basis":"calibrated","platforms":["PS5","Switch 2","Xbox Series","PC"],"price":null,"icon":"https://cdn.dekudeals.com/images/1c13f2cbb7a62c0d11ff5d0e5adb9cebc0b8ee9b/w500.jpg","color":"#de825e","binge":false,"bonus":false,"backlog":true,"newRelease":false,"finishBefore":"2027-01","partGoal":"Chapters 7–9 ||(Gongaga → Cosmo Canyon → Nibelheim)||.","notes":"FFVII saga 3 of 4. Pt 3 of 5.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (~95h total)."},{"id":"final-fantasy-vii-rebirth-pt-4","title":"Final Fantasy VII Rebirth — Pt. 4","date":"2027-02","dateLabel":"","endDate":"","kind":"game","hours":19,"streams":4,"basis":"calibrated","platforms":["PS5","Switch 2","Xbox Series","PC"],"price":null,"icon":"https://cdn.dekudeals.com/images/1c13f2cbb7a62c0d11ff5d0e5adb9cebc0b8ee9b/w500.jpg","color":"#de825e","binge":false,"bonus":false,"backlog":true,"newRelease":false,"finishBefore":"2027-02","partGoal":"Chapters 10–12 ||(the Temple of the Ancients arc)||.","notes":"FFVII saga 3 of 4. Pt 4 of 5.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (~95h total)."},{"id":"final-fantasy-vii-rebirth-pt-5","title":"Final Fantasy VII Rebirth — Pt. 5","date":"2027-03","dateLabel":"","endDate":"","kind":"game","hours":19,"streams":4,"basis":"calibrated","platforms":["PS5","Switch 2","Xbox Series","PC"],"price":null,"icon":"https://cdn.dekudeals.com/images/1c13f2cbb7a62c0d11ff5d0e5adb9cebc0b8ee9b/w500.jpg","color":"#de825e","binge":false,"bonus":false,"backlog":true,"newRelease":false,"finishBefore":"2027-03","partGoal":"Chapters 13–14 ||(the Forgotten Capital to the finale)||.","notes":"FFVII saga 3 of 4. Pt 5 of 5 — finishes by end of March 2027, before Revelation.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (~95h total)."},{"id":"final-fantasy-vii-revelation-pt-1","title":"Final Fantasy VII Revelation — Pt. 1","date":"2027-04","dateLabel":"","endDate":"","kind":"game","hours":18,"streams":4,"basis":"calibrated","platforms":["Switch 2","PS5","Xbox Series","PC"],"price":null,"icon":"https://cdn2.steamgriddb.com/thumb/b36f15b6a95add0eabe7d206aa858c21.jpg","color":"#706ecf","binge":true,"bonus":false,"backlog":false,"finishBefore":"2027-04","partGoal":"Milestones TBD — final FF7 remake-trilogy entry (Spring 2027); will split by chapter at launch.","notes":"FFVII saga 4 of 4 — Spring 2027 release, spread Apr → Jul (4 parts). Pt 1 of 4.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (~70h total, estimate). Final part of the FF7 remake trilogy."},{"id":"final-fantasy-vii-revelation-pt-2","title":"Final Fantasy VII Revelation — Pt. 2","date":"2027-05","dateLabel":"","endDate":"","kind":"game","hours":18,"streams":4,"basis":"calibrated","platforms":["Switch 2","PS5","Xbox Series","PC"],"price":null,"icon":"https://cdn2.steamgriddb.com/thumb/b36f15b6a95add0eabe7d206aa858c21.jpg","color":"#706ecf","binge":true,"bonus":false,"backlog":true,"finishBefore":"2027-05","partGoal":"Milestones TBD — will split by chapter at launch.","notes":"FFVII saga 4 of 4. Pt 2 of 4.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (~70h total, estimate)."},{"id":"final-fantasy-vii-revelation-pt-3","title":"Final Fantasy VII Revelation — Pt. 3","date":"2027-06","dateLabel":"","endDate":"","kind":"game","hours":17,"streams":4,"basis":"calibrated","platforms":["Switch 2","PS5","Xbox Series","PC"],"price":null,"icon":"https://cdn2.steamgriddb.com/thumb/b36f15b6a95add0eabe7d206aa858c21.jpg","color":"#706ecf","binge":true,"bonus":false,"backlog":true,"finishBefore":"2027-06","partGoal":"Milestones TBD — will split by chapter at launch.","notes":"FFVII saga 4 of 4. Pt 3 of 4.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (~70h total, estimate)."},{"id":"final-fantasy-vii-revelation-pt-4","title":"Final Fantasy VII Revelation — Pt. 4","date":"2027-07","dateLabel":"","endDate":"","kind":"game","hours":17,"streams":4,"basis":"calibrated","platforms":["Switch 2","PS5","Xbox Series","PC"],"price":null,"icon":"https://cdn2.steamgriddb.com/thumb/b36f15b6a95add0eabe7d206aa858c21.jpg","color":"#706ecf","binge":true,"bonus":false,"backlog":true,"finishBefore":"2027-07","partGoal":"Milestones TBD — will split by chapter at launch.","notes":"FFVII saga 4 of 4. Pt 4 of 4.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (~70h total, estimate)."},{"id":"pok-mon-sword-pt-1","title":"Pokémon Sword — Pt. 1","date":"2027-07","dateLabel":"","endDate":"","kind":"game","hours":18,"streams":4,"basis":"calibrated","platforms":["Switch"],"price":null,"icon":"https://cdn.dekudeals.com/images/a33541a02e6ff30c5c8e2bbb63bba4ecc450d5d5/w500.jpg","color":"#63c4d9","binge":false,"bonus":false,"backlog":true,"newRelease":false,"finishBefore":"2027-07","partGoal":"Badges 1–4: Grass (Milo), Water (Nessa), Fire (Kabu), Fighting (Bea) — Turffield to Stow-on-Side.","notes":"First playthrough; originally released Nov 2019.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (all Pokémon = M+E). Pt 1 of 2, spread Jul–Aug. Was 36h single-month."},{"id":"pok-mon-sword-pt-2","title":"Pokémon Sword — Pt. 2","date":"2027-08","dateLabel":"","endDate":"","kind":"game","hours":18,"streams":4,"basis":"calibrated","platforms":["Switch"],"price":null,"icon":"https://cdn.dekudeals.com/images/a33541a02e6ff30c5c8e2bbb63bba4ecc450d5d5/w500.jpg","color":"#63c4d9","binge":false,"bonus":false,"backlog":true,"newRelease":false,"finishBefore":"new-pok-mon-snap","partGoal":"Badges 5–8 (Opal, Gordie, Piers, Raihan) + the Champion Cup finale.","notes":"First playthrough; originally released Nov 2019.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra. Pt 2 of 2; finishes before New Pokémon Snap (Aug 16)."},{"id":"new-pok-mon-snap","title":"New Pokémon Snap","date":"2027-08-16","dateLabel":"","endDate":"","kind":"game","hours":14,"streams":3,"basis":"calibrated","platforms":["Switch"],"price":null,"icon":"https://cdn.dekudeals.com/images/fb37e68b34f61d6beeca1552234c5c6d45a5c862/w500.jpg","color":"#8ddb61","binge":false,"bonus":false,"backlog":true,"newRelease":false,"finishBefore":"2027-08","partGoal":"","notes":"First playthrough; originally released Apr 2021.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (clear courses + some requests; full photodex 100% ~30h is a grind you'd skip). Was 10h."},{"id":"pok-mon-violet","title":"Pokémon Violet","date":"2027-09","dateLabel":"","endDate":"","kind":"game","hours":42,"streams":9,"basis":"calibrated","platforms":["Switch"],"price":null,"icon":"https://cdn.dekudeals.com/images/4de144fe89642562a1364c89fb8f6ea9efc3b8cb/w500.jpg","color":"#db61db","binge":false,"bonus":false,"backlog":true,"newRelease":false,"finishBefore":"2027-09","partGoal":"","notes":"First playthrough; originally released Nov 2022.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (all Pokémon = M+E; three story paths + DLC areas). Was 30h (main)."},{"id":"pok-mon-legends-z-a","title":"Pokémon Legends: Z-A","date":"2027-10","dateLabel":"","endDate":"","kind":"game","hours":40,"streams":8,"basis":"calibrated","platforms":["Switch 2","Switch"],"price":69.99,"icon":"https://cdn.dekudeals.com/images/5d0a4118faf51d4be2c2ae54850ff8a79319d68d/w500.jpg","color":"#6e8ecf","binge":false,"bonus":false,"backlog":false,"newRelease":false,"finishBefore":"2027-10","partGoal":"","notes":"Set in Lumiose City; latest Legends entry.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (all Pokémon = M+E). Legends: Arceus M+E ~40h. Was 30h."},{"id":"pok-mon-winds-and-waves","title":"Pokémon Winds and Waves","date":"2027-11","dateLabel":"Nov 2027 (window)","endDate":"","kind":"game","hours":42,"streams":9,"basis":"calibrated","platforms":["Switch 2"],"price":69.99,"icon":"","color":"","binge":false,"bonus":false,"backlog":false,"finishBefore":"2027-12","partGoal":"","notes":"Gen 10. Official window is 2027; you noted November.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (all Pokémon = M+E; Gen 10, no HLTB yet). Was 30h."},{"id":"pikuniku-2","title":"Pikuniku 2","date":"2027","dateLabel":"","endDate":"","kind":"game","hours":6,"streams":2,"basis":"calibrated","platforms":["PC","Switch 2"],"price":null,"icon":"","color":"","binge":false,"bonus":false,"backlog":false,"finishBefore":"","partGoal":"","notes":"Devolver Digital; quirky exploration sequel in 3D.","earlyAccess":"","hltbNote":"Calibrated → 100% (short, cheap completion). Original Pikuniku ~3–4h, now 3D. Was 5h."},{"id":"xenoblade-genesis","title":"Xenoblade Genesis","date":"2027","dateLabel":"","endDate":"","kind":"game","hours":84,"streams":17,"basis":"calibrated","platforms":["Switch 2"],"price":null,"icon":"","color":"","binge":false,"bonus":false,"backlog":false,"finishBefore":"","partGoal":"","notes":"New Monolith Soft Xenoblade entry.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (~84h; long JRPG, no HLTB yet — confirmed by you). Was 60h."},{"id":"virtua-fighter-crossroads","title":"Virtua Fighter Crossroads","date":"2027","dateLabel":"","endDate":"","kind":"game","hours":12,"streams":3,"basis":"estimate","platforms":["PS5","Xbox Series","PC"],"price":null,"icon":"","color":"","binge":false,"bonus":false,"backlog":false,"finishBefore":"","partGoal":"","notes":"Anthology blending a narrative campaign with fighting (UE5).","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (story campaign; estimate). Was 10h."},{"id":"kingdom-hearts-iv","title":"Kingdom Hearts IV","date":"TBD","dateLabel":"TBA","endDate":"","kind":"game","hours":45,"streams":9,"basis":"calibrated","platforms":["Switch 2","PS5","Xbox Series"],"price":null,"icon":"","color":"","binge":true,"bonus":false,"backlog":false,"finishBefore":"","partGoal":"","notes":"No firm date; reported coming to Switch 2.","earlyAccess":"","hltbNote":"Calibrated → Main+Extra (JRPG; estimate). From KH3 ~30h main. Was 35h."}];
+</script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin></script>
+<script type="text/babel" data-presets="react">
+const {useState,useEffect} = React;
+const GAMES = window.SLATE_GAMES || [];
+const ACCENT = '#a970ff';
+const MO = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const PALETTE = ['#a970ff','#3b6fe0','#34d399','#f5b14c','#5ed3de','#eb51b8'];
+
+function byId(id){ return GAMES.find(g => g.id === id) || {}; }
+function anchor(s){
+  if(!s) return null; let m;
+  if(m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s)) return new Date(+m[1],+m[2]-1,+m[3]);
+  if(m=/^(\d{4})-(\d{2})$/.exec(s)) return new Date(+m[1],+m[2]-1,1);
+  if(m=/^(\d{4})-Q(\d)$/.exec(s)) return new Date(+m[1],(+m[2]-1)*3,1);
+  if(m=/(spring|summer|fall|autumn|holiday|winter)\s*(\d{4})/i.exec(s)){ const mp={spring:2,summer:5,fall:8,autumn:8,holiday:10,winter:11}; return new Date(+m[2],mp[m[1].toLowerCase()],1); }
+  if(m=/([A-Za-z]{3,9})\s+(\d{4})/.exec(s)){ const mi=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'].indexOf(m[1].slice(0,3).toLowerCase()); if(mi>=0) return new Date(+m[2],mi,1); }
+  if(m=/^(\d{4})$/.exec(s)) return new Date(+m[1],11,31);
+  return null;
+}
+function shortDate(g){
+  if(/^\d{4}-\d{2}-\d{2}$/.test(g.date)){ const d=anchor(g.date); return MO[d.getMonth()]+' '+d.getDate(); }
+  if(/^\d{4}-\d{2}$/.test(g.date)){ const d=anchor(g.date); return MO[d.getMonth()]; }
+  return g.dateLabel || g.date;
+}
+function goalParts(pg){
+  if(!pg) return null;
+  const m=/\|\|(.+?)\|\|/.exec(pg);
+  if(!m) return {pre:pg, secret:''};
+  return {pre: pg.replace(/\|\|.+?\|\|/,'').replace(/\s*[\u2014\-:]?\s*\.?\s*$/,'').trim(), secret:m[1]};
+}
+
+function buildMonth(){
+  const TODAY=23;
+  const plan={
+    18:{streamed:true},20:{streamed:true},22:{streamed:true},
+    23:{gid:'pok-mon-heartgold',no:'3/5',hrs:'~5h'},
+    24:{launch:true},
+    25:{gid:'star-fox-switch-2',no:'1/2',hrs:'~5h'},
+    26:{gid:'star-fox-switch-2',no:'2/2',hrs:'~4h'},
+    27:{gid:'xenoblade-chronicles-definitive-edition-ns2-pt-1',no:'4/5',hrs:'~8h'},
+    28:{gid:'pok-mon-heartgold',no:'4/5',hrs:'~8h'},
+    29:{gid:'pok-mon-heartgold',no:'5/5',hrs:'~5h'},
+    30:{gid:'xenoblade-chronicles-definitive-edition-ns2-pt-1',no:'5/5',hrs:'~5h'},
+  };
+  const firstDow=new Date(2026,5,1).getDay();
+  const cells=[];
+  for(let i=0;i<firstDow;i++) cells.push({pad:true});
+  for(let d=1;d<=30;d++){
+    const p=plan[d];
+    if(p&&p.gid){ const g=byId(p.gid); cells.push({day:d,stream:true,id:g.id,art:g.icon||'',color:g.color||ACCENT,title:g.title||'',label:p.no,hrs:p.hrs,today:d===TODAY}); }
+    else cells.push({day:d,plain:true,launch:!!(p&&p.launch),streamed:!!(p&&p.streamed),today:d===TODAY});
+  }
+  while(cells.length%7!==0) cells.push({pad:true});
+  return cells;
+}
+
+function buildWeek(){
+  const TODAY=23;
+  const plan={
+    22:{streamed:true,gid:'pok-mon-heartgold'},
+    23:{gid:'pok-mon-heartgold',no:'3/5',hrs:'~5h'},
+    24:{launch:true},
+    25:{gid:'star-fox-switch-2',no:'1/2',hrs:'~5h'},
+    26:{gid:'star-fox-switch-2',no:'2/2',hrs:'~4h'},
+    27:{gid:'xenoblade-chronicles-definitive-edition-ns2-pt-1',no:'4/5',hrs:'~8h'},
+    28:{gid:'pok-mon-heartgold',no:'4/5',hrs:'~8h'},
+  };
+  const dows=['MON','TUE','WED','THU','FRI','SAT','SUN'];
+  return [22,23,24,25,26,27,28].map((d,i)=>{
+    const p=plan[d]; const g=p&&p.gid?byId(p.gid):null;
+    return {dow:dows[i],day:d,today:d===TODAY,launch:!!(p&&p.launch),
+      stream:(p&&p.gid&&!p.streamed)?{id:g.id,art:g.icon||'',color:g.color||ACCENT,title:g.title||'',no:p.no,hrs:p.hrs}:null,
+      done:(p&&p.streamed&&g)?{art:g.icon||'',title:g.title||''}:null};
+  });
+}
+
+function buildWrapped(){
+  const sum=f=>GAMES.reduce((a,g)=>a+(f(g)||0),0);
+  const totalHours=sum(g=>g.hours), totalStreams=sum(g=>g.streams);
+  const playable=GAMES.filter(g=>g.kind!=='event');
+  const weeks=totalHours/11.52;
+  const big=[
+    {value:String(playable.length),label:'titles on the slate',sub:'games, remakes, DLC & marathons',color:'#a970ff'},
+    {value:Math.round(totalHours).toLocaleString()+'h',label:'to finish everything',sub:'summed HowLongToBeat hours',color:'#5ed3de'},
+    {value:String(totalStreams),label:'streams to clear it',sub:'at 5.11 h per stream',color:'#3b6fe0'},
+    {value:Math.round(weeks/4.345)+' mo',label:'of streaming',sub:'at 11.52 h per week',color:'#34d399'},
+  ];
+  const top=GAMES.filter(g=>g.hours>0).slice().sort((a,b)=>b.hours-a.hours).slice(0,5);
+  const maxH=top.length?top[0].hours:1;
+  const topRows=top.map((g,i)=>({title:g.title,art:g.icon||'',hours:g.hours+'h',pct:Math.round((g.hours/maxH)*100)+'%',color:g.color||PALETTE[i%PALETTE.length]}));
+  const groups=[
+    {name:'KINGDOM HEARTS',match:/kingdom hearts/i,color:'#5473e7'},
+    {name:'Final Fantasy VII',match:/final fantasy vii|ffvii/i,color:'#a964d8'},
+    {name:'Pokémon',match:/pok[eé]mon/i,color:'#eec94f'},
+  ];
+  const marathons=groups.map(gr=>{
+    const items=GAMES.filter(g=>gr.match.test(g.title));
+    const hrs=items.reduce((a,g)=>a+(g.hours||0),0);
+    const str=items.reduce((a,g)=>a+(g.streams||0),0);
+    return {name:gr.name,count:items.length,color:gr.color,art:(items.find(g=>g.icon)||{}).icon||'',sub:hrs+'h · '+str+' streams'};
+  }).filter(m=>m.count>1).sort((a,b)=>b.count-a.count);
+  const pc={};
+  GAMES.forEach(g=>(g.platforms||[]).forEach(p=>{pc[p]=(pc[p]||0)+1;}));
+  const plats=Object.keys(pc).map(k=>({name:k,count:pc[k]})).sort((a,b)=>b.count-a.count).slice(0,6);
+  const maxP=plats.length?plats[0].count:1;
+  const platforms=plats.map((p,i)=>({name:p.name,count:p.count,pct:Math.round((p.count/maxP)*100)+'%',color:PALETTE[i%PALETTE.length]}));
+  const bn={self:'Played it myself','remake-original':'From the original','series-avg':'Series average',estimate:'Estimate',calibrated:'Calibrated to my pace'};
+  const bc={};
+  GAMES.forEach(g=>{if(g.basis)bc[g.basis]=(bc[g.basis]||0)+1;});
+  const basis=Object.keys(bc).map((k,i)=>({name:bn[k]||k,count:bc[k],color:PALETTE[i%PALETTE.length]})).sort((a,b)=>b.count-a.count);
+  const yrs=weeks/52;
+  return {big,top:topRows,marathons,platforms,basis,allWeeks:Math.round(weeks)+' weeks',allYears:yrs>=1?yrs.toFixed(1)+' years':Math.round(weeks/4.345)+' months'};
+}
+
+const MO_LONG=['January','February','March','April','May','June','July','August','September','October','November','December'];
+function buildCalendar(year,month){
+  const firstDow=new Date(year,month,1).getDay();
+  const daysIn=new Date(year,month+1,0).getDate();
+  const byDay={};
+  GAMES.forEach(g=>{
+    if(/^\d{4}-\d{2}-\d{2}$/.test(g.date)){
+      const dd=anchor(g.date);
+      if(dd.getFullYear()===year&&dd.getMonth()===month){(byDay[dd.getDate()]=byDay[dd.getDate()]||[]).push(g);}
+    }
+  });
+  const planJun={
+    23:{gid:'pok-mon-heartgold',no:'3/5'},24:{launch:true},
+    25:{gid:'star-fox-switch-2',no:'1/2'},26:{gid:'star-fox-switch-2',no:'2/2'},
+    27:{gid:'xenoblade-chronicles-definitive-edition-ns2-pt-1',no:'4/5'},
+    28:{gid:'pok-mon-heartgold',no:'4/5'},29:{gid:'pok-mon-heartgold',no:'5/5'},
+    30:{gid:'xenoblade-chronicles-definitive-edition-ns2-pt-1',no:'5/5'},
+  };
+  const plan=(year===2026&&month===5)?planJun:{};
+  const cells=[];
+  for(let i=0;i<firstDow;i++) cells.push({pad:true});
+  for(let d=1;d<=daysIn;d++){
+    const rels=(byDay[d]||[]).map(g=>({id:g.id,title:g.title,art:g.icon||'',color:g.color||ACCENT,kind:g.kind}));
+    const p=plan[d];
+    const pg=p&&p.gid?byId(p.gid):null;
+    cells.push({day:d,today:(year===2026&&month===5&&d===23),
+      rels,launch:!!(p&&p.launch),play:pg?{id:pg.id,title:pg.title,art:pg.icon||'',color:pg.color||ACCENT,no:p.no}:null});
+  }
+  while(cells.length%7!==0) cells.push({pad:true});
+  const planned=GAMES.filter(g=>/^\d{4}-\d{2}$/.test(g.date)&&g.kind!=='event'&&!g.bonus)
+    .map(g=>({g,a:anchor(g.date)})).filter(x=>x.a&&x.a.getFullYear()===year&&x.a.getMonth()===month)
+    .map(x=>({id:x.g.id,title:x.g.title,color:x.g.color||ACCENT}));
+  const relCount=Object.keys(byDay).reduce((a,k)=>a+byDay[k].length,0);
+  return {cells,planned,label:MO_LONG[month]+' '+year,relCount};
+}
+
+function resolveDeadline(fb){
+  if(!fb) return null;
+  const g=byId(fb);
+  if(g&&g.title&&g.date){ const a=anchor(g.date); if(a) return a; }
+  return anchor(fb);
+}
+function dlLabel(fb,dl){
+  const g=byId(fb);
+  if(g&&g.title) return 'before '+g.title.split(' — ')[0].split(':')[0].trim();
+  if(/^\d{4}-\d{2}$/.test(fb)) return 'by end of '+MO[dl.getMonth()];
+  return 'by '+MO[dl.getMonth()]+' '+dl.getDate();
+}
+function buildDeadlines(){
+  const TD=new Date(2026,5,23);
+  const groups={};
+  GAMES.forEach(g=>{ if(g.finishBefore&&g.kind!=='event'){ (groups[g.finishBefore]=groups[g.finishBefore]||[]).push(g); } });
+  const out=[];
+  Object.keys(groups).forEach(fb=>{
+    const items=groups[fb]; const dl=resolveDeadline(fb);
+    if(!dl||dl<=TD) return;
+    const hours=items.reduce((a,g)=>a+(g.hours||0),0); if(hours<=0) return;
+    const weeksLeft=Math.max(0.3,(dl-TD)/6048e5);
+    const needed=hours/weeksLeft; const lead=items[0];
+    const tone=needed<=11.52?'#34d399':(needed<=11.52*1.4?'#f5b14c':'#f87171');
+    out.push({id:lead.id,label:lead.title,count:items.length,hours,needed,onTrack:needed<=11.52,tone,
+      fill:Math.min(100,needed/11.52*60),dlText:dlLabel(fb,dl)});
+  });
+  return out.sort((a,b)=>b.needed-a.needed);
+}
+function buildICS(items){
+  const pad=n=>String(n).padStart(2,'0');
+  const fmt=d=>d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate());
+  let s='BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Stream Slate//nabunan//EN\r\nCALSCALE:GREGORIAN\r\n';
+  items.forEach((it,i)=>{ const nd=new Date(it.date.getTime()+864e5);
+    s+='BEGIN:VEVENT\r\nUID:slate-'+i+'-'+fmt(it.date)+'@nabunan\r\nDTSTART;VALUE=DATE:'+fmt(it.date)+'\r\nDTEND;VALUE=DATE:'+fmt(nd)+'\r\nSUMMARY:'+it.title.replace(/[,;]/g,' ')+'\r\nEND:VEVENT\r\n'; });
+  return s+'END:VCALENDAR';
+}
+function downloadICS(items){ const blob=new Blob([buildICS(items)],{type:'text/calendar'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='stream-slate.ics'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000); }
+
+function savePNG(id,name){
+  const el=document.getElementById(id);
+  if(!el||!window.html2canvas){ alert('Export still loading — try again in a second.'); return; }
+  window.html2canvas(el,{backgroundColor:'#0a0d14',scale:2,useCORS:true,logging:false}).then(c=>{
+    const a=document.createElement('a'); a.download=name+'.png'; a.href=c.toDataURL('image/png'); a.click();
+  }).catch(()=>{ alert('Cross-origin cover art blocks PNG export in this preview — it works on your deployed site where the art is same-origin.'); });
+}
+function kindLabel(k){ return {game:'Game',dlc:'DLC / Chapter',event:'Event',replay:'Replay'}[k]||'Game'; }
+function basisLabel(b){ return {self:'Played it myself','remake-original':'From the original','series-avg':'Series average',estimate:'Rough estimate',calibrated:'Calibrated to my pace'}[b]||b; }
+function shortDateFull(g){
+  if(/^\d{4}-\d{2}-\d{2}$/.test(g.date)){ const d=anchor(g.date); return MO[d.getMonth()]+' '+d.getDate()+', '+d.getFullYear(); }
+  if(/^\d{4}-\d{2}$/.test(g.date)){ const d=anchor(g.date); return MO_LONG[d.getMonth()]+' '+d.getFullYear(); }
+  return g.dateLabel||g.date;
+}
+function dowFull(x){ return {MON:'Monday',TUE:'Tuesday',WED:'Wednesday',THU:'Thursday',FRI:'Friday',SAT:'Saturday',SUN:'Sunday'}[x]||x; }
+function defaultQueueIds(){
+  const seed=['pok-mon-heartgold','xenoblade-chronicles-definitive-edition-ns2-pt-1'];
+  const up=GAMES.filter(g=>(g.kind==='game'||g.kind==='dlc')&&g.newRelease!==false&&!g.bonus&&!g.backlog&&anchor(g.date))
+    .filter(g=>anchor(g.date)>=new Date(2026,5,23)).sort((a,b)=>anchor(a.date)-anchor(b.date)).map(g=>g.id);
+  const ids=[]; seed.concat(up).forEach(id=>{ if(byId(id).title&&ids.indexOf(id)<0) ids.push(id); });
+  return ids.slice(0,8);
+}
+function DayModal({d,onClose}){
+  if(!d) return null;
+  const g=d.stream?byId(d.stream.id):null;
+  const gp=g?goalParts(g.partGoal):null;
+  const head=dowFull(d.dow)+', Jun '+d.day;
+  let tag={t:'Rest day',c:'#8b97ab'};
+  if(d.today) tag={t:'Today · streaming',c:'#cdb6ff'};
+  else if(d.launch) tag={t:'Launch eve',c:'#9fb4d8'};
+  else if(d.stream) tag={t:'Stream day',c:'#34d399'};
+  else if(d.done) tag={t:'Streamed',c:'#34d399'};
+  return (
+    <div className="scrim" onClick={onClose}>
+      <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:420}}>
+        <button className="modal-x" onClick={onClose}>×</button>
+        <div className="ros-head"><div className="ros-date">{head}</div><div className="ros-tag" style={{color:tag.c}}>{tag.t}</div></div>
+        <div className="modal-body" style={{marginTop:0,paddingTop:16}}>
+          {d.stream ? <React.Fragment>
+            <div className="ros-game">
+              <div className="ros-art" style={{backgroundImage:'url('+d.stream.art+')'}}></div>
+              <div><div className="ros-title">{d.stream.title}</div><div className="ros-sub">Stream {d.stream.no} · {d.stream.hrs} planned</div></div>
+            </div>
+            <div className="ros-steps">
+              <div className="ros-step"><span className="ros-n">1</span><div>Pre-show — title card up, category set, alert &amp; audio test</div></div>
+              <div className="ros-step"><span className="ros-n">2</span><div>Main — {d.stream.title}, stream {d.stream.no}</div></div>
+              {gp&&gp.pre && <div className="ros-step"><span className="ros-n">3</span><div>Goal — {gp.pre}{gp.secret?' …':''}</div></div>}
+              <div className="ros-step"><span className="ros-n">{gp&&gp.pre?4:3}</span><div>Wrap — clip highlights, tease next stream</div></div>
+            </div>
+          </React.Fragment>
+          : d.launch ? <div className="ros-note">🌙 <b>Midnight launch.</b> No regular stream tonight — be ready to go live at <b>12:00 AM</b> for the new release.</div>
+          : d.done ? <div className="ros-game"><div className="ros-art" style={{backgroundImage:'url('+d.done.art+')'}}></div><div><div className="ros-title">{d.done.title}</div><div className="ros-sub" style={{color:'#34d399'}}>✓ Streamed</div></div></div>
+          : <div className="ros-note">A clean <b>rest day</b> — no stream scheduled. Recover and prep for the week ahead.</div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+function DetailModal({game,onClose}){
+  const [rev,setRev]=useState(false);
+  if(!game) return null;
+  const str=game.hours?Math.max(1,Math.ceil(game.hours/5.11)):0;
+  const wks=game.hours?game.hours/11.52:0;
+  const gp=goalParts(game.partGoal);
+  const dl=game.finishBefore?resolveDeadline(game.finishBefore):null;
+  const TD=new Date(2026,5,23);
+  let pace=null;
+  if(dl&&dl>TD&&game.hours){ const wl=Math.max(0.3,(dl-TD)/6048e5); const need=game.hours/wl; pace={need,ok:need<=11.52,dlText:dlLabel(game.finishBefore,dl)}; }
+  return (
+    <div className="scrim" onClick={onClose}>
+      <div className="modal" onClick={e=>e.stopPropagation()}>
+        <button className="modal-x" onClick={onClose}>×</button>
+        <div className="modal-hero"><div className="modal-heroart" style={{backgroundImage:'url('+(game.icon||'')+')'}}></div><div className="modal-herofade"></div></div>
+        <div className="modal-body">
+          <div className="modal-cover" style={{backgroundImage:'url('+(game.icon||'')+')'}}></div>
+          <div className="modal-kind"><span style={{width:9,height:9,borderRadius:99,display:'inline-block',background:game.color||ACCENT}}></span>{kindLabel(game.kind)}{game.bonus?' · Bonus':''}{game.backlog?' · Backlog':''}</div>
+          <div className="modal-title">{game.title}</div>
+          {game.hours>0 && <div className="modal-stats">
+            <div className="modal-stat"><div className="k">Time to beat</div><div className="v">{game.hours}<small> hours</small></div></div>
+            <div className="modal-stat"><div className="k">Streams to finish</div><div className="v">{str}<small> · {wks.toFixed(1)}w</small></div></div>
+          </div>}
+          {pace && <div className="modal-note" style={{borderLeftColor:pace.ok?'#34d399':'#f87171',marginTop:14}}><b style={{color:pace.ok?'#34d399':'#f87171'}}>{pace.ok?'On pace ✓':'Behind ⚠'}</b> — needs <b style={{color:'#e8edf5'}}>{pace.need.toFixed(1)} h/wk</b> to finish {pace.dlText}; you average 11.5h/wk.</div>}
+          <div className="modal-line"><span className="k">Releases</span><span>{shortDateFull(game)}</span></div>
+          {game.platforms&&game.platforms.length>0 && <div className="modal-line"><span className="k">Platforms</span><div className="modal-tags">{game.platforms.map((p,i)=><span className="modal-tag" key={i}>{p}</span>)}</div></div>}
+          {game.price && <div className="modal-line"><span className="k">Price</span><span style={{fontFamily:'JetBrains Mono',color:'#34d399'}}>${game.price}</span></div>}
+          {game.basis && <div className="modal-line"><span className="k">Estimate</span><span>{basisLabel(game.basis)}</span></div>}
+          {gp&&gp.secret && <div className="modal-note" onClick={()=>setRev(!rev)} style={{cursor:'pointer'}}><b style={{color:'#f5b14c'}}>Goal · </b>{gp.pre} <span className={'spoiler'+(rev?' show':'')}>{gp.secret}</span></div>}
+          {game.notes && <div className="modal-note" style={{borderLeftColor:'#3b6fe0'}}>{game.notes}</div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function App(){
+  const LS=k=>{try{return JSON.parse(localStorage.getItem('ss_'+k));}catch(e){return null;}};
+  const [tab,setTab]=useState('cockpit');
+  const [bold,setBold]=useState(()=>!!LS('bold'));
+  const [now,setNow]=useState(Date.now());
+  const [goals,setGoals]=useState(false);
+  const [calY,setCalY]=useState(2026);
+  const [calM,setCalM]=useState(5);
+  const [detail,setDetail]=useState(null);
+  const [todayPick,setTodayPick]=useState(()=>LS('pick'));
+  const [searchQ,setSearchQ]=useState('');
+  const [filterKind,setFilterKind]=useState('all');
+  useEffect(()=>{ const t=setInterval(()=>setNow(Date.now()),1000); return ()=>clearInterval(t); },[]);
+  useEffect(()=>{ try{localStorage.setItem('ss_bold',JSON.stringify(bold));}catch(e){} },[bold]);
+  useEffect(()=>{ try{localStorage.setItem('ss_pick',JSON.stringify(todayPick));}catch(e){} },[todayPick]);
+  const [theme,setTheme]=useState(()=>LS('theme')||'purple');
+  const [queue,setQueue]=useState(()=>{ const s=LS('queue'); return (Array.isArray(s)&&s.length)?s:defaultQueueIds(); });
+  const [dragIdx,setDragIdx]=useState(null);
+  const [overIdx,setOverIdx]=useState(null);
+  const [live,setLive]=useState(false);
+  const [liveStart,setLiveStart]=useState(0);
+  const [dayShow,setDayShow]=useState(null);
+  const [finDismiss,setFinDismiss]=useState(false);
+  useEffect(()=>{ try{localStorage.setItem('ss_theme',JSON.stringify(theme));}catch(e){} },[theme]);
+  useEffect(()=>{ try{localStorage.setItem('ss_queue',JSON.stringify(queue));}catch(e){} },[queue]);
+
+  const npDefs=[
+    {id:'pok-mon-heartgold',done:2,total:5,statusText:'Recommended today',tone:'#34d399',statusBg:'#14241c'},
+    {id:'xenoblade-chronicles-definitive-edition-ns2-pt-1',done:3,total:5,statusText:'Slightly behind',tone:'#f5b14c',statusBg:'#2a2113'},
+  ];
+  const nowPlaying=npDefs.map(d=>{
+    const g=byId(d.id); const pct=Math.round((d.done/d.total)*100); const gp=goalParts(g.partGoal);
+    return {id:d.id,title:g.title||'',art:g.icon||'',tone:d.tone,statusText:d.statusText,statusBg:d.statusBg,color:g.color||ACCENT,
+      pct,doneText:d.done+' of '+d.total+' streams done',streamsLeft:(d.total-d.done)+' streams to finish · ~'+g.hours+'h',
+      hasGoal:!!(gp&&gp.secret),goalPre:gp?gp.pre:'',goalSecret:gp?gp.secret:''};
+  });
+
+  const upcoming=GAMES
+    .filter(g=>(g.kind==='game'||g.kind==='dlc')&&g.newRelease!==false&&!g.bonus&&!g.backlog&&anchor(g.date))
+    .map(g=>({g,t:anchor(g.date).getTime()}))
+    .filter(x=>x.t>=new Date(2026,5,23).getTime())
+    .sort((a,b)=>a.t-b.t);
+  const nextUp=upcoming.slice(0,5).map(x=>({id:x.g.id,title:x.g.title,art:x.g.icon||'',color:x.g.color||ACCENT,
+    date:shortDate(x.g), streams:x.g.streams, price:x.g.price,
+    meta:shortDate(x.g)+' · '+x.g.streams+' str'+(x.g.price?' · $'+x.g.price:'')}));
+
+  const launchG=((upcoming.find(x=>/^\d{4}-\d{2}-\d{2}$/.test(x.g.date))||upcoming[0]||{}).g)||{};
+  const target=launchG.date&&/^\d{4}-\d{2}-\d{2}$/.test(launchG.date)?anchor(launchG.date).getTime():new Date(2026,5,25).getTime();
+  let diff=Math.max(0,target-now);
+  const cd_d=Math.floor(diff/864e5); diff-=cd_d*864e5;
+  const cd_h=Math.floor(diff/36e5); diff-=cd_h*36e5;
+  const cd_m=Math.floor(diff/6e4); diff-=cd_m*6e4;
+  const cd_s=Math.floor(diff/1e3);
+  const ld=anchor(launchG.date||'2026-06-25');
+  const dow=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][ld.getDay()];
+  const launchColor=launchG.color||ACCENT;
+  const numShadow=bold?{textShadow:'0 0 16px '+launchColor+'aa'}:null;
+
+  const month=buildMonth();
+  const week=buildWeek();
+  const deadlines=buildDeadlines();
+  const atRisk=deadlines.filter(d=>!d.onTrack).length;
+  const wrapped=buildWrapped();
+  const calendar=buildCalendar(calY,calM);
+  const calPrev=()=>{ let m=calM-1,y=calY; if(m<0){m=11;y--;} setCalM(m); setCalY(y); };
+  const calNext=()=>{ let m=calM+1,y=calY; if(m>11){m=0;y++;} setCalM(m); setCalY(y); };
+  const calToday=()=>{ setCalM(5); setCalY(2026); };
+  const openDetail=(id)=>{ const g=byId(id); if(g&&g.title) setDetail(g); };
+  const todayOpts=[
+    {id:'pok-mon-heartgold',label:'Pokémon HeartGold',rec:true,tag:'On pace',tone:'#34d399',tagbg:'#13201a',note:'on track to wrap HeartGold by Jun 29.'},
+    {id:'xenoblade-chronicles-definitive-edition-ns2-pt-1',label:'Xenoblade — Pt. 1',tag:'Catch-up',tone:'#f5b14c',tagbg:'#2a2113',note:'pulls Xenoblade Pt. 1 back on schedule.'},
+    {id:'deltarune-chapters-3-4',label:'Deltarune 3+4',bonus:true,tag:'Bonus',tone:'#cdb6ff',tagbg:'#1b1430',note:'a fun optional pick — won’t push any deadline.'},
+    {id:'__rest',label:'Take a break',rest:true,tag:'Rest day',tone:'#8b97ab',tagbg:'#161d2a',note:'your committed plan still finishes on time.'},
+  ];
+  const todayChosen=todayPick?todayOpts.find(o=>o.id===todayPick):null;
+  const todayActive=todayChosen||todayOpts.find(o=>o.rec);
+  const filtered=GAMES.filter(g=>{
+    if(filterKind!=='all'){ if(filterKind==='bonus'){ if(!g.bonus) return false; } else if(g.kind!==filterKind) return false; }
+    if(searchQ){ const q=searchQ.toLowerCase(); if(!(g.title.toLowerCase().includes(q)||(g.platforms||[]).join(' ').toLowerCase().includes(q))) return false; }
+    return true;
+  }).slice().sort((a,b)=>{ const ta=anchor(a.date),tb=anchor(b.date); if(ta&&tb) return ta-tb; if(ta) return -1; if(tb) return 1; return 0; });
+
+  const THEMES=[{id:'purple',acc:'#a970ff',ink:'#160a2b'},{id:'teal',acc:'#2bd4c0',ink:'#04201c'},{id:'amber',acc:'#f5a142',ink:'#241402'},{id:'mono',acc:'#cdd3df',ink:'#0d1118'}];
+  const themeObj=THEMES.find(t=>t.id===theme)||THEMES[0];
+  const toggleLive=()=>{ if(live){setLive(false);} else {setLive(true);setLiveStart(Date.now());} };
+  const elapsed=(()=>{ if(!live||!liveStart) return '0:00'; let s=Math.floor((now-liveStart)/1000); const h=Math.floor(s/3600); s%=3600; const m=Math.floor(s/60); s%=60; return (h>0?h+':':'')+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0'); })();
+  let qcur=new Date(2026,5,23).getTime();
+  const queueRows=queue.map(id=>{ const g=byId(id); const hrs=g.hours||0; qcur+=(hrs/11.52)*6048e5; const fin=new Date(qcur); const dl=g.finishBefore?resolveDeadline(g.finishBefore):null; let flag='',ft='#5c6678'; if(dl){ if(fin>dl){ const late=Math.ceil((fin-dl)/864e5); flag='⚠ '+late+'d late'; ft='#f87171'; } else { flag='✓ in time'; ft='#34d399'; } } return {id,title:g.title||id,art:g.icon||'',hours:hrs,streams:Math.max(1,Math.ceil(hrs/5.11)),finText:MO[fin.getMonth()]+' '+fin.getDate(),flag,ft}; });
+  const lastFin=queueRows.length?queueRows[queueRows.length-1].finText:'—';
+  const moveQ=()=>{ if(dragIdx==null||overIdx==null||dragIdx===overIdx){setDragIdx(null);setOverIdx(null);return;} const q=queue.slice(); const [m]=q.splice(dragIdx,1); q.splice(overIdx,0,m); setQueue(q); setDragIdx(null); setOverIdx(null); };
+
+  return (
+    <div className="app-bg" style={{'--acc':themeObj.acc,'--acc-ink':themeObj.ink}}><div className="wrap">
+      <div className="topbar">
+        <div className="brand">
+          <div className="logo">S</div>
+          <div>
+            <div className="brand-name">Stream Slate</div>
+            <div className="brand-sub">@nabunan · planning cockpit</div>
+          </div>
+        </div>
+        <div className="spacer"></div>
+        <div className="nav">
+          <button className={tab==='cockpit'?'on':''} onClick={()=>setTab('cockpit')}>Cockpit</button>
+          <button className={tab==='calendar'?'on':''} onClick={()=>setTab('calendar')}>Calendar</button>
+          <button className={tab==='queue'?'on':''} onClick={()=>setTab('queue')}>Queue</button>
+          <button className={tab==='browse'?'on':''} onClick={()=>setTab('browse')}>Browse</button>
+          <button className={tab==='wrapped'?'on':''} onClick={()=>setTab('wrapped')}>Season</button>
+          <button className={tab==='share'?'on':''} onClick={()=>setTab('share')}>Share</button>
+        </div>
+        <div className="theme-sw">{THEMES.map(t=><button key={t.id} className={'sw'+(theme===t.id?' on':'')} style={{background:t.acc}} title={t.id} onClick={()=>setTheme(t.id)}></button>)}</div>
+        <button className={'toggle'+(bold?' bold':'')} onClick={()=>setBold(!bold)}><span className="dot"></span>{bold?'Bold':'Refined'}</button>
+        <button className={'toggle'+(live?' livebtn':'')} onClick={toggleLive}><span className="dot" style={live?{background:'#f87171',boxShadow:'0 0 8px #f87171'}:null}></span>{live?'End stream':'Go live'}</button>
+      </div>
+
+      {tab==='cockpit' && <div className="anim">
+        {!finDismiss && <div className="fin-banner">
+          <span className="fin-emoji">🎉</span>
+          <div className="fin-txt"><b>Wrapped Pokémon FireRed</b> last week — 5 streams · 24h · finished on time ✓</div>
+          <button className="fin-x" onClick={()=>setFinDismiss(true)}>×</button>
+        </div>}
+        {live && <div className="live-hero">
+          <div className="live-bg" style={{backgroundImage:'url('+(nowPlaying[0].art||'')+')'}}></div>
+          <div className="live-veil"></div>
+          <div className="live-body">
+            <div className="live-tag"><span className="live-dot2"></span>LIVE NOW</div>
+            <div className="live-title">{nowPlaying[0].title}</div>
+            <div className="live-meta">Stream 3 of 5 · ~5h tonight · 1,284 watching</div>
+          </div>
+          <div className="live-elapsed"><div className="le-num">{elapsed}</div><div className="le-lbl">UPTIME</div></div>
+        </div>}
+        <div className="instr">
+          <div className="instr-tile">
+            <div className="it-k">STATUS</div>
+            <div className="it-v" style={{color:atRisk?'#f5b14c':'#34d399'}}>{atRisk?'Tight':'On track'}</div>
+            <div className="it-s">{atRisk?atRisk+' deadline'+(atRisk>1?'s':'')+' need a faster week':'every deadline is reachable'}</div>
+          </div>
+          <div className="instr-tile"><div className="it-k">PACE</div><div className="it-v">11.5<small> h/wk</small></div><div className="it-s">5.11h × ~2.3 streams · live 90-day</div></div>
+          <div className="instr-tile"><div className="it-k">IN FLIGHT</div><div className="it-v">5<small> games</small></div><div className="it-s">rotating through June</div></div>
+          <div className="instr-tile"><div className="it-k">NEXT LAUNCH</div><div className="it-v">{cd_d}<small> d</small> {cd_h}<small> h</small></div><div className="it-s" style={{whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{launchG.title}</div></div>
+        </div>
+
+        <div className="tonight">
+          <div className="tonight-head">
+            <span className="tonight-h">Tonight</span>
+            <span className="tonight-date">Tue · Jun 23</span>
+            <span className="tonight-note">ranked by your 90-day pace</span>
+          </div>
+          <div className="tonight-grid">
+            {todayOpts.map(o=>{
+              const g=o.rest?null:byId(o.id);
+              const chosen=todayPick===o.id;
+              const recDef=!todayPick&&o.rec;
+              return (
+                <button key={o.id} className={'opt'+(chosen?' sel':'')+(recDef?' rec':'')} onClick={()=>setTodayPick(chosen?null:o.id)}>
+                  {(chosen||recDef) && <span className="opt-check" style={{background:chosen?'#a970ff':'#34d399'}}>✓</span>}
+                  <div className="opt-top">
+                    {o.rest
+                      ? <div className="opt-art rest">☾</div>
+                      : <div className="opt-art" style={{backgroundImage:'url('+(g.icon||'')+')'}}></div>}
+                    <div className="opt-name">{o.label}</div>
+                  </div>
+                  <span className="opt-tag" style={{color:o.tone,background:o.tagbg,border:o.bonus?'1px dashed '+o.tone+'66':'1px solid transparent'}}>{o.tag}</span>
+                </button>
+              );
+            })}
+          </div>
+          <div className="tonight-foot">
+            <span className="tonight-foot-pill" style={{color:todayActive.tone,background:todayActive.tagbg}}>{todayPick?'PICKED':'SUGGESTED'}</span>
+            <span className="tonight-foot-txt"><b>{todayActive.label}</b> — {todayActive.note}</span>
+          </div>
+        </div>
+
+        <div className="hero-grid">
+          <div className="panel">
+            {bold && <React.Fragment>
+              <div className="hero-blur" style={{backgroundImage:'url('+nowPlaying[0].art+')'}}></div>
+              <div className="hero-glowlayer" style={{background:'radial-gradient(560px 280px at 18% -10%, '+nowPlaying[0].color+'40, transparent 70%)'}}></div>
+              <div className="hero-veil"></div>
+            </React.Fragment>}
+            <div style={{position:'relative'}}>
+              <div className="eyebrow" style={{color:'#cdb6ff'}}><span className="live-dot"></span>NOW STREAMING</div>
+              <div className="np-cards">
+                {nowPlaying.map((g,i)=>(
+                  <div className="np-card" key={i} onClick={()=>openDetail(g.id)} style={{borderColor:g.color+'44',cursor:'pointer'}}>
+                    <div className="np-top">
+                      <div className="np-art" style={{backgroundImage:'url('+g.art+')'}}></div>
+                      <div style={{minWidth:0,flex:1}}>
+                        <div className="np-title">{g.title}</div>
+                        <div className="np-status" style={{background:g.statusBg,color:g.tone}}>{g.statusText}</div>
+                      </div>
+                    </div>
+                    <div className="np-prog">
+                      <div className="ring" style={{background:'conic-gradient('+g.tone+' '+(g.pct*3.6)+'deg, rgba(255,255,255,.08) 0)'}}>
+                        <div className="ring-inner" style={{color:g.tone}}>{g.pct}%</div>
+                      </div>
+                      <div style={{minWidth:0,flex:1}}>
+                        <div className="np-done">{g.doneText}</div>
+                        <div className="np-left">{g.streamsLeft}</div>
+                      </div>
+                    </div>
+                    {g.hasGoal && <div className="goal" onClick={(e)=>{e.stopPropagation();setGoals(!goals);}}>
+                      <span className="lbl">GOAL · </span>{g.goalPre} <span className={'spoiler'+(goals?' show':'')}>{g.goalSecret}</span>
+                    </div>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="panel" style={bold?{borderColor:launchColor+'66'}:null}>
+            {bold && <div className="hero-glowlayer" style={{background:'radial-gradient(420px 240px at 80% -20%, '+launchColor+'40, transparent 70%)',animation:'none'}}></div>}
+            <div style={{position:'relative',display:'flex',flexDirection:'column',height:'100%'}}>
+              <div className="cd-head"><span style={{fontSize:'1rem'}}>🌙</span><b>NEXT MIDNIGHT LAUNCH</b></div>
+              <div className="cd-game">
+                <div className="cd-gameart" style={{backgroundImage:'url('+(launchG.icon||'')+')'}}></div>
+                <div style={{minWidth:0}}>
+                  <div className="cd-gametitle">{launchG.title}</div>
+                  <div className="cd-gamedate">{dow}, {MO[ld.getMonth()]} {ld.getDate()} · 12:00 AM</div>
+                </div>
+              </div>
+              <div className="cd-grid">
+                <div className="cd-cell"><div className="cd-num" style={numShadow}>{cd_d}</div><div className="cd-lbl">DAYS</div></div>
+                <div className="cd-cell"><div className="cd-num" style={numShadow}>{String(cd_h).padStart(2,'0')}</div><div className="cd-lbl">HRS</div></div>
+                <div className="cd-cell"><div className="cd-num" style={numShadow}>{String(cd_m).padStart(2,'0')}</div><div className="cd-lbl">MIN</div></div>
+                <div className="cd-cell"><div className="cd-num" style={Object.assign({color:bold?launchColor:'#9fb4d8'},numShadow)}>{String(cd_s).padStart(2,'0')}</div><div className="cd-lbl">SEC</div></div>
+              </div>
+              <div className="upnext-h">UP NEXT</div>
+              {nextUp.map((n,i)=>(
+                <div className="un-row" key={i} onClick={()=>openDetail(n.id)} style={{cursor:'pointer'}}>
+                  <div className="un-art" style={{backgroundImage:'url('+n.art+')'}}></div>
+                  <div style={{minWidth:0,flex:1}}>
+                    <div className="un-title">{n.title}</div>
+                    <div className="un-meta">{n.meta}</div>
+                  </div>
+                  <span className="un-dot" style={{background:n.color}}></span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="week">
+          <div className="week-head"><span className="week-h">This week</span><span className="week-sub">Mon Jun 22 – Sun Jun 28</span></div>
+          <div className="week-row">
+            {week.map((d,i)=>(
+              <div className={'wday'+(d.today?' today':'')} key={i} onClick={()=>setDayShow(d)} style={{cursor:'pointer'}}>
+                <div className="wday-top"><span className="wday-dow">{d.dow}</span><span className="wday-num">{d.day}</span></div>
+                {d.stream
+                  ? <div className="wstream" onClick={(e)=>{e.stopPropagation();openDetail(d.stream.id);}} style={bold?{boxShadow:'0 0 14px '+d.stream.color+'55'}:null}>
+                      <div className="wstream-art" style={{backgroundImage:'url('+d.stream.art+')'}}></div>
+                      <div className="wstream-grad"></div>
+                      <span className="wstream-no" style={{background:d.stream.color}}>{d.stream.no}</span>
+                      <div className="wstream-title">{d.stream.title}</div>
+                      <div className="wstream-hrs">{d.stream.hrs}</div>
+                    </div>
+                  : d.launch
+                  ? <div className="wempty"><span className="big">🌙</span><small>launch eve</small></div>
+                  : d.done
+                  ? <div className="wdone"><div className="wdone-art" style={{backgroundImage:'url('+d.done.art+')'}}></div><small>✓ streamed</small></div>
+                  : <div className="wempty"><small>rest</small></div>}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="dl-panel">
+          <div className="dl-head"><span className="dl-h">Deadlines &amp; catch-up</span><span className="dl-sub">finish each before the next drops · the bar shows needed pace vs your 11.5h/wk</span></div>
+          {deadlines.slice(0,5).map((d,i)=>(
+            <div className="dl-row" key={i} onClick={()=>openDetail(d.id)}>
+              <div style={{minWidth:0}}><div className="dl-name">{d.label}</div><div className="dl-when">{d.dlText} · {d.count>1?d.count+' games · ':''}{d.hours}h to play</div></div>
+              <div className="dl-gauge"><div className="dl-bar"><span className="cap"></span><i style={{width:d.fill+'%',background:d.tone}}></i></div></div>
+              <div className="dl-need" style={{color:d.tone}}>{d.needed.toFixed(1)}<small> h/wk</small></div>
+              <div className="dl-flag">{d.onTrack?'✓':'⚠'}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className={'month'+(bold?' boldcal':'')}>
+          <div className="m-head">
+            <h2>June 2026</h2>
+            <div className="m-legend">
+              <span><span style={{width:9,height:9,borderRadius:3,background:'#a970ff',display:'inline-block'}}></span>stream day</span>
+              <span>🌙 launch eve</span>
+              <span><span style={{color:'#34d399',fontWeight:700}}>✓</span> streamed</span>
+              <span>8 stream days planned</span>
+            </div>
+          </div>
+          <div className="m-week">{['SUN','MON','TUE','WED','THU','FRI','SAT'].map(w=><span key={w}>{w}</span>)}</div>
+          <div className="m-grid">
+            {month.map((c,i)=>{
+              if(c.pad) return <div className="m-cell pad" key={i}></div>;
+              if(c.stream) return (
+                <div className="m-cell" key={i} onClick={()=>openDetail(c.id)} style={{borderColor: bold?c.color:c.color+'66', boxShadow: bold?('0 0 16px '+c.color+'55'):'none', cursor:'pointer'}}>
+                  <div className="m-art" style={{backgroundImage:'url('+c.art+')'}}></div>
+                  <div className="m-grad"></div>
+                  <div className="m-day">{c.day}</div>
+                  <div className="m-badge" style={{background:c.color}}>{c.label}</div>
+                  <div className="m-foot"><div className="m-title">{c.title}</div><div className="m-hrs">{c.hrs}</div></div>
+                </div>
+              );
+              return (
+                <div className={'m-cell'+(c.today?' today':'')} key={i} style={c.today&&bold?{boxShadow:'0 0 16px #a970ff66'}:null}>
+                  <div className={'m-day plain'+(c.today?' todaynum':'')+(c.streamed?' streamednum':'')}>{c.day}</div>
+                  {c.launch && <React.Fragment><div className="m-moon">🌙</div><div className="m-evelbl">launch eve</div></React.Fragment>}
+                  {c.streamed && <div className="m-check">✓</div>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>}
+
+      {tab==='queue' && <div className="anim">
+        <div className="w-head"><h1>What-if queue</h1><span>drag to reorder — finish dates recompute at 11.5h/wk</span><button className="savebtn ghost" style={{marginLeft:'auto'}} onClick={()=>setQueue(defaultQueueIds())}>Reset order</button></div>
+        <div className="q-list">
+          {queueRows.map((r,i)=>(
+            <div key={r.id} className={'q-row'+(dragIdx===i?' drag':'')+(overIdx===i?' over':'')} draggable="true"
+              onDragStart={()=>setDragIdx(i)} onDragEnter={()=>setOverIdx(i)} onDragOver={e=>e.preventDefault()} onDrop={moveQ} onDragEnd={moveQ}>
+              <span className="q-handle">⠿</span>
+              <div className="q-art" style={{backgroundImage:'url('+r.art+')'}} onClick={()=>openDetail(r.id)}></div>
+              <div style={{minWidth:0,cursor:'pointer'}} onClick={()=>openDetail(r.id)}><div className="q-name">{r.title}</div><div className="q-sub">{r.hours}h · {r.streams} streams</div></div>
+              <div className="q-fin">{r.finText}<small>finishes</small></div>
+              <div className="q-flag" style={{color:r.ft}}>{r.flag}</div>
+            </div>
+          ))}
+        </div>
+        <div className="q-summary">At 11.5h/wk this order wraps everything by <b>{lastFin}</b>. Drag a game up to play it sooner — watch the finish dates and the ⚠ deadline flags shift.</div>
+      </div>}
+
+      {tab==='browse' && <div className="anim">
+        <div className="w-head"><h1>Browse the slate</h1><span>{filtered.length} of {GAMES.length} titles</span></div>
+        <div className="browse-bar">
+          <div className="browse-search"><span className="ic">⌕</span><input placeholder="Search games, platforms…" value={searchQ} onChange={e=>setSearchQ(e.target.value)} /></div>
+          <div className="browse-filters">
+            {[['all','All'],['game','Games'],['dlc','DLC'],['event','Events'],['bonus','Bonus']].map(([k,l])=>(
+              <button key={k} className={filterKind===k?'on':''} onClick={()=>setFilterKind(k)}>{l}</button>
+            ))}
+          </div>
+        </div>
+        <div className="browse-list">
+          {filtered.length===0
+            ? <div className="brow-empty">No titles match your search.</div>
+            : filtered.map((g,i)=>(
+              <div className="brow" key={i} onClick={()=>openDetail(g.id)}>
+                <div className="brow-art" style={{backgroundImage:'url('+(g.icon||'')+')'}}></div>
+                <div className="brow-title"><div className="brow-name">{g.title}</div><div className="brow-meta">{kindLabel(g.kind)}{g.bonus?' · Bonus':''}{g.backlog?' · Backlog':''}</div></div>
+                <div className="brow-plat">{(g.platforms||[]).join(', ')||'—'}</div>
+                <div className="brow-date">{shortDateFull(g)}</div>
+                <div className="brow-hltb">{g.hours?g.hours+'h':'—'}</div>
+              </div>
+            ))}
+        </div>
+      </div>}
+
+      {tab==='wrapped' && <div className="anim">
+        <div className="w-head"><h1>The Slate in Numbers</h1><span>everything queued across the next 18 months</span></div>
+        <div className="w-stats">
+          {wrapped.big.map((s,i)=>(
+            <div className="w-stat" key={i}>
+              <div className="big" style={{color:s.color}}>{s.value}</div>
+              <div className="lbl">{s.label}</div>
+              <div className="sub">{s.sub}</div>
+            </div>
+          ))}
+        </div>
+        <div className="hero-grid">
+          <div className="w-panel">
+            <h3>Longest hauls</h3>
+            <div className="desc">biggest playthroughs on the slate, by hours</div>
+            {wrapped.top.map((t,i)=>(
+              <div className="w-row" key={i}>
+                <div className="w-rowart" style={{backgroundImage:'url('+t.art+')'}}></div>
+                <div style={{minWidth:0,flex:1}}>
+                  <div className="w-rowtitle">{t.title}</div>
+                  <div className="w-bar"><div style={{width:t.pct,background:t.color}}></div></div>
+                </div>
+                <div className="w-hours" style={{color:t.color}}>{t.hours}</div>
+              </div>
+            ))}
+          </div>
+          <div className="w-panel">
+            <h3>Marathons</h3>
+            <div className="desc">multi-part series in the queue</div>
+            {wrapped.marathons.map((m,i)=>(
+              <div className="w-mara" key={i}>
+                <div className="w-maraart" style={{backgroundImage:'url('+m.art+')'}}></div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:'.84rem',fontWeight:600}}>{m.name}</div>
+                  <div className="un-meta">{m.sub}</div>
+                </div>
+                <div style={{textAlign:'right',flex:'none'}}>
+                  <div className="w-maracount" style={{color:m.color}}>{m.count}</div>
+                  <div style={{fontSize:'.58rem',color:'#5c6678',fontFamily:'JetBrains Mono',marginTop:2}}>PARTS</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="hero-grid" style={{marginTop:14}}>
+          <div className="w-panel">
+            <h3 style={{marginBottom:16}}>Platforms in rotation</h3>
+            {wrapped.platforms.map((p,i)=>(
+              <div className="w-platrow" key={i}>
+                <div className="w-platname">{p.name}</div>
+                <div className="w-platbar"><div style={{height:'100%',borderRadius:99,width:p.pct,background:p.color}}></div></div>
+                <div className="w-platcount">{p.count}</div>
+              </div>
+            ))}
+          </div>
+          <div className="w-panel">
+            <h3>How hours are estimated</h3>
+            <div className="desc">provenance of every HLTB figure</div>
+            {wrapped.basis.map((b,i)=>(
+              <div className="w-basisrow" key={i}>
+                <span style={{width:10,height:10,borderRadius:3,flex:'none',background:b.color}}></span>
+                <div style={{flex:1,fontSize:'.78rem',color:'#c9d2e0'}}>{b.name}</div>
+                <div style={{fontFamily:'JetBrains Mono',fontSize:'.74rem',fontWeight:700,color:'#8b97ab'}}>{b.count}</div>
+              </div>
+            ))}
+            <div className="w-note">At <b style={{color:'#e8edf5'}}>11.52 h/week</b>, clearing the whole slate end-to-end would take <b style={{color:'#a970ff'}}>{wrapped.allWeeks}</b> — about <b style={{color:'#e8edf5'}}>{wrapped.allYears}</b> of streaming.</div>
+          </div>
+        </div>
+      </div>}
+
+      {tab==='calendar' && <div className="anim">
+        <div className="w-head"><h1>Release &amp; stream calendar</h1><span>browse every dated drop and planned stream</span></div>
+        <div className={'cal'+(bold?' boldcal':'')} style={{marginTop:16}}>
+          <div className="cal-bar">
+            <div className="cal-nav"><button onClick={calPrev}>‹</button><button onClick={calNext}>›</button></div>
+            <div className="cal-title">{calendar.label}</div>
+            <button className="cal-todaybtn" onClick={calToday}>Today</button>
+            <span className="cal-cnt">{calendar.relCount} release{calendar.relCount===1?'':'s'} · {calendar.planned.length} planned</span>
+          </div>
+          {calendar.planned.length>0 && <div className="cal-planned">
+            <span className="cal-planned-h">Planned this month</span>
+            {calendar.planned.map((p,i)=>(<span className="cal-pchip" key={i} onClick={()=>openDetail(p.id)} style={{cursor:'pointer'}}><span className="cal-pdot" style={{background:p.color}}></span>{p.title}</span>))}
+          </div>}
+          <div className="cal-week">{['SUN','MON','TUE','WED','THU','FRI','SAT'].map(w=><span key={w}>{w}</span>)}</div>
+          <div className="cal-grid">
+            {calendar.cells.map((c,i)=>{
+              if(c.pad) return <div className="cal-cell pad" key={i}></div>;
+              return (
+                <div className={'cal-cell'+(c.today?' today':'')} key={i}>
+                  <span className="cal-dnum">{c.day}</span>
+                  {c.launch && <span className="cal-moon">🌙</span>}
+                  {c.rels.map((r,j)=>(
+                    <div className="cal-rel" key={j} onClick={()=>openDetail(r.id)} style={{background:r.color,cursor:'pointer'}}>
+                      <span className="cal-relart" style={{backgroundImage:'url('+r.art+')'}}></span>
+                      <span className="cal-reltitle">{r.title}</span>
+                    </div>
+                  ))}
+                  {c.play && <div className="cal-play" onClick={()=>openDetail(c.play.id)} style={Object.assign({cursor:'pointer'},bold?{boxShadow:'0 0 14px '+c.play.color+'66'}:{})}>
+                    <div className="cal-playart" style={{backgroundImage:'url('+c.play.art+')'}}></div>
+                    <div className="cal-playgrad"></div>
+                    <span className="cal-playtitle">{c.play.title}</span>
+                    <span className="cal-playno" style={{background:c.play.color}}>{c.play.no}</span>
+                  </div>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>}
+
+      {tab==='share' && <div className="anim">
+        <div className="w-head"><h1>Share your schedule</h1><span>auto-built from your next streams — screenshot to post</span><button className="savebtn" style={{marginLeft:'auto'}} onClick={()=>downloadICS(upcoming.map(x=>({date:anchor(x.g.date),title:'🎮 '+x.g.title})))}>⤓ Add to Calendar (.ics)</button></div>
+        <div className="share-stage">
+          <div className="share-col">
+            <div className="share-cap" style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>Twitch panel · 340px <button className="savebtn ghost" onClick={()=>savePNG('cardV','stream-slate-panel')}>↓ Save PNG</button></div>
+            <div className="card-v" id="cardV" style={bold?{boxShadow:'0 24px 60px #0009, 0 0 0 1px '+launchColor+'66, 0 0 44px '+launchColor+'33'}:null}>
+              <div className="cardv-top">
+                <div style={{display:'flex',alignItems:'center',gap:9}}>
+                  <div className="logo" style={{width:30,height:30,fontSize:'.95rem',boxShadow:'none',background:'#ffffff22'}}>S</div>
+                  <div><div className="cardv-brandname">STREAM SLATE</div><div className="cardv-brandsub">@nabunan</div></div>
+                </div>
+                <div className="cardv-tag">WEEKLY</div>
+              </div>
+              <div className="cardv-next">
+                <div className="cardv-nextart" style={{backgroundImage:'url('+(launchG.icon||'')+')'}}></div>
+                <div style={{minWidth:0}}>
+                  <div className="cardv-eyebrow">🌙 NEXT · MIDNIGHT LAUNCH</div>
+                  <div className="cardv-title">{launchG.title}</div>
+                  <div className="cardv-date">{MO[ld.getMonth()].toUpperCase()} {ld.getDate()} · in {cd_d}d {cd_h}h</div>
+                </div>
+              </div>
+              <div className="cardv-list">
+                {nextUp.map((n,i)=>(
+                  <div className="cardv-row" key={i}>
+                    <span className="cardv-chip">{n.date.toUpperCase()}</span>
+                    <div className="cardv-rowart" style={{backgroundImage:'url('+n.art+')'}}></div>
+                    <div className="cardv-rowtitle">{n.title}</div>
+                    <span className="cardv-rowstr">{n.streams} str</span>
+                  </div>
+                ))}
+              </div>
+              <div className="cardv-foot">slate.nabunan.com</div>
+            </div>
+          </div>
+
+          <div className="share-col">
+            <div className="share-cap" style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>Social / Discord banner · 680px <button className="savebtn ghost" onClick={()=>savePNG('cardW','stream-slate-banner')}>↓ Save PNG</button></div>
+            <div className="card-w" id="cardW" style={bold?{boxShadow:'0 24px 60px #0009, 0 0 0 1px '+launchColor+'66, 0 0 44px '+launchColor+'33'}:null}>
+              <div className="cardw-left">
+                <div className="cardw-leftart" style={{backgroundImage:'url('+(launchG.icon||'')+')'}}></div>
+                <div className="cardw-leftveil"></div>
+                <div className="cardw-leftbody">
+                  <div className="cardw-eyebrow">🌙 NEXT STREAM</div>
+                  <div className="cardw-title">{launchG.title}</div>
+                  <div className="cardw-date">{dow}, {MO[ld.getMonth()]} {ld.getDate()} · in {cd_d}d {cd_h}h</div>
+                </div>
+              </div>
+              <div className="cardw-right">
+                <div className="cardw-brand">
+                  <div className="logo" style={{width:30,height:30,fontSize:'.95rem'}}>S</div>
+                  <div><div className="cardv-brandname" style={{color:'#e8edf5'}}>STREAM SLATE</div><div className="brand-sub">@nabunan · weekly schedule</div></div>
+                </div>
+                {nextUp.slice(0,4).map((n,i)=>(
+                  <div className="cardv-row" key={i}>
+                    <span className="cardv-chip">{n.date.toUpperCase()}</span>
+                    <div className="cardv-rowart" style={{backgroundImage:'url('+n.art+')'}}></div>
+                    <div className="cardv-rowtitle">{n.title}</div>
+                    <span className="cardv-rowstr">{n.streams} str</span>
+                  </div>
+                ))}
+                <div className="cardw-foot">slate.nabunan.com · updated weekly from Twitch</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>}
+
+      {detail && <DetailModal game={detail} onClose={()=>setDetail(null)} />}
+      {dayShow && <DayModal d={dayShow} onClose={()=>setDayShow(null)} />}
+
+    </div></div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

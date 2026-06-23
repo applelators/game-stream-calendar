@@ -19,6 +19,47 @@ No build tools: in-browser Babel transpilation via CDN. Cloudflare Worker + KV b
 
 ---
 
+## Design language (apply to all UI work)
+
+Stream Slate uses a refreshed dark design language. Full detail + reference implementation:
+`handoff-package/HANDOFF.md` and `handoff-package/Stream Slate Cockpit.html`. When building or
+changing UI, follow it:
+
+- **Type:** Space Grotesk (display, headings, numbers), DM Sans (body), JetBrains Mono
+  (labels, dates, metrics). Keep mono for anything numeric or "system".
+- **Color:** dark surfaces `--bg #0a0d14` → `--s1 #10141d` / `--s2 #141a26` / `--s3 #0d1320`
+  panels; hairlines `--hair #1b2433` / `--border-solid #283245`; text `#e8edf5`, muted
+  `#8b97ab`, faint `#5c6678`. Accent is themeable via `--acc` (default `#a970ff`) + `--acc-ink`
+  (`#160a2b`); `--accent` is a back-compat alias of `--acc`. Semantic: ok `#34d399`,
+  warn `#f5b14c`, danger `#f87171`. **Use each game's `iconColor` (via `gameColor(id)`) for its
+  own bands/rings/dots**, not the global accent.
+- **Shape/depth:** radius 10–18px; soft dark shadows (`0 2px 8px #0008`); colored glow only in
+  "Bold" mode.
+- **Art-forward:** cover art full-bleeds days/cells/cards with a bottom gradient + overlaid
+  title — never a tiny inset thumbnail.
+- **Calm hierarchy:** one quiet default state; red/amber only for real problems; never stack
+  competing colored alert strips. **Do not use** left-accent-stripe callout boxes
+  (`border-left: 3px solid …`) — retired.
+- **Layout:** flex/grid + `gap` only; fluid `clamp()` padding; breakpoints 920/700/640/560;
+  responsive to 1440p, 1300×740, and iPhone.
+- **Motion:** one subtle fade-up on view change; slow glow pulse for live/Bold accents only.
+- **Persist UI prefs** (theme, today's pick, queue order) the same way settings already persist
+  (KV + localStorage fallback).
+
+**Reusable patterns** (match the reference HTML markup/classes): instrument tile (`.instr-tile`)
+· cover-art cell · progress ring (conic-gradient) · pace gauge (`.dl-bar` bar + `.cap` capacity
+marker) · option tile (`.opt.sel` accent ring vs `.opt.rec` green ring) · detail modal ·
+run-of-show modal.
+
+**Build order** (highest value first): 1) deadlines/catch-up **pace gauges** + **health
+instrument panel**; 2) art-forward **month grid** + **weekly strip**; 3) **what-if queue**
+(drag-reorder, finish dates re-chain at live pace); 4) detail/run-of-show modals, Browse, Season,
+Share (PNG + .ics), theme presets, live mode. Reuse `calc.js` math (`streamsToFinish`,
+`weeksToFinish`, `anchorDate`, `releaseLabel`, `isPlaceable`, `schedule`, `finishBeforeDeadline`)
+— the new UI is presentational over these. Commit per feature so Workers Builds redeploys cleanly.
+
+---
+
 ## Architecture / no-build pipeline
 
 `public/index.html` loads React + ReactDOM + Babel from CDN, then **fetches `calc.js` and
