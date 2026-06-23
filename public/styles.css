@@ -798,3 +798,10 @@ input, select, textarea { font-family: inherit; }
 .live-elapsed { position: relative; text-align: center; flex: none; background: #0c0709; border: 1px solid #3a1c20; border-radius: 13px; padding: 12px 18px; }
 .le-num { font-family: var(--display); font-weight: 700; font-size: 1.5rem; color: #fff; font-variant-numeric: tabular-nums; }
 .le-lbl { font-size: 0.58rem; color: #a8767a; font-family: var(--mono); letter-spacing: 0.1em; margin-top: 5px; }
+
+/* day-number opens the run-of-show modal; day-off toggle inside it */
+.gc-dnum-btn { cursor: pointer; }
+.gc-dnum-btn:hover { color: var(--acc); }
+.gc-cell.hasart .gc-dnum-btn:hover { color: #fff; filter: brightness(1.2); }
+.ros-foot { display: flex; align-items: center; gap: 12px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--hair); }
+.ros-foot-txt { flex: 1; font-size: 0.74rem; color: var(--muted); line-height: 1.4; }

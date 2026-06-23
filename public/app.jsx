@@ -785,6 +785,13 @@ function App() {
       return { ...s, autoPlace: cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id] };
     });
   }, []);
+  // Mark/unmark a day (ISO 'YYYY-MM-DD') as a day off → streamed at weekend length.
+  const toggleLongDay = useCallback((iso) => {
+    setSettings((s) => {
+      const cur = s.longDays || [];
+      return { ...s, longDays: cur.includes(iso) ? cur.filter((x) => x !== iso) : [...cur, iso] };
+    });
+  }, []);
   // Realistic release-priority finish per game (for the detail card).
   const seqPositions = useMemo(
     () => schedule(effGames.filter((g) => isPlaceable(g.release) && !g.bonus), ep, 'sequential', normVacs, dayOpts),
@@ -897,7 +904,7 @@ function App() {
         ? <ShareView games={effGames} today={today} pace={ep} />
         : settings.view === 'releases'
         ? <ReleasesView games={effGames} pace={ep} onPick={setDetail} />
-        : <MonthGridView games={effGames} pace={ep} vacations={normVacs} dayOpts={dayOpts} doneCounts={doneInfo.counts} streamMap={doneInfo.streamMap} sessionGoals={settings.sessionGoals || {}} streams={streams} onPick={setDetail} onTogglePlan={togglePlan} onChooseToday={chooseToday} />}
+        : <MonthGridView games={effGames} pace={ep} vacations={normVacs} dayOpts={dayOpts} doneCounts={doneInfo.counts} streamMap={doneInfo.streamMap} sessionGoals={settings.sessionGoals || {}} streams={streams} longDayISOs={settings.longDays || []} onPick={setDetail} onTogglePlan={togglePlan} onChooseToday={chooseToday} onToggleLongDay={toggleLongDay} />}
 
       {detailGame && (
         <DetailCard game={detailGame} pace={ep} vacations={normVacs} queuedPos={seqPositions[detailGame.id]}
@@ -1330,7 +1337,7 @@ function WeekStrip({ days, onOpenDay }) {
 }
 
 // A single day's run-of-show: pre-show → game → goal → wrap, or the day's state.
-function RunOfShowModal({ day, onClose, onPick }) {
+function RunOfShowModal({ day, isLong, onToggleLongDay, onClose, onPick }) {
   if (!day) return null;
   const info = day.info;
   const play = (!info.vac && !info.launch && info.session && info.play) ? info.play : null;
@@ -1378,13 +1385,20 @@ function RunOfShowModal({ day, onClose, onPick }) {
           ) : (
             <div className="ros-note">A clean <b>open day</b> — no stream scheduled. Recover and prep for the week ahead.</div>
           )}
+          {onToggleLongDay && day.iso && !info.vac && (
+            <div className="ros-foot">
+              <div className="ros-foot-txt">{isLong ? 'Marked a day off — streams at weekend length.' : 'Day off work? Stream a longer (weekend-length) session.'}</div>
+              <button className={'btn btn-sm' + (isLong ? '' : ' btn-accent')} onClick={() => onToggleLongDay(day.iso)}>
+                {isLong ? 'Remove day off' : '＋ Day off (longer stream)'}</button>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap, sessionGoals, streams, onPick, onTogglePlan, onChooseToday }) {
+function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap, sessionGoals, streams, longDayISOs, onPick, onTogglePlan, onChooseToday, onToggleLongDay }) {
   const isMobile = useIsMobile();
   const [pop, setPop] = useState(null); // in-app hover popup over a cell
   const [dayShow, setDayShow] = useState(null); // run-of-show day modal
@@ -1695,10 +1709,12 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap,
     const labels = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
     const full = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const out = [];
+    const pad = (n) => String(n).padStart(2, '0');
     for (let i = 0; i < 7; i++) {
       const day = new Date(Date.UTC(tY, tM, tD - offset + i));
       out.push({
         dow: labels[i], num: day.getUTCDate(),
+        iso: `${day.getUTCFullYear()}-${pad(day.getUTCMonth() + 1)}-${pad(day.getUTCDate())}`,
         dateLabel: `${full[i]} · ${MONTHS[day.getUTCMonth()]} ${day.getUTCDate()}`,
         isToday: day.getUTCFullYear() === tY && day.getUTCMonth() === tM && day.getUTCDate() === tD,
         info: dayInfo(day, ctx),
@@ -1711,7 +1727,7 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap,
     <div>
       <TodayPicker options={todayOptions} mobile={false} onPick={onPick} onChoose={onChooseToday} />
       <WeekStrip days={weekDays} onOpenDay={setDayShow} />
-      {dayShow && <RunOfShowModal day={dayShow} onClose={() => setDayShow(null)} onPick={(id) => { setDayShow(null); onPick(id); }} />}
+      {dayShow && <RunOfShowModal day={dayShow} isLong={(longDayISOs || []).includes(dayShow.iso)} onToggleLongDay={onToggleLongDay} onClose={() => setDayShow(null)} onPick={(id) => { setDayShow(null); onPick(id); }} />}
       <div className="gc-bar">
         <button className="gc-today" onClick={scrollToToday}>Jump to today</button>
         <div className="gc-cnt">{totalCount} release{totalCount === 1 ? '' : 's'} · scroll for more months ↓</div>
@@ -1744,11 +1760,16 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap,
             }
             const dl = deadlineByDay[`${y}-${mon}-${d}`];
             const popData = cellPopData(info, day);
+            const pad2 = (n) => String(n).padStart(2, '0');
+            const dowI = (day.getUTCDay() + 6) % 7;
+            const dayObj = { num: d, iso: `${y}-${pad2(mon + 1)}-${pad2(d)}`, isToday,
+              dateLabel: `${['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][dowI]} · ${MONTHS[mon]} ${d}`, info };
             cells.push(
               <div key={d} className={cls} style={cellStyle}
                 onMouseEnter={popData ? (e) => setPop({ rect: e.currentTarget.getBoundingClientRect(), data: popData }) : undefined}
                 onMouseLeave={popData ? () => setPop(null) : undefined}>
-                <span className="gc-dnum">{d}{info.releases.length ? <span className="gc-relstar">★</span> : null}{dl ? <span className="gc-deadflag">⚑</span> : null}{!info.vac && !info.launch && info.session && info.goal ? <span className="gc-goal-inline">🎯</span> : null}</span>
+                <span className="gc-dnum gc-dnum-btn" title="Open this day's run-of-show"
+                  onClick={(e) => { e.stopPropagation(); setPop(null); setDayShow(dayObj); }}>{d}{info.releases.length ? <span className="gc-relstar">★</span> : null}{dl ? <span className="gc-deadflag">⚑</span> : null}{!info.vac && !info.launch && info.session && info.goal ? <span className="gc-goal-inline">🎯</span> : null}</span>
                 {(() => {
                   // Two stacked, color-coded badges (top-right): placement X/N and hours.
                   let xn = null, xnStyle, hrs = null;
