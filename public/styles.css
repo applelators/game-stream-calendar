@@ -720,3 +720,43 @@ input, select, textarea { font-family: inherit; }
 .w-note b { color: var(--text); }
 @media (max-width: 920px) { .s-grid { grid-template-columns: 1fr; } }
 @media (max-width: 640px) { .w-stats { grid-template-columns: 1fr 1fr; } }
+
+/* ============================================================
+   Share cards + .ics (redesign step 4e)
+   ============================================================ */
+.savebtn { display: inline-flex; align-items: center; gap: 6px; font-size: 0.7rem; font-weight: 700; color: var(--acc-ink); background: var(--acc); border: 0; border-radius: 7px; padding: 6px 12px; }
+.savebtn:hover { filter: brightness(1.08); }
+.savebtn.ghost { background: var(--s1); color: #cdb6ff; border: 1px solid #2c3a52; }
+.share-stage { display: flex; flex-wrap: wrap; gap: 26px; align-items: flex-start; margin-top: 18px; }
+.share-col { display: flex; flex-direction: column; gap: 10px; }
+.share-cap { font-size: 0.72rem; color: var(--faint); font-family: var(--mono); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.card-v { width: 340px; max-width: 100%; border-radius: 20px; overflow: hidden; background: linear-gradient(180deg, var(--s2), #0b0f18); border: 1px solid var(--border-solid); box-shadow: 0 24px 60px #0009; }
+.cardv-top { position: relative; display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; background: linear-gradient(120deg, var(--acc), var(--accent-2)); }
+.cardv-brandname { font-family: var(--display); font-weight: 700; font-size: 0.95rem; color: #fff; line-height: 1; }
+.cardv-brandsub { font-size: 0.66rem; color: #ffffffcc; font-family: var(--mono); margin-top: 3px; }
+.cardv-tag { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.12em; color: #ffffffe0; font-family: var(--mono); }
+.cardv-next { display: flex; gap: 13px; align-items: center; padding: 18px; }
+.cardv-nextart { width: 66px; height: 66px; border-radius: 12px; background: #0e1320 center/cover; flex: none; box-shadow: 0 6px 18px #000a; }
+.cardv-eyebrow { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; color: #9fb4d8; font-family: var(--mono); }
+.cardv-title { font-family: var(--display); font-weight: 700; font-size: 1.1rem; line-height: 1.12; margin-top: 5px; }
+.cardv-date { font-size: 0.72rem; color: #cdb6ff; font-family: var(--mono); margin-top: 5px; }
+.cardv-list { padding: 4px 18px 6px; }
+.cardv-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--hair); }
+.cardv-row:first-child { border-top: 0; }
+.cardv-chip { font-family: var(--mono); font-size: 0.6rem; font-weight: 700; color: #9fb4d8; background: #0c111b; border: 1px solid #243049; border-radius: 5px; padding: 3px 5px; width: 58px; text-align: center; flex: none; }
+.cardv-rowart { width: 30px; height: 30px; border-radius: 6px; background: #0e1320 center/cover; flex: none; box-shadow: 0 1px 4px #0007; }
+.cardv-rowtitle { flex: 1; min-width: 0; font-size: 0.78rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cardv-rowstr { font-family: var(--mono); font-size: 0.62rem; color: var(--faint); flex: none; }
+.cardv-foot { padding: 13px 18px; background: #0b0f18; border-top: 1px solid var(--hair); font-size: 0.64rem; color: var(--faint); font-family: var(--mono); text-align: center; }
+.card-w { width: 680px; max-width: 100%; display: flex; border-radius: 20px; overflow: hidden; background: linear-gradient(180deg, var(--s2), #0b0f18); border: 1px solid var(--border-solid); box-shadow: 0 24px 60px #0009; }
+.cardw-left { position: relative; width: 300px; flex: none; min-height: 300px; }
+.cardw-leftart { position: absolute; inset: 0; background: #0e1320 center/cover; }
+.cardw-leftveil { position: absolute; inset: 0; background: linear-gradient(180deg, #0a0d1420, #0a0d14f2); }
+.cardw-leftbody { position: absolute; left: 0; right: 0; bottom: 0; padding: 20px; }
+.cardw-eyebrow { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.12em; color: #cdb6ff; font-family: var(--mono); }
+.cardw-title { font-family: var(--display); font-weight: 700; font-size: 1.5rem; line-height: 1.08; margin-top: 7px; text-shadow: 0 2px 8px #000; }
+.cardw-date { font-size: 0.78rem; color: var(--text); font-family: var(--mono); margin-top: 8px; }
+.cardw-right { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: 16px 20px; }
+.cardw-brand { display: flex; align-items: center; gap: 9px; margin-bottom: 10px; }
+.cardw-foot { margin-top: auto; font-size: 0.64rem; color: var(--faint); font-family: var(--mono); padding-top: 12px; border-top: 1px solid var(--hair); }
+@media (max-width: 720px) { .card-w { flex-direction: column; width: 340px; } .cardw-left { width: 100%; min-height: 180px; } }

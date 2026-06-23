@@ -537,6 +537,111 @@ function SeasonView({ games, pace, onPick }) {
 }
 
 // ============================================================================
+// Share (redesign step 4e): shareable cards (PNG via html2canvas) + .ics export.
+// ============================================================================
+function buildICS(items) {
+  const pad = (n) => String(n).padStart(2, '0');
+  const fmt = (d) => d.getUTCFullYear() + pad(d.getUTCMonth() + 1) + pad(d.getUTCDate());
+  let s = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Stream Slate//nabunan//EN\r\nCALSCALE:GREGORIAN\r\n';
+  items.forEach((it, i) => {
+    const nd = new Date(it.date.getTime() + 864e5);
+    s += 'BEGIN:VEVENT\r\nUID:slate-' + i + '-' + fmt(it.date) + '@nabunan\r\nDTSTART;VALUE=DATE:' + fmt(it.date) +
+      '\r\nDTEND;VALUE=DATE:' + fmt(nd) + '\r\nSUMMARY:' + String(it.title).replace(/[,;\\]/g, ' ') + '\r\nEND:VEVENT\r\n';
+  });
+  return s + 'END:VCALENDAR';
+}
+function downloadICS(items) {
+  const blob = new Blob([buildICS(items)], { type: 'text/calendar' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'stream-slate.ics';
+  a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+function savePNG(id, name) {
+  const el = document.getElementById(id);
+  if (!el || !window.html2canvas) { alert('Export still loading — try again in a second.'); return; }
+  window.html2canvas(el, { backgroundColor: '#0a0d14', scale: 2, useCORS: true, logging: false })
+    .then((c) => { const a = document.createElement('a'); a.download = name + '.png'; a.href = c.toDataURL('image/png'); a.click(); })
+    .catch(() => alert('Cover art is served from an external CDN, which can block PNG export in some browsers. The .ics export always works; or screenshot the card directly.'));
+}
+function ShareView({ games, today, pace }) {
+  const upcoming = games
+    .filter((g) => g.kind !== 'event' && isPlaceable(g.release) && anchorDate(g.release) && anchorDate(g.release).getTime() >= today.getTime())
+    .sort((a, b) => anchorDate(a.release) - anchorDate(b.release));
+  if (!upcoming.length) return <div className="anim"><div className="w-head"><h1>Share your schedule</h1><span>no upcoming dated releases to feature</span></div></div>;
+  const hero = upcoming.find((g) => g.release.precision === 'day') || upcoming[0];
+  const nextUp = upcoming.slice(0, 5);
+  const dated = upcoming.filter((g) => g.release.precision === 'day');
+  const heroArt = isImgIcon(hero.icon) ? hero.icon : null;
+  const row = (g) => ({ id: g.id, title: g.title, art: isImgIcon(g.icon) ? g.icon : null, color: gameColor(g.id).solid,
+    date: g.release.precision === 'day' ? shortDate(anchorDate(g.release)) : releaseLabel(g.release),
+    streams: g.hltbHours ? streamsToFinish(g.hltbHours, pace) : 0 });
+  return (
+    <div className="anim">
+      <div className="w-head"><h1>Share your schedule</h1><span>auto-built from your next streams — screenshot or export to post</span>
+        <button className="savebtn" style={{ marginLeft: 'auto' }}
+          onClick={() => downloadICS(dated.map((g) => ({ date: anchorDate(g.release), title: '🎮 ' + g.title })))}>⤓ Add to Calendar (.ics)</button></div>
+      <div className="share-stage">
+        <div className="share-col">
+          <div className="share-cap">Twitch panel · 340px <button className="savebtn ghost" onClick={() => savePNG('cardV', 'stream-slate-panel')}>↓ Save PNG</button></div>
+          <div className="card-v" id="cardV">
+            <div className="cardv-top">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                <div className="logo" style={{ width: 30, height: 30, fontSize: '.95rem', boxShadow: 'none', background: '#ffffff22' }}>S</div>
+                <div><div className="cardv-brandname">STREAM SLATE</div><div className="cardv-brandsub">@nabunan</div></div>
+              </div>
+              <div className="cardv-tag">UPCOMING</div>
+            </div>
+            <div className="cardv-next">
+              <div className="cardv-nextart" style={heroArt ? { backgroundImage: `url(${heroArt})` } : { background: gameColor(hero.id).solid }} />
+              <div style={{ minWidth: 0 }}>
+                <div className="cardv-eyebrow">NEXT UP</div>
+                <div className="cardv-title">{hero.title}</div>
+                <div className="cardv-date">{hero.release.precision === 'day' ? shortDate(anchorDate(hero.release)) : releaseLabel(hero.release)}</div>
+              </div>
+            </div>
+            <div className="cardv-list">
+              {nextUp.map((g) => { const r = row(g); return (
+                <div className="cardv-row" key={r.id}>
+                  <span className="cardv-chip">{r.date}</span>
+                  <div className="cardv-rowart" style={r.art ? { backgroundImage: `url(${r.art})` } : { background: r.color }} />
+                  <div className="cardv-rowtitle">{r.title}</div>
+                  <span className="cardv-rowstr">{r.streams ? r.streams + ' str' : ''}</span>
+                </div>); })}
+            </div>
+            <div className="cardv-foot">slate.nabunan.com</div>
+          </div>
+        </div>
+        <div className="share-col">
+          <div className="share-cap">Social / Discord banner · 680px <button className="savebtn ghost" onClick={() => savePNG('cardW', 'stream-slate-banner')}>↓ Save PNG</button></div>
+          <div className="card-w" id="cardW">
+            <div className="cardw-left">
+              <div className="cardw-leftart" style={heroArt ? { backgroundImage: `url(${heroArt})` } : { background: gameColor(hero.id).solid }} />
+              <div className="cardw-leftveil" />
+              <div className="cardw-leftbody">
+                <div className="cardw-eyebrow">NEXT STREAM</div>
+                <div className="cardw-title">{hero.title}</div>
+                <div className="cardw-date">{hero.release.precision === 'day' ? shortDate(anchorDate(hero.release)) : releaseLabel(hero.release)}</div>
+              </div>
+            </div>
+            <div className="cardw-right">
+              <div className="cardw-brand"><div className="logo" style={{ width: 28, height: 28, fontSize: '.9rem', boxShadow: 'none' }}>S</div>
+                <div><div className="cardv-brandname">STREAM SLATE</div><div className="cardv-brandsub">@nabunan · on deck</div></div></div>
+              {nextUp.map((g) => { const r = row(g); return (
+                <div className="cardv-row" key={r.id}>
+                  <span className="cardv-chip">{r.date}</span>
+                  <div className="cardv-rowart" style={r.art ? { backgroundImage: `url(${r.art})` } : { background: r.color }} />
+                  <div className="cardv-rowtitle">{r.title}</div>
+                  <span className="cardv-rowstr">{r.streams ? r.streams + ' str' : ''}</span>
+                </div>); })}
+              <div className="cardw-foot">slate.nabunan.com · paced to my live 90-day cadence</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
 // App
 // ============================================================================
 function App() {
@@ -707,6 +812,8 @@ function App() {
               onClick={() => setSettings((s) => ({ ...s, view: 'browse' }))}>Browse</button>
             <button className={settings.view === 'season' ? 'on' : ''}
               onClick={() => setSettings((s) => ({ ...s, view: 'season' }))}>Season</button>
+            <button className={settings.view === 'share' ? 'on' : ''}
+              onClick={() => setSettings((s) => ({ ...s, view: 'share' }))}>Share</button>
             <button className={settings.view === 'releases' ? 'on' : ''}
               onClick={() => setSettings((s) => ({ ...s, view: 'releases' }))}>Releases</button>
           </div>
@@ -740,6 +847,8 @@ function App() {
         ? <BrowseView games={effGames} onPick={setDetail} />
         : settings.view === 'season'
         ? <SeasonView games={effGames} pace={ep} onPick={setDetail} />
+        : settings.view === 'share'
+        ? <ShareView games={effGames} today={today} pace={ep} />
         : settings.view === 'releases'
         ? <ReleasesView games={effGames} pace={ep} onPick={setDetail} />
         : <MonthGridView games={effGames} pace={ep} vacations={normVacs} dayOpts={dayOpts} doneCounts={doneInfo.counts} streamMap={doneInfo.streamMap} sessionGoals={settings.sessionGoals || {}} streams={streams} onPick={setDetail} onTogglePlan={togglePlan} onChooseToday={chooseToday} />}
