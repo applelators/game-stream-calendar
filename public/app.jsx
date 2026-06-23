@@ -1242,11 +1242,11 @@ function bonusNoteFor(dbrackets) {
 
 // Art-forward Mon–Sun strip for the current week (redesign step 2). Reuses dayInfo
 // output: each day is either a planned art cell, a streamed "done" card, or empty.
-function WeekStrip({ days, onPick }) {
+function WeekStrip({ days, onOpenDay }) {
   return (
     <div className="week">
       <div className="week-head"><span className="week-h">This week</span>
-        <span className="week-sub">Mon–Sun · tap a stream to open it</span></div>
+        <span className="week-sub">Mon–Sun · tap a day for its run-of-show</span></div>
       <div className="week-row">
         {days.map((wd, i) => {
           const info = wd.info;
@@ -1254,7 +1254,7 @@ function WeekStrip({ days, onPick }) {
           const art = play && isImgIcon(play.icon) ? play.icon : null;
           const doneArt = info.streamed && info.streamed[0] && info.streamed[0].games[0] && info.streamed[0].games[0].art;
           return (
-            <div className={'wday' + (wd.isToday ? ' today' : '')} key={i}>
+            <div className={'wday' + (wd.isToday ? ' today' : '')} key={i} onClick={() => onOpenDay(wd)} style={{ cursor: 'pointer' }}>
               <div className="wday-top"><span className="wday-dow">{wd.dow}</span><span className="wday-num">{wd.num}</span></div>
               {info.streamed ? (
                 <div className="wdone">
@@ -1262,7 +1262,7 @@ function WeekStrip({ days, onPick }) {
                   <small>✓ streamed</small>
                 </div>
               ) : play ? (
-                <div className="wstream" onClick={() => onPick(play.id)} style={art ? null : { background: gameColor(play.id).solid }}>
+                <div className="wstream" style={art ? null : { background: gameColor(play.id).solid }}>
                   {art && <div className="wstream-art" style={{ backgroundImage: `url(${art})` }} />}
                   {art && <div className="wstream-grad" />}
                   {info.streamOrd != null && <span className="wstream-no" style={{ background: gameColor(play.id).solid }}>{info.streamOrd}/{info.streamTotal}</span>}
@@ -1283,9 +1283,65 @@ function WeekStrip({ days, onPick }) {
   );
 }
 
+// A single day's run-of-show: pre-show → game → goal → wrap, or the day's state.
+function RunOfShowModal({ day, onClose, onPick }) {
+  if (!day) return null;
+  const info = day.info;
+  const play = (!info.vac && !info.launch && info.session && info.play) ? info.play : null;
+  let tag = { t: 'Open day', c: 'var(--faint)' };
+  if (day.isToday && play) tag = { t: 'Today · streaming', c: '#cdb6ff' };
+  else if (info.streamed) tag = { t: 'Streamed', c: 'var(--good)' };
+  else if (info.launch) tag = { t: 'Launch eve', c: '#9fb4d8' };
+  else if (play) tag = { t: 'Stream day', c: 'var(--good)' };
+  else if (info.vac) tag = { t: 'Time off', c: 'var(--warn)' };
+  else if (info.rest) tag = { t: 'Rest day', c: 'var(--muted)' };
+  return (
+    <div className="scrim" onClick={onClose}>
+      <div className="modal mros" onClick={(e) => e.stopPropagation()}>
+        <button className="modal-x" onClick={onClose}>×</button>
+        <div className="ros-head"><div className="ros-date">{day.dateLabel}</div><div className="ros-tag" style={{ color: tag.c }}>{tag.t}</div></div>
+        <div className="ros-body">
+          {play ? (
+            <React.Fragment>
+              <div className="ros-game" onClick={() => onPick(play.id)} style={{ cursor: 'pointer' }}>
+                <div className="ros-art" style={isImgIcon(play.icon) ? { backgroundImage: `url(${play.icon})` } : { background: gameColor(play.id).solid }} />
+                <div><div className="ros-title">{play.title}</div>
+                  <div className="ros-sub">Stream {info.streamOrd} of {info.streamTotal}{info.session.hours ? ` · ~${info.session.hours}h planned` : ''}</div></div>
+              </div>
+              <div className="ros-steps">
+                <div className="ros-step"><span className="ros-n">1</span><div>Pre-show — title card up, category set, alert &amp; audio check</div></div>
+                <div className="ros-step"><span className="ros-n">2</span><div>Main — {play.title}, stream {info.streamOrd}/{info.streamTotal}</div></div>
+                {info.goal && <div className="ros-step"><span className="ros-n">3</span><div>Goal — {renderSpoilers(info.goal)}</div></div>}
+                <div className="ros-step"><span className="ros-n">{info.goal ? 4 : 3}</span><div>Wrap — clip highlights, tease the next stream</div></div>
+              </div>
+            </React.Fragment>
+          ) : info.launch ? (
+            <div className="ros-note">🌙 <b>Midnight launch.</b> No regular stream the night before — be ready to go live at <b>12:00 AM</b> for {info.launch.title}.</div>
+          ) : info.streamed ? (
+            info.streamed.map((st, i) => (
+              <div className="ros-game" key={i}>
+                <div className="ros-art" style={st.games[0] && st.games[0].art ? { backgroundImage: `url(${st.games[0].art})` } : { background: 'var(--panel-3)' }} />
+                <div><div className="ros-title">{st.games.map((g) => g.name).join(' + ')}</div>
+                  <div className="ros-sub" style={{ color: 'var(--good)' }}>✓ streamed · {fmtMins(st.minutes)}</div></div>
+              </div>
+            ))
+          ) : info.vac ? (
+            <div className="ros-note">✈ <b>Time off.</b> {info.vacLabel || 'On a break'} — no stream scheduled.</div>
+          ) : info.rest ? (
+            <div className="ros-note">☕ <b>Rest day.</b> Your committed plan still finishes on time.</div>
+          ) : (
+            <div className="ros-note">A clean <b>open day</b> — no stream scheduled. Recover and prep for the week ahead.</div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap, sessionGoals, streams, onPick, onTogglePlan, onChooseToday }) {
   const isMobile = useIsMobile();
   const [pop, setPop] = useState(null); // in-app hover popup over a cell
+  const [dayShow, setDayShow] = useState(null); // run-of-show day modal
 
   // Actual streams already done (from @nabunan's Twitch history) keyed by calendar
   // day, so past days show what really happened (✓) instead of the plan.
@@ -1591,11 +1647,13 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap,
     const dow = new Date(Date.UTC(tY, tM, tD)).getUTCDay(); // 0 Sun..6 Sat
     const offset = (dow + 6) % 7;                            // days back to Monday
     const labels = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+    const full = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const out = [];
     for (let i = 0; i < 7; i++) {
       const day = new Date(Date.UTC(tY, tM, tD - offset + i));
       out.push({
         dow: labels[i], num: day.getUTCDate(),
+        dateLabel: `${full[i]} · ${MONTHS[day.getUTCMonth()]} ${day.getUTCDate()}`,
         isToday: day.getUTCFullYear() === tY && day.getUTCMonth() === tM && day.getUTCDate() === tD,
         info: dayInfo(day, ctx),
       });
@@ -1606,7 +1664,8 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap,
   return (
     <div>
       <TodayPicker options={todayOptions} mobile={false} onPick={onPick} onChoose={onChooseToday} />
-      <WeekStrip days={weekDays} onPick={onPick} />
+      <WeekStrip days={weekDays} onOpenDay={setDayShow} />
+      {dayShow && <RunOfShowModal day={dayShow} onClose={() => setDayShow(null)} onPick={(id) => { setDayShow(null); onPick(id); }} />}
       <div className="gc-bar">
         <button className="gc-today" onClick={scrollToToday}>Jump to today</button>
         <div className="gc-cnt">{totalCount} release{totalCount === 1 ? '' : 's'} · scroll for more months ↓</div>

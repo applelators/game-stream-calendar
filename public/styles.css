@@ -760,3 +760,21 @@ input, select, textarea { font-family: inherit; }
 .cardw-brand { display: flex; align-items: center; gap: 9px; margin-bottom: 10px; }
 .cardw-foot { margin-top: auto; font-size: 0.64rem; color: var(--faint); font-family: var(--mono); padding-top: 12px; border-top: 1px solid var(--hair); }
 @media (max-width: 720px) { .card-w { flex-direction: column; width: 340px; } .cardw-left { width: 100%; min-height: 180px; } }
+
+/* ============================================================
+   Run-of-show day modal (redesign step 4f)
+   ============================================================ */
+.modal.mros { max-width: 420px; overflow: hidden; position: relative; }
+.ros-head { padding: 18px 20px 0; }
+.ros-date { font-family: var(--display); font-weight: 700; font-size: 1.3rem; }
+.ros-tag { font-size: 0.66rem; font-weight: 700; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; }
+.ros-body { padding: 14px 20px 20px; }
+.ros-game { display: flex; gap: 13px; align-items: center; margin-bottom: 14px; }
+.ros-art { width: 56px; height: 56px; border-radius: 10px; background: #0e1320 center/cover; box-shadow: 0 4px 14px #0009; flex: none; }
+.ros-title { font-family: var(--display); font-weight: 700; font-size: 1.02rem; line-height: 1.15; }
+.ros-sub { font-size: 0.74rem; color: #9fb4d8; font-family: var(--mono); margin-top: 4px; }
+.ros-steps { display: flex; flex-direction: column; gap: 8px; }
+.ros-step { display: flex; gap: 11px; align-items: flex-start; font-size: 0.82rem; color: #c9d2e0; line-height: 1.4; background: var(--s3); border: 1px solid var(--hair); border-radius: 10px; padding: 9px 11px; }
+.ros-n { width: 20px; height: 20px; border-radius: 99px; background: var(--acc); color: var(--acc-ink); font-size: 0.64rem; font-weight: 800; display: grid; place-items: center; flex: none; font-family: var(--mono); }
+.ros-note { font-size: 0.86rem; color: var(--muted); line-height: 1.5; background: var(--s3); border: 1px solid var(--hair); border-radius: 10px; padding: 13px 15px; }
+.ros-note b { color: var(--text); }
