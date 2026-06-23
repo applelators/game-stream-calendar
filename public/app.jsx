@@ -25,6 +25,7 @@ const DEFAULT_SETTINGS = {
   dayPins: {},     // { 'YYYY-MM-DD': gameId } — force a specific game on a specific day
   restDays: [],    // ISO dates the user chose to rest (no committed stream)
   sessionGoals: {},// { 'gameId#streamOrdinal': 'goal note' } — per-stream goals (hover)
+  queue: [],       // what-if queue play order (game ids); empty = default release order
 };
 
 const FALLBACK_PACE = { hoursPerStream: 5.11, hoursPerWeek: 11.52, weekdayHps: 4.0, weekendHps: 8.0, weekdayStreams: 0, weekendStreams: 0, source: 'fallback', fetchedAt: null, numStreams: 29, totalHours: 148.1, windowDays: 90 };
@@ -312,6 +313,87 @@ function DeadlinePanel({ deadlines, onPick }) {
 }
 
 // ============================================================================
+// What-if queue (redesign step 3): drag to reorder; finish dates re-chain at the
+// live pace; each game flagged against its finishBefore deadline. Order persists.
+// ============================================================================
+// Default play order: in-progress games first (by date), then every committed dated
+// game from today on, in release order. Events/bonus/finished excluded.
+function defaultQueueIds(games, today, doneHours) {
+  const inProg = [], upcoming = [];
+  for (const g of games) {
+    if (g.kind === 'event' || g.bonus) continue;
+    const done = (doneHours && doneHours[g.id]) || 0;
+    const remaining = (Number(g.hltbHours) || 0) - done;
+    if (remaining <= 0.5) continue;
+    if (done > 0) { inProg.push(g); continue; }
+    if (!isPlaceable(g.release)) continue;
+    const a = anchorDate(g.release);
+    if (a && a.getTime() >= today.getTime()) upcoming.push({ g, a });
+  }
+  const byDate = (a, b) => { const x = anchorDate(a.release), y = anchorDate(b.release); return (x && y) ? x - y : 0; };
+  inProg.sort(byDate);
+  upcoming.sort((p, q) => p.a - q.a);
+  return [...inProg.map((g) => g.id), ...upcoming.map((o) => o.g.id)];
+}
+function QueueView({ games, pace, ids, today, doneHours, onReorder, onPick }) {
+  const byId = {}; games.forEach((g) => { byId[g.id] = g; });
+  const [dragIdx, setDragIdx] = useState(null);
+  const [overIdx, setOverIdx] = useState(null);
+  const hpw = (pace && pace.hoursPerWeek) || 11.52;
+  let cursor = today.getTime();
+  const rows = [];
+  for (const id of ids) {
+    const g = byId[id]; if (!g) continue;
+    const remaining = Math.max(0, (Number(g.hltbHours) || 0) - ((doneHours && doneHours[id]) || 0));
+    cursor += (remaining / hpw) * 6048e5;
+    const fin = new Date(cursor);
+    const dl = g.finishBefore ? finishBeforeDeadline(g, byId) : null;
+    let flag = '', tone = 'var(--faint)';
+    if (dl) {
+      if (fin.getTime() > dl.getTime()) { flag = '⚠ ' + Math.ceil((fin.getTime() - dl.getTime()) / 864e5) + 'd late'; tone = 'var(--danger)'; }
+      else { flag = '✓ in time'; tone = 'var(--good)'; }
+    }
+    rows.push({ id, g, remaining: Math.round(remaining), streams: streamsToFinish(remaining, pace), fin, flag, tone });
+  }
+  const lastFin = rows.length ? rows[rows.length - 1].fin : null;
+  const lateCount = rows.filter((r) => r.flag.startsWith('⚠')).length;
+  const drop = () => {
+    if (dragIdx == null || overIdx == null || dragIdx === overIdx) { setDragIdx(null); setOverIdx(null); return; }
+    const q = ids.slice(); const [m] = q.splice(dragIdx, 1); q.splice(overIdx, 0, m);
+    onReorder(q); setDragIdx(null); setOverIdx(null);
+  };
+  return (
+    <div className="anim">
+      <div className="q-head">
+        <div>
+          <div className="q-h">What-if queue</div>
+          <div className="q-desc">drag to reorder · finish dates re-chain at your {hpw.toFixed(1)}h/wk pace (breaks not counted)</div>
+        </div>
+        <button className="btn btn-sm" onClick={() => onReorder([])}>Reset to release order</button>
+      </div>
+      <div className="q-list">
+        {rows.map((r, i) => (
+          <div key={r.id} className={'q-row' + (dragIdx === i ? ' drag' : '') + (overIdx === i ? ' over' : '')}
+            draggable onDragStart={() => setDragIdx(i)} onDragEnter={() => setOverIdx(i)}
+            onDragOver={(e) => e.preventDefault()} onDragEnd={drop}>
+            <div className="q-handle">⠿</div>
+            <div className="q-art" onClick={() => onPick(r.id)}
+              style={isImgIcon(r.g.icon) ? { backgroundImage: `url(${r.g.icon})` } : { background: gameColor(r.id).solid }} />
+            <div style={{ minWidth: 0 }}>
+              <div className="q-name">{r.g.title}</div>
+              <div className="q-sub">{r.remaining}h · {r.streams} stream{r.streams === 1 ? '' : 's'}{r.g.finishBefore ? ' · has deadline' : ''}</div>
+            </div>
+            <div className="q-fin">{fmtDate(r.fin)}<small>est. finish</small></div>
+            <div className="q-flag" style={{ color: r.tone }}>{r.flag}</div>
+          </div>
+        ))}
+      </div>
+      <div className="q-summary">In this order, the last game wraps <b>{lastFin ? fmtDate(lastFin) : '—'}</b>{lateCount ? ` · ${lateCount} game${lateCount > 1 ? 's' : ''} miss a deadline` : ' · every deadline holds ✓'}.</div>
+    </div>
+  );
+}
+
+// ============================================================================
 // App
 // ============================================================================
 function App() {
@@ -451,6 +533,16 @@ function App() {
   const paceSource = settings.override ? 'manual'
     : pace.source === 'sullygnome' ? 'live 90-day'
     : pace.source === 'twitchtracker' ? 'TwitchTracker 30-day' : 'fallback';
+  // What-if queue order: saved order (still-existing ids) + any new games appended.
+  const queueIds = useMemo(() => {
+    const def = defaultQueueIds(effGames, today, doneInfo.hours);
+    const live = new Set(def);
+    const saved = (settings.queue || []).filter((id) => live.has(id));
+    const merged = [...saved];
+    for (const id of def) if (!merged.includes(id)) merged.push(id);
+    return merged;
+  }, [effGames, settings.queue, today, doneInfo.hours]);
+  const reorderQueue = useCallback((ids) => setSettings((s) => ({ ...s, queue: ids })), []);
 
   return (
     <div className="app">
@@ -465,6 +557,8 @@ function App() {
               onClick={() => setSettings((s) => ({ ...s, view: 'timeline' }))}>Timeline</button>
             <button className={settings.view === 'grid' ? 'on' : ''}
               onClick={() => setSettings((s) => ({ ...s, view: 'grid' }))}>Month grid</button>
+            <button className={settings.view === 'queue' ? 'on' : ''}
+              onClick={() => setSettings((s) => ({ ...s, view: 'queue' }))}>Queue</button>
             <button className={settings.view === 'releases' ? 'on' : ''}
               onClick={() => setSettings((s) => ({ ...s, view: 'releases' }))}>Releases</button>
           </div>
@@ -485,6 +579,8 @@ function App() {
 
       {settings.view === 'timeline'
         ? <TimelineView games={effGames} pace={ep} mode={settings.schedMode} vacations={normVacs} onPick={setDetail} />
+        : settings.view === 'queue'
+        ? <QueueView games={effGames} pace={ep} ids={queueIds} today={today} doneHours={doneInfo.hours} onReorder={reorderQueue} onPick={setDetail} />
         : settings.view === 'releases'
         ? <ReleasesView games={effGames} pace={ep} onPick={setDetail} />
         : <MonthGridView games={effGames} pace={ep} vacations={normVacs} dayOpts={dayOpts} doneCounts={doneInfo.counts} streamMap={doneInfo.streamMap} sessionGoals={settings.sessionGoals || {}} streams={streams} onPick={setDetail} onTogglePlan={togglePlan} onChooseToday={chooseToday} />}

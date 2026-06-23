@@ -590,3 +590,25 @@ input, select, textarea { font-family: inherit; }
 .wdone-art { width: 34px; height: 34px; border-radius: 6px; background-size: cover; background-position: center; box-shadow: 0 2px 6px #0008; }
 .wdone small { font-size: 0.58rem; font-family: var(--mono); color: var(--good); font-weight: 700; }
 @media (max-width: 640px) { .wday { flex: 1 0 108px; min-width: 108px; } }
+
+/* ============================================================
+   What-if queue (redesign step 3)
+   ============================================================ */
+.q-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin: 6px 0 14px; flex-wrap: wrap; }
+.q-h { font-family: var(--display); font-weight: 700; font-size: 1.15rem; }
+.q-desc { font-size: 0.72rem; color: var(--faint); font-family: var(--mono); margin-top: 3px; }
+.q-list { border: 1px solid var(--border-solid); border-radius: 16px; background: var(--s1); overflow: hidden; }
+.q-row { display: grid; grid-template-columns: 24px 40px 1fr 120px 96px; align-items: center; gap: 13px; padding: 11px 14px; border-top: 1px solid #161d2a; background: var(--s1); }
+.q-row:first-child { border-top: 0; }
+.q-row.drag { opacity: 0.35; }
+.q-row.over { box-shadow: inset 0 2px 0 var(--acc); }
+.q-handle { color: var(--faint); font-size: 1.05rem; text-align: center; cursor: grab; user-select: none; }
+.q-art { width: 40px; height: 40px; border-radius: 8px; background: #0e1320 center/cover; box-shadow: 0 2px 6px #0008; cursor: pointer; }
+.q-name { font-size: 0.86rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.q-sub { font-size: 0.66rem; color: var(--faint); font-family: var(--mono); margin-top: 2px; }
+.q-fin { font-family: var(--mono); font-size: 0.82rem; text-align: right; color: #c9d2e0; }
+.q-fin small { font-size: 0.58rem; color: var(--faint); display: block; margin-top: 2px; }
+.q-flag { font-family: var(--mono); font-size: 0.66rem; font-weight: 700; text-align: right; }
+.q-summary { margin-top: 14px; font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+.q-summary b { color: var(--text); }
+@media (max-width: 640px) { .q-row { grid-template-columns: 20px 1fr 84px; } .q-art, .q-sub, .q-flag { display: none; } }
