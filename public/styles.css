@@ -135,8 +135,9 @@ input, select, textarea { font-family: inherit; }
 .gc-dow { display: grid; grid-template-columns: repeat(7, 1fr); background: var(--panel-2); border-bottom: 1px solid var(--border-solid); }
 .gc-dow span { padding: 9px 11px; font-size: 0.66rem; letter-spacing: 0.09em; color: var(--faint); font-weight: 700; }
 /* fixed, uniform row height so weeks line up regardless of cover art aspect ratio */
-.gc-grid { display: grid; grid-template-columns: repeat(7, 1fr); grid-auto-rows: 112px; }
-.gc-cell { position: relative; min-height: 0; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 6px 7px 8px; display: flex; flex-direction: column; gap: 3px; overflow: hidden; }
+/* square, rounded, gap-separated art tiles (matches the redesign month) */
+.gc-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; padding: 8px 10px 14px; }
+.gc-cell { position: relative; aspect-ratio: 1 / 1; min-height: 0; border-radius: 10px; border: 1px solid var(--hair); background: #0d121c; padding: 6px 7px 8px; display: flex; flex-direction: column; gap: 3px; overflow: hidden; }
 /* stream number in the day's corner, separate from the game pill */
 .gc-badges { position: absolute; top: 5px; right: 6px; z-index: 3; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
 .gc-strno { font-family: var(--mono); font-size: 0.64rem;
@@ -147,11 +148,10 @@ input, select, textarea { font-family: inherit; }
   font-weight: 700; color: var(--muted); background: #000000a6; border-radius: 3px; padding: 0 2px; line-height: 1.45; }
 .gc-hrs { position: absolute; top: 5px; left: 6px; z-index: 1; font-family: var(--mono); font-size: 0.6rem;
   font-weight: 700; color: var(--accent-2); background: #00000080; border-radius: 4px; padding: 0 4px; line-height: 1.4; }
-.gc-cell:nth-child(7n) { border-right: 0; }
-.gc-grid > .gc-cell:nth-last-child(-n+7) { border-bottom: 0; }
 .gc-cell.oth { background: #0a0e16; }
 .gc-cell.win { background: #a970ff10; }
 .gc-cell.oth.win { background: #a970ff08; }
+.gc-cell.today { background: #19142b; border-color: var(--acc); }
 .gc-dnum { align-self: flex-start; font-size: 0.86rem; color: var(--text); font-family: var(--mono); font-weight: 700; padding: 1px 3px; margin-bottom: 1px; }
 .gc-cell.oth .gc-dnum { color: var(--faint); opacity: 0.55; }
 .gc-cell.today .gc-dnum { background: var(--accent); color: var(--acc-ink); border-radius: 99px; min-width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; padding: 0 6px; }
@@ -183,10 +183,10 @@ input, select, textarea { font-family: inherit; }
 .gc-ev.k-dlc { background: var(--good); }
 .gc-ev.k-event { background: var(--warn); }
 .gc-more { font-size: 0.68rem; color: var(--muted); padding: 1px 4px; }
-.gc-cell.pad { background: #0a0e16; }
+.gc-cell.pad { background: transparent; border-color: transparent; }
 
 /* continuous month stack + persistent weekday header */
-.gc-weekbar { position: sticky; top: 0; z-index: 5; display: grid; grid-template-columns: repeat(7, 1fr); background: var(--panel-2); border: 1px solid var(--border-solid); border-radius: var(--radius-sm); margin-bottom: 14px; box-shadow: 0 6px 16px #04060b66; }
+.gc-weekbar { position: sticky; top: 0; z-index: 5; display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; padding: 0 10px; background: var(--panel-2); border: 1px solid var(--border-solid); border-radius: var(--radius-sm); margin-bottom: 14px; box-shadow: 0 6px 16px #04060b66; }
 .gc-weekbar span { padding: 9px 12px; font-size: 0.66rem; letter-spacing: 0.09em; color: var(--faint); font-weight: 700; }
 .gc-stack { display: flex; flex-direction: column; gap: 16px; }
 .gc-month { border: 1px solid var(--border-solid); border-radius: var(--radius); overflow: hidden; background: var(--panel); scroll-margin-top: 60px; }
