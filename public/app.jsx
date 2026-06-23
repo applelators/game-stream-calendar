@@ -122,20 +122,32 @@ function computeDoneInfo(games, streams) {
   const hours = {}, counts = {};
   if (!streams || !streams.length || !games || !games.length) return { hours, counts };
   const groups = {}; // base key -> [{id, hltb}] in file/part order
+  const startMs = {}; // base key -> earliest scheduled start (ms); streams before it are
+  //                     pre-existing progress already baked into hltbHours, so not credited.
   for (const g of games) {
     if (g.kind === 'event' || g.bonus) continue;
     const base = stripGameName(g.title); if (!base) continue;
     (groups[base] = groups[base] || []).push({ id: g.id, hltb: Number(g.hltbHours) || 0 });
+    const a = anchorDate(g.release);
+    if (a) { const ms = a.getTime(); if (startMs[base] == null || ms < startMs[base]) startMs[base] = ms; }
   }
   const baseFor = (k) => Object.keys(groups).find((b) => k === b || ((k.includes(b) || b.includes(k)) && Math.min(k.length, b.length) >= 8));
-  // per base: chronological list of { hrs } from matching past streams
+  const dateMs = (s) => { const [y, m, d] = String(s || '').split('-').map(Number); return (y && m && d) ? Date.UTC(y, m - 1, d) : null; };
+  // per base: chronological list of { hrs } from matching past streams, only those on/after
+  // the game's scheduled start (older streams = progress already in the estimate).
   const perBase = {};
   const sorted = [...streams].sort((a, b) => String(a.date) < String(b.date) ? -1 : 1);
   for (const s of sorted) {
     const gs = s.games || [];
     if (!gs.length) continue;
+    const sMs = dateMs(s.date);
     const per = (Number(s.minutes) || 0) / 60 / gs.length;
-    for (const g of gs) { const b = baseFor(stripGameName(g.name)); if (b) (perBase[b] = perBase[b] || []).push(per); }
+    for (const g of gs) {
+      const b = baseFor(stripGameName(g.name));
+      if (!b) continue;
+      if (startMs[b] != null && sMs != null && sMs < startMs[b]) continue; // pre-start progress
+      (perBase[b] = perBase[b] || []).push(per);
+    }
   }
   for (const base in perBase) {
     const parts = groups[base];
