@@ -105,6 +105,34 @@ const fmtDate = (d) => `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTC
 const shortDate = (d) => `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`;
 const fmtMins = (m) => { const h = Math.floor((m || 0) / 60), mm = (m || 0) % 60; return h ? `${h}h${mm ? ' ' + mm + 'm' : ''}` : `${mm}m`; };
 
+// Build the content for the in-app hover popup from a day's info. Returns null for
+// days with nothing to show (empty/vacation).
+function cellPopData(info, day) {
+  if (!info || info.vac) return null;
+  if (info.streamed) {
+    const items = [];
+    for (const st of info.streamed) {
+      const names = st.games.map((g) => g.name).join(' + ');
+      const g0 = st.games[0] || {};
+      items.push({ name: names, art: g0.art, ord: g0.ord, total: g0.total, length: fmtMins(st.minutes), combined: st.games.length > 1 });
+    }
+    return { kind: 'streamed', items };
+  }
+  if (info.launch) return { kind: 'launch', title: info.launch.title, art: info.launch.icon };
+  if (info.rest) return { kind: 'rest' };
+  if (info.session && info.play) {
+    const dow = day.getUTCDay();
+    return {
+      kind: 'planned', title: info.play.title, art: info.play.icon,
+      ord: info.streamOrd, total: info.streamTotal,
+      length: info.session.hours ? `~${info.session.hours}h planned (${dow === 0 || dow === 6 ? 'weekend' : 'weekday'})` : null,
+      goal: info.goal,
+    };
+  }
+  if (info.bonusPlay) return { kind: 'bonus', title: info.bonusPlay.title, art: info.bonusPlay.icon };
+  return null;
+}
+
 // Map real streamed history onto slate games. Stream game NAMES (from SullyGnome) are
 // matched to slate titles by a normalized key (part suffix / parens / punctuation
 // stripped, fuzzy contains). Each matching past stream's hours are allocated across
@@ -119,8 +147,8 @@ const stripGameName = (s) => String(s || '').toLowerCase()
   .replace(/\bns2\b/g, 'nintendo switch 2')
   .replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
 function computeDoneInfo(games, streams) {
-  const hours = {}, counts = {};
-  if (!streams || !streams.length || !games || !games.length) return { hours, counts };
+  const hours = {}, counts = {}, streamMap = {}; // streamMap: `${dayKey}|${normName}` -> {id, ord}
+  if (!streams || !streams.length || !games || !games.length) return { hours, counts, streamMap };
   const groups = {}; // base key -> [{id, hltb}] in file/part order
   const startMs = {}; // base key -> earliest scheduled start (ms); streams before it are
   //                     pre-existing progress already baked into hltbHours, so not credited.
@@ -133,8 +161,8 @@ function computeDoneInfo(games, streams) {
   }
   const baseFor = (k) => Object.keys(groups).find((b) => k === b || ((k.includes(b) || b.includes(k)) && Math.min(k.length, b.length) >= 8));
   const dateMs = (s) => { const [y, m, d] = String(s || '').split('-').map(Number); return (y && m && d) ? Date.UTC(y, m - 1, d) : null; };
-  // per base: chronological list of { hrs } from matching past streams, only those on/after
-  // the game's scheduled start (older streams = progress already in the estimate).
+  // per base: chronological list of { hrs, key } from matching past streams, only those
+  // on/after the game's scheduled start (older streams = progress already in the estimate).
   const perBase = {};
   const sorted = [...streams].sort((a, b) => String(a.date) < String(b.date) ? -1 : 1);
   for (const s of sorted) {
@@ -142,17 +170,25 @@ function computeDoneInfo(games, streams) {
     if (!gs.length) continue;
     const sMs = dateMs(s.date);
     const per = (Number(s.minutes) || 0) / 60 / gs.length;
+    const [yy, mm, dd] = String(s.date || '').split('-').map(Number);
+    const dayKey = (yy && mm && dd) ? `${yy}-${mm - 1}-${dd}` : null;
     for (const g of gs) {
-      const b = baseFor(stripGameName(g.name));
+      const norm = stripGameName(g.name);
+      const b = baseFor(norm);
       if (!b) continue;
       if (startMs[b] != null && sMs != null && sMs < startMs[b]) continue; // pre-start progress
-      (perBase[b] = perBase[b] || []).push(per);
+      (perBase[b] = perBase[b] || []).push({ hrs: per, key: dayKey ? `${dayKey}|${norm}` : null });
     }
   }
   for (const base in perBase) {
     const parts = groups[base];
     let pi = 0, filled = 0;
-    for (const hrs of perBase[base]) {
+    const ordByPart = {};
+    for (const ev of perBase[base]) {
+      const hrs = ev.hrs;
+      const startId = parts[Math.min(pi, parts.length - 1)].id; // part this stream begins on
+      ordByPart[startId] = (ordByPart[startId] || 0) + 1;
+      if (ev.key) streamMap[ev.key] = { id: startId, ord: ordByPart[startId] };
       let h = hrs;
       while (h > 0.001 && pi < parts.length) {
         const cap = Math.max(0, parts[pi].hltb - filled);
@@ -164,7 +200,7 @@ function computeDoneInfo(games, streams) {
       }
     }
   }
-  return { hours, counts };
+  return { hours, counts, streamMap };
 }
 function effectivePace(settings, pace) {
   if (settings.override) return { hoursPerStream: settings.hoursPerStream, hoursPerWeek: settings.hoursPerWeek, weekdayHps: settings.hoursPerStream, weekendHps: settings.hoursPerStream };
@@ -316,7 +352,7 @@ function App() {
 
       {settings.view === 'timeline'
         ? <TimelineView games={effGames} pace={ep} mode={settings.schedMode} vacations={normVacs} onPick={setDetail} />
-        : <MonthGridView games={effGames} pace={ep} vacations={normVacs} dayOpts={dayOpts} doneCounts={doneInfo.counts} sessionGoals={settings.sessionGoals || {}} streams={streams} onPick={setDetail} onTogglePlan={togglePlan} onChooseToday={chooseToday} />}
+        : <MonthGridView games={effGames} pace={ep} vacations={normVacs} dayOpts={dayOpts} doneCounts={doneInfo.counts} streamMap={doneInfo.streamMap} sessionGoals={settings.sessionGoals || {}} streams={streams} onPick={setDetail} onTogglePlan={togglePlan} onChooseToday={chooseToday} />}
 
       {detailGame && (
         <DetailCard game={detailGame} pace={ep} vacations={normVacs} queuedPos={seqPositions[detailGame.id]}
@@ -509,7 +545,20 @@ function dayInfo(day, ctx) {
   const releases = ctx.releasesByDay[k] || [];
   // Actual history wins: a day you already streamed shows what you really played.
   const streamed = ctx.streamedByDay && ctx.streamedByDay[k];
-  if (streamed && streamed.length) return { streamed, releases };
+  if (streamed && streamed.length) {
+    // Attach each game's playthrough placement (X of N: completed + planned).
+    let primaryOrd = null, primaryTotal = null;
+    const enriched = streamed.map((st) => ({
+      minutes: st.minutes,
+      games: st.games.map((g) => {
+        const m = ctx.streamMap[`${k}|${stripGameName(g.name)}`];
+        let ord = null, total = null;
+        if (m) { ord = m.ord; total = (ctx.doneCounts[m.id] || 0) + (ctx.plannedTotal[m.id] || 0); if (primaryOrd == null) { primaryOrd = ord; primaryTotal = total; } }
+        return { ...g, ord, total };
+      }),
+    }));
+    return { streamed: enriched, streamOrd: primaryOrd, streamTotal: primaryTotal, releases };
+  }
   if (inVacation(day, ctx.vacations)) {
     return { vac: true, vacRunStart: !inVacation(prev, ctx.vacations), vacLabel: vacLabelFor(day, ctx.vacations), releases };
   }
@@ -692,8 +741,9 @@ function bonusNoteFor(dbrackets) {
   };
 }
 
-function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, sessionGoals, streams, onPick, onTogglePlan, onChooseToday }) {
+function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap, sessionGoals, streams, onPick, onTogglePlan, onChooseToday }) {
   const isMobile = useIsMobile();
+  const [pop, setPop] = useState(null); // in-app hover popup over a cell
 
   // Actual streams already done (from @nabunan's Twitch history) keyed by calendar
   // day, so past days show what really happened (✓) instead of the plan.
@@ -718,7 +768,7 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, sessionGoa
 
   // The realistic one-game-per-day plan (release-priority queue) drives the
   // calendar: each stream day maps to the game you'll actually be playing.
-  const { releasesByDay, sessionByDay, gameById, plannedByMonth, bonusByMonth, bonusPlayByDay, deadlineByDay, deadlineBracketsByMonth, slippedByMonth, todayOptions, min, max } = useMemo(() => {
+  const { releasesByDay, sessionByDay, gameById, plannedByMonth, bonusByMonth, bonusPlayByDay, deadlineByDay, deadlineBracketsByMonth, slippedByMonth, plannedTotal, todayOptions, min, max } = useMemo(() => {
     // Interleaved plan: stream sessions rotate among in-progress games; bonus games
     // fill only spare slots. Drives the calendar directly.
     // "Today" = the user's LOCAL calendar day (not UTC) so the picker, cell highlight,
@@ -847,7 +897,10 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, sessionGoa
         || (a.rest ? 1 : 0) - (b.rest ? 1 : 0) || (a.def ? 1 : 0) - (b.def ? 1 : 0));
       todayOptions = opts;
     }
-    return { releasesByDay: rbd, sessionByDay: sbd, gameById: gbi, plannedByMonth: pbm, bonusByMonth: bbm, bonusPlayByDay: bpd, deadlineByDay: dbd, deadlineBracketsByMonth: dbm, slippedByMonth: sbm, todayOptions, min: mn, max: mx };
+    // remaining planned sessions per game (for total = completed + planned).
+    const plannedTotal = {};
+    for (const key in sbd) { const s = sbd[key]; plannedTotal[s.id] = s.total; }
+    return { releasesByDay: rbd, sessionByDay: sbd, gameById: gbi, plannedByMonth: pbm, bonusByMonth: bbm, bonusPlayByDay: bpd, deadlineByDay: dbd, deadlineBracketsByMonth: dbm, slippedByMonth: sbm, plannedTotal, todayOptions, min: mn, max: mx };
   }, [placeable, pace, vacations, dayOpts, streamedByDay]);
 
   // Bonus games don't reserve midnight-launch eves (they're not committed).
@@ -855,7 +908,7 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, sessionGoa
 
   const now = new Date();
   const tY = now.getFullYear(), tM = now.getMonth(), tD = now.getDate();
-  const ctx = { vacations, sessionByDay, bonusPlayByDay, gameById, releasesByDay, deadlineByDay, streamedByDay, eveByDay: eves.eveByDay, releaseDays: eves.releaseDays, restDays: dayOpts && dayOpts.restDays, doneCounts: doneCounts || {}, sessionGoals: sessionGoals || {} };
+  const ctx = { vacations, sessionByDay, bonusPlayByDay, gameById, releasesByDay, deadlineByDay, streamedByDay, eveByDay: eves.eveByDay, releaseDays: eves.releaseDays, restDays: dayOpts && dayOpts.restDays, doneCounts: doneCounts || {}, sessionGoals: sessionGoals || {}, streamMap: streamMap || {}, plannedTotal: plannedTotal || {} };
 
   if (!min) {
     return (
@@ -1025,26 +1078,27 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, sessionGoa
               else if (info.bonusPlay) cellStyle = { backgroundColor: gameColor(info.bonusPlay.id).solid + '14' };
             }
             const dl = deadlineByDay[`${y}-${mon}-${d}`];
+            const popData = cellPopData(info, day);
             cells.push(
-              <div key={d} className={cls} style={cellStyle}>
-                <span className="gc-dnum" title={relTitles || undefined}>{d}{info.releases.length ? <span className="gc-relstar">★</span> : null}{dl ? <span className="gc-deadflag" title={`Finish before ${dl.title}: ${dl.games.join(', ')}`}>⚑</span> : null}</span>
+              <div key={d} className={cls} style={cellStyle}
+                onMouseEnter={popData ? (e) => setPop({ rect: e.currentTarget.getBoundingClientRect(), data: popData }) : undefined}
+                onMouseLeave={popData ? () => setPop(null) : undefined}>
+                <span className="gc-dnum">{d}{info.releases.length ? <span className="gc-relstar">★</span> : null}{dl ? <span className="gc-deadflag">⚑</span> : null}</span>
                 {!info.vac && !info.launch && info.session && info.play && (
-                  <span className="gc-strno" style={{ background: gameColor(info.play.id).solid, color: '#0c0c12' }}
-                    title={`Stream ${info.streamOrd} of ${info.streamTotal}`}>{info.streamOrd}/{info.streamTotal}</span>
+                  <span className="gc-strno" style={{ background: gameColor(info.play.id).solid, color: '#0c0c12' }}>{info.streamOrd}/{info.streamTotal}</span>
                 )}
-                {!info.vac && !info.launch && info.session && info.session.hours ? (
-                  <span className="gc-hrs" title={`Estimated stream length this day (${(day.getUTCDay() === 0 || day.getUTCDay() === 6) ? 'weekend' : 'weekday'} pace)`}>~{info.session.hours}h</span>
-                ) : null}
+                {info.streamed && info.streamOrd != null && (
+                  <span className="gc-strno gc-strno-done">{info.streamOrd}/{info.streamTotal}</span>
+                )}
                 {info.streamed && info.streamed.reduce((n, st) => n + st.games.length, 0) > 1 && (
-                  <span className="gc-multi" title={`Multiple categories: ${info.streamed.flatMap((st) => st.games.map((g) => g.name)).join(', ')}`}>⊞ {info.streamed.reduce((n, st) => n + st.games.length, 0)} games</span>
+                  <span className="gc-multi">⊞ {info.streamed.reduce((n, st) => n + st.games.length, 0)} games</span>
                 )}
                 {info.streamed && info.streamed.map((st, si) => {
-                  const combined = st.games.length > 1;
                   const names = st.games.map((g) => g.name).join(' + ');
                   return (
-                    <div className="gc-done" key={si} title={`Streamed: ${names} — ${fmtMins(st.minutes)}${combined ? ' (combined)' : ''}`}>
+                    <div className="gc-done" key={si}>
                       {st.games[0] && st.games[0].art ? <img className="gc-done-art" src={st.games[0].art} alt="" loading="lazy" /> : null}
-                      <span className="gc-done-nm"><span className="gc-done-chk">✓</span>{names}<span className="gc-done-len"> · {fmtMins(st.minutes)}{combined ? ' (comb.)' : ''}</span></span>
+                      <span className="gc-done-nm"><span className="gc-done-chk">✓</span>{names}</span>
                     </div>
                   );
                 })}
@@ -1058,14 +1112,12 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, sessionGoa
                   <span className="gc-goal" title={`Goal for stream #${info.streamOrd}: ${info.goal}`}>🎯</span>
                 )}
                 {!info.vac && !info.launch && info.session && info.play && (hasArt ? (
-                  <div className="gc-tile" onClick={() => onPick(info.play.id)}
-                    title={`${info.play.title} — stream ${info.session.idx}/${info.session.total}${info.goal ? `\n🎯 Goal: ${info.goal}` : ''}`}>
+                  <div className="gc-tile" onClick={() => onPick(info.play.id)}>
                     <div className="gc-tileart"><img src={info.play.icon} alt="" loading="lazy" /></div>
                     <div className="gc-tilename" style={{ background: gameColor(info.play.id).solid }}>{info.play.title}</div>
                   </div>
                 ) : (
-                  <div className="gc-ev" style={{ background: gameColor(info.play.id).solid }} onClick={() => onPick(info.play.id)}
-                    title={`${info.play.title} — stream ${info.session.idx}/${info.session.total}${info.goal ? `\n🎯 Goal: ${info.goal}` : ''}`}>
+                  <div className="gc-ev" style={{ background: gameColor(info.play.id).solid }} onClick={() => onPick(info.play.id)}>
                     {info.play.title}</div>
                 ))}
                 {info.bonusPlay && (
@@ -1110,6 +1162,39 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, sessionGoa
         })}
       </div>
       {rail.length > 0 && <RailBlock rail={rail} onPick={onPick} />}
+      {pop && pop.data && <CellPopup pop={pop} />}
+    </div>
+  );
+}
+
+// In-app hover popup that floats above the hovered calendar cell.
+function CellPopup({ pop }) {
+  const r = pop.rect, d = pop.data;
+  const style = { left: r.left + r.width / 2, top: r.top - 8 };
+  return (
+    <div className="cell-pop" style={style}>
+      {d.kind === 'streamed' && d.items.map((it, i) => (
+        <div className="cell-pop-row" key={i}>
+          {it.art ? <img className="cell-pop-art" src={it.art} alt="" /> : null}
+          <div className="cell-pop-txt">
+            <div className="cell-pop-title">✓ {it.name}{it.combined ? ' (combined)' : ''}</div>
+            <div className="cell-pop-sub">{it.ord != null ? `Stream ${it.ord} of ${it.total} · ` : ''}{it.length} streamed</div>
+          </div>
+        </div>
+      ))}
+      {d.kind === 'planned' && (
+        <div className="cell-pop-row">
+          {isImgIcon(d.art) ? <img className="cell-pop-art" src={d.art} alt="" /> : null}
+          <div className="cell-pop-txt">
+            <div className="cell-pop-title">{d.title}</div>
+            <div className="cell-pop-sub">Stream {d.ord} of {d.total}{d.length ? ` · ${d.length}` : ''}</div>
+            {d.goal && <div className="cell-pop-goal">🎯 {d.goal}</div>}
+          </div>
+        </div>
+      )}
+      {d.kind === 'launch' && <div className="cell-pop-title">🌙 Midnight launch — {d.title}</div>}
+      {d.kind === 'rest' && <div className="cell-pop-title">☕ Rest day</div>}
+      {d.kind === 'bonus' && <div className="cell-pop-title">★ {d.title} (bonus)</div>}
     </div>
   );
 }

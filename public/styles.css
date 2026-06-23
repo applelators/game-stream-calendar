@@ -399,6 +399,24 @@ input, select, textarea { font-family: inherit; }
 .gc-today-chip.chosen small, .mg-today-chip.chosen small { color: #160a2bcc; }
 .gc-today-chip.def, .mg-today-chip.def { border-style: dashed; color: var(--muted); font-size: 0.74rem; }
 .mg-pill.mg-rest { background: #1a2130; color: var(--muted); }
+/* streamed-day stream-number badge (placement in the playthrough) */
+.gc-strno.gc-strno-done { background: var(--good); color: #06160e; }
+/* in-app hover popup floating above a calendar cell */
+.cell-pop { position: fixed; z-index: 200; transform: translate(-50%, -100%);
+  background: #0d1320; border: 1px solid var(--border-hi, #34415a); border-radius: 10px;
+  box-shadow: 0 8px 26px #000b, 0 0 0 1px #0006; padding: 8px 10px; min-width: 150px; max-width: 260px;
+  pointer-events: none; animation: cellpop 0.1s ease-out; }
+.cell-pop::after { content: ''; position: absolute; left: 50%; bottom: -6px; transform: translateX(-50%);
+  border: 6px solid transparent; border-top-color: #0d1320; }
+@keyframes cellpop { from { opacity: 0; transform: translate(-50%, calc(-100% + 4px)); } to { opacity: 1; transform: translate(-50%, -100%); } }
+.cell-pop-row { display: flex; gap: 8px; align-items: center; }
+.cell-pop-row + .cell-pop-row { margin-top: 7px; padding-top: 7px; border-top: 1px solid var(--border); }
+.cell-pop-art { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; flex: none; box-shadow: 0 1px 3px #0007; }
+.cell-pop-txt { min-width: 0; }
+.cell-pop-title { font-size: 0.8rem; font-weight: 700; color: var(--text); line-height: 1.2; }
+.cell-pop-sub { font-size: 0.7rem; color: var(--muted); font-family: var(--mono); margin-top: 2px; }
+.cell-pop-goal { font-size: 0.72rem; color: var(--good); margin-top: 4px; }
+
 /* per-stream goal marker (hover for the goal) */
 .gc-goal { position: absolute; top: 4px; right: 24px; z-index: 3; font-size: 0.72rem; cursor: help; }
 .gc-cell.hasart .gc-goal { right: 26px; }
