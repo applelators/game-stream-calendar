@@ -920,3 +920,30 @@ input, select, textarea { font-family: inherit; }
 .cal-playno { position: relative; font-family: var(--mono); font-size: 0.56rem; font-weight: 700; color: #0c0c12; border-radius: 4px; padding: 0 4px; flex: none; }
 .cal-vaclbl { position: absolute; left: 7px; bottom: 6px; font-size: 0.58rem; color: #9fb4d8; font-family: var(--mono); }
 @media (max-width: 640px) { .cal-grid { grid-auto-rows: 92px; } .cal-reltitle { display: none; } }
+
+/* ============================================================
+   One-click day-off on cells + useful day-modal actions
+   ============================================================ */
+.gc-offbtn { position: absolute; right: 5px; bottom: 5px; z-index: 5; opacity: 0; pointer-events: none; transition: opacity 0.12s;
+  font-family: var(--mono); font-size: 0.58rem; font-weight: 700; color: var(--text); background: #0a0d14e0;
+  border: 1px solid var(--border-solid); border-radius: 7px; padding: 3px 7px; white-space: nowrap; }
+.gc-cell:hover .gc-offbtn { opacity: 1; pointer-events: auto; }
+.gc-offbtn:hover { border-color: var(--warn); }
+.gc-cell.dayoff { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--warn) 65%, transparent); }
+.gc-cell.dayoff .gc-offbtn { opacity: 1; pointer-events: auto; color: #241402; background: var(--warn); border-color: var(--warn); }
+
+/* day-modal action tiles (replaces the old run-of-show steps) */
+.ros-goal { display: flex; gap: 8px; flex-wrap: wrap; align-items: baseline; font-size: 0.84rem; color: #c9d2e0; line-height: 1.45; background: var(--s3); border: 1px solid var(--hair); border-radius: 10px; padding: 11px 13px; margin-top: 4px; }
+.ros-goal-k { font-size: 0.62rem; font-weight: 700; font-family: var(--mono); letter-spacing: 0.04em; color: var(--warn); flex: none; }
+.ros-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+.ros-act { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: var(--s3); border: 1px solid var(--border-solid); border-radius: 12px; padding: 11px 13px; cursor: pointer; transition: 0.12s; color: var(--text); }
+.ros-act:hover { border-color: #34415a; transform: translateY(-1px); }
+.ros-act-ic { font-size: 1.1rem; width: 22px; text-align: center; flex: none; }
+.ros-act-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.ros-act-tx b { font-size: 0.86rem; font-weight: 700; }
+.ros-act-tx small { font-size: 0.66rem; color: var(--faint); font-family: var(--mono); margin-top: 1px; }
+.ros-act-sw { font-family: var(--mono); font-weight: 800; font-size: 0.9rem; color: var(--faint); flex: none; width: 20px; height: 20px; border-radius: 99px; border: 1px solid var(--border-solid); display: grid; place-items: center; }
+.ros-act.on { border-color: var(--warn); background: color-mix(in srgb, var(--warn) 12%, var(--s3)); }
+.ros-act.on .ros-act-sw { background: var(--warn); color: #241402; border-color: var(--warn); }
+.ros-act.rest.on { border-color: var(--muted); background: color-mix(in srgb, var(--muted) 12%, var(--s3)); }
+.ros-act.rest.on .ros-act-sw { background: var(--muted); color: #0c0c12; border-color: var(--muted); }

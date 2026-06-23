@@ -903,6 +903,13 @@ function App() {
       return { ...s, longDays: cur.includes(iso) ? cur.filter((x) => x !== iso) : [...cur, iso] };
     });
   }, []);
+  // Mark/unmark a day as a rest day (no committed stream).
+  const toggleRestDay = useCallback((iso) => {
+    setSettings((s) => {
+      const cur = s.restDays || [];
+      return { ...s, restDays: cur.includes(iso) ? cur.filter((x) => x !== iso) : [...cur, iso] };
+    });
+  }, []);
   // Realistic release-priority finish per game (for the detail card).
   const seqPositions = useMemo(
     () => schedule(effGames.filter((g) => isPlaceable(g.release) && !g.bonus), ep, 'sequential', normVacs, dayOpts),
@@ -1028,10 +1035,10 @@ function App() {
         : settings.view === 'share'
         ? <ShareView games={effGames} today={today} pace={ep} />
         : settings.view === 'calendar'
-        ? <MonthGridView games={effGames} pace={ep} vacations={normVacs} dayOpts={dayOpts} doneCounts={doneInfo.counts} streamMap={doneInfo.streamMap} sessionGoals={settings.sessionGoals || {}} streams={streams} longDayISOs={settings.longDays || []} paginated onPick={setDetail} onTogglePlan={togglePlan} onChooseToday={chooseToday} onToggleLongDay={toggleLongDay} />
+        ? <MonthGridView games={effGames} pace={ep} vacations={normVacs} dayOpts={dayOpts} doneCounts={doneInfo.counts} streamMap={doneInfo.streamMap} sessionGoals={settings.sessionGoals || {}} streams={streams} longDayISOs={settings.longDays || []} restDayISOs={settings.restDays || []} paginated onPick={setDetail} onTogglePlan={togglePlan} onChooseToday={chooseToday} onToggleLongDay={toggleLongDay} onToggleRest={toggleRestDay} />
         : settings.view === 'releases'
         ? <ReleasesView games={effGames} pace={ep} onPick={setDetail} />
-        : <MonthGridView games={effGames} pace={ep} vacations={normVacs} dayOpts={dayOpts} doneCounts={doneInfo.counts} streamMap={doneInfo.streamMap} sessionGoals={settings.sessionGoals || {}} streams={streams} longDayISOs={settings.longDays || []} onPick={setDetail} onTogglePlan={togglePlan} onChooseToday={chooseToday} onToggleLongDay={toggleLongDay} />}
+        : <MonthGridView games={effGames} pace={ep} vacations={normVacs} dayOpts={dayOpts} doneCounts={doneInfo.counts} streamMap={doneInfo.streamMap} sessionGoals={settings.sessionGoals || {}} streams={streams} longDayISOs={settings.longDays || []} restDayISOs={settings.restDays || []} onPick={setDetail} onTogglePlan={togglePlan} onChooseToday={chooseToday} onToggleLongDay={toggleLongDay} onToggleRest={toggleRestDay} />}
 
       {detailGame && (
         <DetailCard game={detailGame} pace={ep} vacations={normVacs} queuedPos={seqPositions[detailGame.id]}
@@ -1473,17 +1480,16 @@ function WeekStrip({ days, onOpenDay }) {
 }
 
 // A single day's run-of-show: pre-show → game → goal → wrap, or the day's state.
-function RunOfShowModal({ day, isLong, onToggleLongDay, onClose, onPick }) {
+function DayModal({ day, isLong, isRest, onToggleLongDay, onToggleRest, onClose, onPick }) {
   if (!day) return null;
   const info = day.info;
   const play = (!info.vac && !info.launch && info.session && info.play) ? info.play : null;
   let tag = { t: 'Open day', c: 'var(--faint)' };
-  if (day.isToday && play) tag = { t: 'Today · streaming', c: '#cdb6ff' };
-  else if (info.streamed) tag = { t: 'Streamed', c: 'var(--good)' };
+  if (info.streamed) tag = { t: 'Streamed', c: 'var(--good)' };
   else if (info.launch) tag = { t: 'Launch eve', c: '#9fb4d8' };
-  else if (play) tag = { t: 'Stream day', c: 'var(--good)' };
   else if (info.vac) tag = { t: 'Time off', c: 'var(--warn)' };
   else if (info.rest) tag = { t: 'Rest day', c: 'var(--muted)' };
+  else if (play) tag = { t: day.isToday ? 'Today · streaming' : 'Stream day', c: 'var(--good)' };
   return (
     <div className="scrim" onClick={onClose}>
       <div className="modal mros" onClick={(e) => e.stopPropagation()}>
@@ -1491,21 +1497,13 @@ function RunOfShowModal({ day, isLong, onToggleLongDay, onClose, onPick }) {
         <div className="ros-head"><div className="ros-date">{day.dateLabel}</div><div className="ros-tag" style={{ color: tag.c }}>{tag.t}</div></div>
         <div className="ros-body">
           {play ? (
-            <React.Fragment>
-              <div className="ros-game" onClick={() => onPick(play.id)} style={{ cursor: 'pointer' }}>
-                <div className="ros-art" style={isImgIcon(play.icon) ? { backgroundImage: `url(${play.icon})` } : { background: gameColor(play.id).solid }} />
-                <div><div className="ros-title">{play.title}</div>
-                  <div className="ros-sub">Stream {info.streamOrd} of {info.streamTotal}{info.session.hours ? ` · ~${info.session.hours}h planned` : ''}</div></div>
-              </div>
-              <div className="ros-steps">
-                <div className="ros-step"><span className="ros-n">1</span><div>Pre-show — title card up, category set, alert &amp; audio check</div></div>
-                <div className="ros-step"><span className="ros-n">2</span><div>Main — {play.title}, stream {info.streamOrd}/{info.streamTotal}</div></div>
-                {info.goal && <div className="ros-step"><span className="ros-n">3</span><div>Goal — {renderSpoilers(info.goal)}</div></div>}
-                <div className="ros-step"><span className="ros-n">{info.goal ? 4 : 3}</span><div>Wrap — clip highlights, tease the next stream</div></div>
-              </div>
-            </React.Fragment>
+            <div className="ros-game" onClick={() => onPick(play.id)} style={{ cursor: 'pointer' }}>
+              <div className="ros-art" style={isImgIcon(play.icon) ? { backgroundImage: `url(${play.icon})` } : { background: gameColor(play.id).solid }} />
+              <div><div className="ros-title">{play.title}</div>
+                <div className="ros-sub">Stream {info.streamOrd} of {info.streamTotal}{info.session.hours ? ` · ~${info.session.hours}h${isLong ? ' (day off)' : ''} planned` : ''}</div></div>
+            </div>
           ) : info.launch ? (
-            <div className="ros-note">🌙 <b>Midnight launch.</b> No regular stream the night before — be ready to go live at <b>12:00 AM</b> for {info.launch.title}.</div>
+            <div className="ros-note">🌙 <b>Midnight launch</b> — {info.launch.title} drops. Be ready to go live at 12:00 AM.</div>
           ) : info.streamed ? (
             info.streamed.map((st, i) => (
               <div className="ros-game" key={i}>
@@ -1516,16 +1514,26 @@ function RunOfShowModal({ day, isLong, onToggleLongDay, onClose, onPick }) {
             ))
           ) : info.vac ? (
             <div className="ros-note">✈ <b>Time off.</b> {info.vacLabel || 'On a break'} — no stream scheduled.</div>
-          ) : info.rest ? (
-            <div className="ros-note">☕ <b>Rest day.</b> Your committed plan still finishes on time.</div>
           ) : (
-            <div className="ros-note">A clean <b>open day</b> — no stream scheduled. Recover and prep for the week ahead.</div>
+            <div className="ros-note">{info.rest ? <React.Fragment>☕ <b>Rest day</b> — you marked this off; no committed stream.</React.Fragment> : 'No stream scheduled here yet. Use the actions below to plan this day.'}</div>
           )}
-          {onToggleLongDay && day.iso && !info.vac && (
-            <div className="ros-foot">
-              <div className="ros-foot-txt">{isLong ? 'Marked a day off — streams at weekend length.' : 'Day off work? Stream a longer (weekend-length) session.'}</div>
-              <button className={'btn btn-sm' + (isLong ? '' : ' btn-accent')} onClick={() => onToggleLongDay(day.iso)}>
-                {isLong ? 'Remove day off' : '＋ Day off (longer stream)'}</button>
+          {play && info.goal && <div className="ros-goal"><span className="ros-goal-k">🎯 Goal</span>{renderSpoilers(info.goal)}</div>}
+          {!info.vac && day.iso && (
+            <div className="ros-actions">
+              {onToggleLongDay && (
+                <button className={'ros-act' + (isLong ? ' on' : '')} onClick={() => onToggleLongDay(day.iso)}>
+                  <span className="ros-act-ic">☀</span>
+                  <span className="ros-act-tx"><b>Day off</b><small>{isLong ? 'on · weekend-length stream' : 'stream a longer session'}</small></span>
+                  <span className="ros-act-sw">{isLong ? '✓' : '+'}</span>
+                </button>
+              )}
+              {onToggleRest && !info.streamed && (
+                <button className={'ros-act rest' + (isRest ? ' on' : '')} onClick={() => onToggleRest(day.iso)}>
+                  <span className="ros-act-ic">☕</span>
+                  <span className="ros-act-tx"><b>Rest day</b><small>{isRest ? 'on · no stream this day' : 'skip streaming this day'}</small></span>
+                  <span className="ros-act-sw">{isRest ? '✓' : '+'}</span>
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -1534,7 +1542,7 @@ function RunOfShowModal({ day, isLong, onToggleLongDay, onClose, onPick }) {
   );
 }
 
-function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap, sessionGoals, streams, longDayISOs, paginated, onPick, onTogglePlan, onChooseToday, onToggleLongDay }) {
+function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap, sessionGoals, streams, longDayISOs, restDayISOs, paginated, onPick, onTogglePlan, onChooseToday, onToggleLongDay, onToggleRest }) {
   const isMobile = useIsMobile();
   const [pop, setPop] = useState(null); // in-app hover popup over a cell
   const [dayShow, setDayShow] = useState(null); // run-of-show day modal
@@ -1913,7 +1921,7 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap,
           <div className="cal-grid">{cells}</div>
         </div>
         {rail.length > 0 && <RailBlock rail={rail} onPick={onPick} />}
-        {dayShow && <RunOfShowModal day={dayShow} isLong={(longDayISOs || []).includes(dayShow.iso)} onToggleLongDay={onToggleLongDay} onClose={() => setDayShow(null)} onPick={(id) => { setDayShow(null); onPick(id); }} />}
+        {dayShow && <DayModal day={dayShow} isLong={(longDayISOs || []).includes(dayShow.iso)} isRest={(restDayISOs || []).includes(dayShow.iso)} onToggleLongDay={onToggleLongDay} onToggleRest={onToggleRest} onClose={() => setDayShow(null)} onPick={(id) => { setDayShow(null); onPick(id); }} />}
       </div>
     );
   }
@@ -1943,7 +1951,7 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap,
     <div>
       <TodayPicker options={todayOptions} gameById={gameById} onChoose={onChooseToday} />
       <WeekStrip days={weekDays} onOpenDay={setDayShow} />
-      {dayShow && <RunOfShowModal day={dayShow} isLong={(longDayISOs || []).includes(dayShow.iso)} onToggleLongDay={onToggleLongDay} onClose={() => setDayShow(null)} onPick={(id) => { setDayShow(null); onPick(id); }} />}
+      {dayShow && <DayModal day={dayShow} isLong={(longDayISOs || []).includes(dayShow.iso)} isRest={(restDayISOs || []).includes(dayShow.iso)} onToggleLongDay={onToggleLongDay} onToggleRest={onToggleRest} onClose={() => setDayShow(null)} onPick={(id) => { setDayShow(null); onPick(id); }} />}
       <div className="gc-bar">
         <button className="gc-today" onClick={scrollToToday}>Jump to today</button>
         <div className="gc-cnt">{totalCount} release{totalCount === 1 ? '' : 's'} · scroll for more months ↓</div>
@@ -1965,7 +1973,10 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap,
             monthCount += info.releases.length;
             const isToday = y === tY && mon === tM && d === tD;
             const hasArt = !info.vac && !info.launch && info.session && info.play && isImgIcon(info.play.icon);
-            const cls = 'gc-cell' + (info.vac ? ' vac' : info.streamed ? ' streamed' : '') + (hasArt ? ' hasart' : '') + (isToday ? ' today' : '');
+            const pad2 = (n) => String(n).padStart(2, '0');
+            const iso = `${y}-${pad2(mon + 1)}-${pad2(d)}`;
+            const isOff = (longDayISOs || []).includes(iso);
+            const cls = 'gc-cell' + (info.vac ? ' vac' : info.streamed ? ' streamed' : '') + (hasArt ? ' hasart' : '') + (isToday ? ' today' : '') + (isOff ? ' dayoff' : '');
             const relTitles = info.releases.map((r) => r.title).join(', ');
             let cellStyle;
             if (!info.vac && !info.streamed) {
@@ -1976,16 +1987,19 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap,
             }
             const dl = deadlineByDay[`${y}-${mon}-${d}`];
             const popData = cellPopData(info, day);
-            const pad2 = (n) => String(n).padStart(2, '0');
             const dowI = (day.getUTCDay() + 6) % 7;
-            const dayObj = { num: d, iso: `${y}-${pad2(mon + 1)}-${pad2(d)}`, isToday,
+            const dayObj = { num: d, iso, isToday,
               dateLabel: `${['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][dowI]} · ${MONTHS[mon]} ${d}`, info };
             cells.push(
               <div key={d} className={cls} style={cellStyle}
                 onMouseEnter={popData ? (e) => setPop({ rect: e.currentTarget.getBoundingClientRect(), data: popData }) : undefined}
                 onMouseLeave={popData ? () => setPop(null) : undefined}>
-                <span className="gc-dnum gc-dnum-btn" title="Open this day's run-of-show"
+                <span className="gc-dnum gc-dnum-btn" title="Open day options"
                   onClick={(e) => { e.stopPropagation(); setPop(null); setDayShow(dayObj); }}>{d}{info.releases.length ? <span className="gc-relstar">★</span> : null}{dl ? <span className="gc-deadflag">⚑</span> : null}{!info.vac && !info.launch && info.session && info.goal ? <span className="gc-goal-inline">🎯</span> : null}</span>
+                {!info.vac && (
+                  <button className="gc-offbtn" title={isOff ? 'Day off — click to remove (normal length)' : 'Mark a day off → longer weekend-length stream'}
+                    onClick={(e) => { e.stopPropagation(); setPop(null); onToggleLongDay(iso); }}>☀ {isOff ? 'Day off ✓' : 'Day off'}</button>
+                )}
                 {(() => {
                   // Two stacked, color-coded badges (top-right): placement X/N and hours.
                   let xn = null, xnStyle, hrs = null;
