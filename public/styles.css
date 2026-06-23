@@ -805,3 +805,28 @@ input, select, textarea { font-family: inherit; }
 .gc-cell.hasart .gc-dnum-btn:hover { color: #fff; filter: brightness(1.2); }
 .ros-foot { display: flex; align-items: center; gap: 12px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--hair); }
 .ros-foot-txt { flex: 1; font-size: 0.74rem; color: var(--muted); line-height: 1.4; }
+
+/* ============================================================
+   "Tonight" picker — art option tiles (redesign)
+   ============================================================ */
+.tonight { border: 1px solid var(--border-solid); background: linear-gradient(180deg, var(--s2), #0f131c); border-radius: 18px; padding: clamp(15px, 2vw, 20px); margin-bottom: 16px; }
+.tonight-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 13px; flex-wrap: wrap; }
+.tonight-h { font-family: var(--display); font-weight: 700; font-size: 1.08rem; }
+.tonight-date { font-size: 0.72rem; color: var(--muted); font-family: var(--mono); }
+.tonight-note { margin-left: auto; font-size: 0.66rem; color: var(--faint); font-family: var(--mono); letter-spacing: 0.02em; }
+.tonight-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.opt { position: relative; text-align: left; background: var(--s3); border: 1px solid var(--border-solid); border-radius: 13px; padding: 12px; display: flex; flex-direction: column; gap: 10px; transition: 0.13s; color: var(--text); cursor: pointer; }
+.opt:hover { border-color: #34415a; transform: translateY(-2px); }
+.opt.rec { border-color: color-mix(in srgb, var(--good) 40%, transparent); background: #101b16; }
+.opt.sel { border-color: var(--acc); background: #16122a; box-shadow: 0 0 0 1px var(--acc), 0 10px 24px color-mix(in srgb, var(--acc) 14%, transparent); }
+.opt-top { display: flex; align-items: center; gap: 10px; }
+.opt-art { width: 42px; height: 42px; border-radius: 9px; background: #0e1320 center/cover; flex: none; box-shadow: 0 2px 8px #0008; }
+.opt-art.rest { display: grid; place-items: center; font-size: 1.25rem; color: #9fb4d8; background: #161d2a; box-shadow: none; }
+.opt-name { font-size: 0.82rem; font-weight: 700; line-height: 1.15; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.opt-tag { align-self: flex-start; font-size: 0.62rem; font-weight: 700; font-family: var(--mono); border-radius: 99px; padding: 2px 9px; background: #0c111b; border: 1px solid #243049; }
+.opt-check { position: absolute; top: 10px; right: 10px; width: 18px; height: 18px; border-radius: 99px; font-size: 0.66rem; font-weight: 800; display: grid; place-items: center; }
+.tonight-foot { display: flex; align-items: center; gap: 11px; margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--hair); }
+.tonight-foot-pill { font-size: 0.6rem; font-weight: 800; font-family: var(--mono); letter-spacing: 0.08em; border-radius: 6px; padding: 3px 8px; flex: none; background: #0c111b; border: 1px solid #243049; }
+.tonight-foot-txt { font-size: 0.8rem; color: var(--muted); line-height: 1.4; }
+.tonight-foot-txt b { color: var(--text); }
+@media (max-width: 700px) { .tonight-grid { grid-template-columns: repeat(2, 1fr); } }

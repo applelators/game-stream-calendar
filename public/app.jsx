@@ -1193,57 +1193,66 @@ function renderSpoilers(text) {
 // "What can I stream today" — committed games + a rest option. Clicking one PICKS
 // it for today (pins it; reflected in the calendar cell and saved). The plan's
 // recommendation is marked; an already-behind game is surfaced. No bonus games.
-function TodayPicker({ options, mobile, onPick, onChoose }) {
+function TodayPicker({ options, gameById, onChoose }) {
   if (!options || !options.length) return null;
-  const pfx = mobile ? 'mg' : 'gc';
   const today = new Date();
-  const label = `${MONTHS[today.getMonth()]} ${today.getDate()}`;
+  const dows = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const dateLabel = `${dows[today.getDay()]} · ${MONTHS[today.getMonth()]} ${today.getDate()}`;
+  const meta = (o) => {
+    if (o.def) return { tag: 'Plan default', tone: 'var(--muted)' };
+    if (o.rest) return o.recommended ? { tag: 'Rest day', tone: 'var(--good)' }
+      : o.restCost > 0 ? { tag: `Costs ${o.restCost}d`, tone: 'var(--warn)' } : { tag: 'Rest day', tone: 'var(--muted)' };
+    if (o.recommended) return o.behind ? { tag: 'Catch-up', tone: 'var(--warn)' } : { tag: 'On pace', tone: 'var(--good)' };
+    if (o.behind) return { tag: 'Catch-up', tone: 'var(--warn)' };
+    if (o.danger) return { tag: 'At risk', tone: 'var(--warn)' };
+    if (o.getAhead) return { tag: 'Get ahead', tone: 'var(--muted)' };
+    return { tag: 'Alternative', tone: 'var(--muted)' };
+  };
+  const noteFor = (o) => {
+    if (o.def) return "clears your pick and uses the plan's choice.";
+    if (o.rest) return o.recommended ? 'a clean rest — your plan still finishes on time.'
+      : o.restCost > 0 ? `resting pushes deadlines ~${o.restCost}d further.` : 'a rest day.';
+    if (o.recommended) return o.behind ? 'already behind — playing it limits the slip.' : 'keeps you on track this month.';
+    if (o.behind) return 'already behind its deadline — slips further if skipped.';
+    if (o.danger) return 'deadline is tight — at risk of slipping.';
+    if (o.getAhead) return 'optional — play it to build a buffer.';
+    return 'an alternative committed game.';
+  };
+  const active = options.find((o) => o.chosen) || options.find((o) => o.recommended) || options.find((o) => !o.def) || options[0];
+  const am = meta(active);
+  const click = (o) => { if (o.def) return onChoose('__default__'); if (o.rest) return onChoose(o.chosen ? '__default__' : '__rest__'); return onChoose(o.chosen ? '__default__' : o.id); };
   return (
-    <div className={`${pfx}-todaybar`}>
-      <span className={`${pfx}-today-h`}>▶ Today ({label}) · what are you streaming?</span>
-      {options.map((o) => {
-        if (o.def) {
+    <div className="tonight">
+      <div className="tonight-head">
+        <span className="tonight-h">Tonight</span>
+        <span className="tonight-date">{dateLabel}</span>
+        <span className="tonight-note">what are you streaming? · ranked by your pace</span>
+      </div>
+      <div className="tonight-grid">
+        {options.map((o) => {
+          const m = meta(o);
+          const chosen = !!o.chosen;
+          const rec = !chosen && !!o.recommended;
+          const g = (!o.rest && !o.def) ? gameById[o.id] : null;
+          const art = g && isImgIcon(g.icon) ? g.icon : null;
           return (
-            <button key="__default__" className={`${pfx}-today-chip def`} onClick={() => onChoose('__default__')}
-              title="Clear your pick and use the plan's default for today">
-              ↺ Use plan default
+            <button key={o.def ? '__def' : o.rest ? '__rest' : o.id} className={'opt' + (chosen ? ' sel' : '') + (rec ? ' rec' : '')} onClick={() => click(o)}>
+              {(chosen || rec) && <span className="opt-check" style={{ background: chosen ? 'var(--acc)' : 'var(--good)', color: chosen ? 'var(--acc-ink)' : '#06160e' }}>✓</span>}
+              <div className="opt-top">
+                {o.rest ? <div className="opt-art rest">☾</div>
+                  : o.def ? <div className="opt-art rest">↺</div>
+                  : <div className="opt-art" style={art ? { backgroundImage: `url(${art})` } : { background: gameColor(o.id).solid }} />}
+                <div className="opt-name">{o.def ? 'Use plan default' : o.rest ? 'Take a break' : o.title}</div>
+              </div>
+              <span className="opt-tag" style={{ color: m.tone }}>{m.tag}</span>
             </button>
           );
-        }
-        if (o.rest) {
-          return (
-            <button key="__rest__" className={`${pfx}-today-chip rest${o.chosen ? ' chosen' : ''}${o.recommended ? ' rec' : o.restCost > 0 ? ' risk' : ''}`}
-              onClick={() => onChoose('__rest__')}
-              title={o.recommended ? 'Resting today can be made up later this month — no deadline slips'
-                : `Resting today can't be made up — it pushes deadlines ~${o.restCost}d further`}>
-              <span className="dot" style={{ background: 'var(--muted)' }} />
-              ☕ Take a break (rest day)
-              <small>{o.chosen ? '● chosen' : o.recommended ? '✓ recommended · make up later' : `⚠ +${o.restCost}d slip`}</small>
-            </button>
-          );
-        }
-        const note = o.chosen ? '● chosen'
-          : o.recommended ? (o.behind ? '✓ recommended · behind — limits slip' : '✓ recommended')
-          : o.behind ? '⚠ behind — slips further'
-          : o.danger ? '⚠ at risk'
-          : o.getAhead ? 'optional · get ahead'
-          : 'alternative';
-        const cls = o.chosen ? ' chosen' : o.recommended ? ' rec' : (o.behind || o.danger) ? ' risk' : ' safe';
-        return (
-          <button key={o.id} className={`${pfx}-today-chip${cls}`}
-            style={{ borderColor: gameColor(o.id).solid }}
-            onClick={() => onChoose(o.id)}
-            title={o.chosen ? 'You picked this for today (click another to change)'
-              : o.recommended ? (o.behind ? 'Recommended — already behind; play it to limit the slip' : 'Recommended — playing today keeps you on track')
-              : o.behind ? 'Already behind its deadline; not playing it slips it further'
-              : o.danger ? 'Deadline is tight — at risk of slipping'
-              : o.getAhead ? 'Optional — play to build a buffer' : 'An alternative committed game'}>
-            <span className="dot" style={{ background: gameColor(o.id).solid }} />
-            {o.title}
-            <small>{note}</small>
-          </button>
-        );
-      })}
+        })}
+      </div>
+      <div className="tonight-foot">
+        <span className="tonight-foot-pill" style={{ color: am.tone }}>{options.find((o) => o.chosen) ? 'PICKED' : 'SUGGESTED'}</span>
+        <span className="tonight-foot-txt"><b>{active.def ? 'Plan default' : active.rest ? 'Take a break' : active.title}</b> — {noteFor(active)}</span>
+      </div>
     </div>
   );
 }
@@ -1585,7 +1594,7 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap,
     while (m <= end) { months.push(m); m = new Date(Date.UTC(m.getUTCFullYear(), m.getUTCMonth() + 1, 1)); }
     return (
       <div>
-        <TodayPicker options={todayOptions} mobile={true} onPick={onPick} onChoose={onChooseToday} />
+        <TodayPicker options={todayOptions} gameById={gameById} onChoose={onChooseToday} />
         <div className="cal-legend">Each game has its own colour; numbers = each stream (3/6) · ✓ + box art = already streamed · 🌙 = launch · hatched = vacation · ★ = release · dashed chip = planned (tap to auto-pick a day) · ✓ chip = placed</div>
         <div className="mg-wrap">
           {months.map((mo, i) => {
@@ -1725,7 +1734,7 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap,
 
   return (
     <div>
-      <TodayPicker options={todayOptions} mobile={false} onPick={onPick} onChoose={onChooseToday} />
+      <TodayPicker options={todayOptions} gameById={gameById} onChoose={onChooseToday} />
       <WeekStrip days={weekDays} onOpenDay={setDayShow} />
       {dayShow && <RunOfShowModal day={dayShow} isLong={(longDayISOs || []).includes(dayShow.iso)} onToggleLongDay={onToggleLongDay} onClose={() => setDayShow(null)} onPick={(id) => { setDayShow(null); onPick(id); }} />}
       <div className="gc-bar">
