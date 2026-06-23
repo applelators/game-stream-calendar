@@ -1259,23 +1259,50 @@ function ReleasesView({ games, pace, onPick }) {
     }
     return Object.values(m);
   }, [releases]);
+  // Dated entries (day/month/quarter) group under their year. Anything without a real
+  // date — year-only OR fully TBD — is "unscheduled" and drops to the bottom section,
+  // sorted by year, then TBA/TBD (no year) last.
   const groups = useMemo(() => {
     const m = {};
     for (const e of entries) {
-      const yr = e.rep.release && e.rep.release.year ? String(e.rep.release.year) : 'TBD';
+      if (!isPlaceable(e.rep.release)) continue;
+      const yr = String(e.rep.release.year);
       (m[yr] = m[yr] || []).push(e);
     }
-    const keys = Object.keys(m).sort((a, b) =>
-      a === 'TBD' ? 1 : b === 'TBD' ? -1 : Number(a) - Number(b));
+    const keys = Object.keys(m).sort((a, b) => Number(a) - Number(b));
     for (const k of keys) {
-      m[k].sort((x, y) => {
-        if (!x.d && !y.d) return x.title < y.title ? -1 : 1;
-        if (!x.d) return 1; if (!y.d) return -1;
-        return (x.d - y.d) || (x.title < y.title ? -1 : 1);
-      });
+      m[k].sort((x, y) => (x.d - y.d) || (x.title < y.title ? -1 : 1));
     }
     return keys.map((k) => ({ year: k, items: m[k] }));
   }, [entries]);
+  const unscheduled = useMemo(() => {
+    const items = entries.filter((e) => !isPlaceable(e.rep.release));
+    return items.sort((x, y) => {
+      const xy = x.rep.release && x.rep.release.year, yy = y.rep.release && y.rep.release.year;
+      if (xy && yy && xy !== yy) return xy - yy;
+      if (xy && !yy) return -1;     // year-only before fully-TBD
+      if (!xy && yy) return 1;
+      return x.title < y.title ? -1 : 1;
+    });
+  }, [entries]);
+
+  const relRow = (e) => {
+    const g = e.rep;
+    const strk = e.hours > 0 ? streamsToFinish(e.hours, pace) : null;
+    const base = g.editions && g.editions.length ? g.editions[0] : null;
+    return (
+      <div className="rel-row" key={e.key} onClick={() => onPick(g.id)}>
+        <span className="rel-date">{releaseLabel(g.release)}</span>
+        <span className="rel-kind" style={{ background: KIND_COLOR[g.kind] }}>{KIND_LABEL[g.kind]}</span>
+        <span className="rel-title"><GameBadge game={g} size={18} />{e.title}
+          {e.parts > 1 ? <span className="rel-parts">{e.parts} parts</span> : null}
+          {g.bonus ? <span className="rel-bonus">★ bonus</span> : null}</span>
+        <span className="rel-plat">{(g.platforms || []).join(', ')}</span>
+        <span className="rel-price">{base && base.msrpUSD ? '$' + base.msrpUSD.toFixed(2) : ''}</span>
+        <span className="rel-hltb">{e.hours ? <React.Fragment>{e.hours}h<small> · {strk} str</small></React.Fragment> : ''}</span>
+      </div>
+    );
+  };
 
   return (
     <div className="releases">
@@ -1287,29 +1314,18 @@ function ReleasesView({ games, pace, onPick }) {
       </div>
       {groups.map(({ year, items }) => (
         <div className="rel-yr" key={year}>
-          <div className="rel-yr-h">{year === 'TBD' ? 'Unscheduled / TBD' : year}
+          <div className="rel-yr-h">{year}
             <span className="rel-yr-cnt">{items.length} title{items.length === 1 ? '' : 's'}</span></div>
-          <div className="rel-tbl">
-            {items.map((e) => {
-              const g = e.rep;
-              const strk = e.hours > 0 ? streamsToFinish(e.hours, pace) : null;
-              const base = g.editions && g.editions.length ? g.editions[0] : null;
-              return (
-                <div className="rel-row" key={e.key} onClick={() => onPick(g.id)}>
-                  <span className="rel-date">{releaseLabel(g.release)}</span>
-                  <span className="rel-kind" style={{ background: KIND_COLOR[g.kind] }}>{KIND_LABEL[g.kind]}</span>
-                  <span className="rel-title"><GameBadge game={g} size={18} />{e.title}
-                    {e.parts > 1 ? <span className="rel-parts">{e.parts} parts</span> : null}
-                    {g.bonus ? <span className="rel-bonus">★ bonus</span> : null}</span>
-                  <span className="rel-plat">{(g.platforms || []).join(', ')}</span>
-                  <span className="rel-price">{base && base.msrpUSD ? '$' + base.msrpUSD.toFixed(2) : ''}</span>
-                  <span className="rel-hltb">{e.hours ? <React.Fragment>{e.hours}h<small> · {strk} str</small></React.Fragment> : ''}</span>
-                </div>
-              );
-            })}
-          </div>
+          <div className="rel-tbl">{items.map(relRow)}</div>
         </div>
       ))}
+      {unscheduled.length > 0 && (
+        <div className="rel-yr" key="unscheduled">
+          <div className="rel-yr-h">Unscheduled / TBA
+            <span className="rel-yr-cnt">{unscheduled.length} title{unscheduled.length === 1 ? '' : 's'}</span></div>
+          <div className="rel-tbl">{unscheduled.map(relRow)}</div>
+        </div>
+      )}
     </div>
   );
 }
