@@ -420,6 +420,7 @@ input, select, textarea { font-family: inherit; }
 /* per-stream goal marker (hover for the goal) */
 .gc-goal { position: absolute; top: 4px; right: 24px; z-index: 3; font-size: 0.72rem; cursor: help; }
 .gc-cell.hasart .gc-goal { right: 26px; }
+.gc-goal-inline { font-size: 0.66rem; margin-left: 4px; vertical-align: 1px; }
 .mg-goal { position: absolute; top: 2px; right: 14px; z-index: 3; font-size: 0.6rem; cursor: help; }
 /* multiple game categories streamed in one day */
 .gc-multi { position: absolute; top: 5px; left: 6px; z-index: 2; font-family: var(--mono); font-size: 0.58rem;

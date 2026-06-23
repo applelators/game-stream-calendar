@@ -1083,12 +1083,12 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap,
               <div key={d} className={cls} style={cellStyle}
                 onMouseEnter={popData ? (e) => setPop({ rect: e.currentTarget.getBoundingClientRect(), data: popData }) : undefined}
                 onMouseLeave={popData ? () => setPop(null) : undefined}>
-                <span className="gc-dnum">{d}{info.releases.length ? <span className="gc-relstar">★</span> : null}{dl ? <span className="gc-deadflag">⚑</span> : null}</span>
+                <span className="gc-dnum">{d}{info.releases.length ? <span className="gc-relstar">★</span> : null}{dl ? <span className="gc-deadflag">⚑</span> : null}{!info.vac && !info.launch && info.session && info.goal ? <span className="gc-goal-inline">🎯</span> : null}</span>
                 {!info.vac && !info.launch && info.session && info.play && (
-                  <span className="gc-strno" style={{ background: gameColor(info.play.id).solid, color: '#0c0c12' }}>{info.streamOrd}/{info.streamTotal}</span>
+                  <span className="gc-strno" style={{ background: gameColor(info.play.id).solid, color: '#0c0c12' }}>{info.streamOrd}/{info.streamTotal}{info.session.hours ? ` · ~${info.session.hours}h` : ''}</span>
                 )}
-                {info.streamed && info.streamOrd != null && (
-                  <span className="gc-strno gc-strno-done">{info.streamOrd}/{info.streamTotal}</span>
+                {info.streamed && (info.streamOrd != null || info.streamed.length) && (
+                  <span className="gc-strno gc-strno-done">{info.streamOrd != null ? `${info.streamOrd}/${info.streamTotal} · ` : ''}{fmtMins(info.streamed.reduce((n, st) => n + (st.minutes || 0), 0))}</span>
                 )}
                 {info.streamed && info.streamed.reduce((n, st) => n + st.games.length, 0) > 1 && (
                   <span className="gc-multi">⊞ {info.streamed.reduce((n, st) => n + st.games.length, 0)} games</span>
@@ -1105,11 +1105,7 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap,
                 {info.vac && info.vacRunStart && <div className="gc-away">✈ {info.vacLabel}</div>}
                 {info.rest && <div className="gc-away">☕ Rest day</div>}
                 {info.launch && (
-                  <div className="gc-ev gc-launch" onClick={() => onPick(info.launch.id)}
-                    title={`Midnight launch — ${info.launch.title}`}>🌙</div>
-                )}
-                {!info.vac && !info.launch && info.session && info.goal && (
-                  <span className="gc-goal" title={`Goal for stream #${info.streamOrd}: ${info.goal}`}>🎯</span>
+                  <div className="gc-ev gc-launch" onClick={() => onPick(info.launch.id)}>🌙</div>
                 )}
                 {!info.vac && !info.launch && info.session && info.play && (hasArt ? (
                   <div className="gc-tile" onClick={() => onPick(info.play.id)}>
@@ -1122,7 +1118,7 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap,
                 ))}
                 {info.bonusPlay && (
                   <div className="gc-ev bonus" style={{ borderColor: gameColor(info.bonusPlay.id).solid }}
-                    onClick={() => onPick(info.bonusPlay.id)} title={`${info.bonusPlay.title} — bonus (free time)`}>
+                    onClick={() => onPick(info.bonusPlay.id)}>
                     <span className="bstar">★</span>{info.bonusFirst ? ' ' + info.bonusPlay.title : ' bonus'}</div>
                 )}
               </div>
