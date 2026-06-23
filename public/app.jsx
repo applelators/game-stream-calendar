@@ -1233,9 +1233,15 @@ function RailBlock({ rail, onPick }) {
 // Releases appendix — every title the calendar knows about, grouped by year
 // ============================================================================
 function ReleasesView({ games, pace, onPick }) {
+  // Actual new releases only: real new games/DLC. Exclude events (not releases) and
+  // replays (games that came out in a prior year — just being started on stream now).
+  const releases = useMemo(
+    () => games.filter((g) => g.kind === 'game' || g.kind === 'dlc'),
+    [games]
+  );
   const groups = useMemo(() => {
     const m = {};
-    for (const g of games) {
+    for (const g of releases) {
       const yr = g.release && g.release.year ? String(g.release.year) : 'TBD';
       (m[yr] = m[yr] || []).push({ g, d: anchorDate(g.release) });
     }
@@ -1249,13 +1255,14 @@ function ReleasesView({ games, pace, onPick }) {
       });
     }
     return keys.map((k) => ({ year: k, items: m[k] }));
-  }, [games]);
+  }, [releases]);
 
   return (
     <div className="releases">
       <div className="rel-intro">
-        All <strong>{games.length}</strong> titles Stream Slate knows about — release date, type,
-        platforms, price, and time to finish on stream. Tap any row for full details.
+        <strong>{releases.length}</strong> new releases on the slate — release date, type,
+        platforms, price, and time to finish on stream. (Replays of older games and events are
+        excluded.) Tap any row for full details.
       </div>
       {groups.map(({ year, items }) => (
         <div className="rel-yr" key={year}>
