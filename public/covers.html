@@ -45,7 +45,7 @@
 <body>
   <div class="wrap">
     <h1>Cover art <span style="color:var(--faint);font-weight:600;font-size:.6em">· square 1:1</span></h1>
-    <div class="sub">New-release covers from the slate, as direct CDN links (old games &amp; events excluded, parts consolidated). <b>dekudeals = 500×500</b>, <b>SteamGridDB = 400×400</b> — all true 1:1. Click a cover or <b>Copy</b> to grab its link. · <a class="home" href="/">← back to Stream Slate</a></div>
+    <div class="sub">New-release covers as tidy <b>short links</b> (e.g. <code style="font-family:'JetBrains Mono',monospace;font-size:.85em">slate.nabunan.com/c/star-fox-switch-2</code>) that redirect to the square 1:1 CDN image. <b>dekudeals = 500×500</b>, <b>SteamGridDB = 400×400</b>. Click a cover or <b>Copy</b> to grab its short link. · <a class="home" href="/">← back to Stream Slate</a></div>
     <div class="bar">
       <div class="search"><span style="color:var(--faint)">⌕</span><input id="q" placeholder="Search games…" /></div>
       <button class="btn acc" id="copyAll">⧉ Copy all links</button>
@@ -79,12 +79,12 @@
     list.forEach(function(g){
       var card = document.createElement('div'); card.className = 'card';
       card.innerHTML =
-        '<button class="art" style="background-image:url(' + g.icon + ')" title="Copy link"></button>' +
+        '<button class="art" style="background-image:url(' + g.icon + ')" title="Copy short link"></button>' +
         '<div class="meta"><div class="nm">' + g.title.replace(/</g,'&lt;') + '</div>' +
-        '<div class="dim">' + dimFor(g.icon) + '</div>' +
-        '<div class="row"><div class="url" title="' + g.icon + '">' + g.icon + '</div>' +
+        '<div class="dim">' + dimFor(g.icon) + ' · redirects to CDN</div>' +
+        '<div class="row"><div class="url" title="' + g.icon + '">' + g.short + '</div>' +
         '<button class="copy">Copy</button></div></div>';
-      var url = g.icon;
+      var url = g.short;
       card.querySelector('.art').onclick = function(){ copy(url, null); };
       card.querySelector('.copy').onclick = function(){ copy(url, this); };
       grid.appendChild(card);
@@ -92,6 +92,8 @@
   }
   // Collapse "— Pt. N" parts and named collections into one entry per full game.
   function baseTitle(t){ return String(t || '').replace(/\s*—\s*pt\.?\s*\d+.*$/i, '').trim(); }
+  function slug(s){ return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); }
+  var SHORT_BASE = location.origin + '/c/';
   fetch('games.json').then(function(r){ return r.json(); }).then(function(data){
     var arr = Array.isArray(data) ? data : (data && data.games) || [];
     var seen = {}; GAMES = [];
@@ -99,10 +101,10 @@
       var k = g.kind || 'game';
       if (k !== 'game' && k !== 'dlc') return;   // exclude events
       if (g.newRelease === false) return;         // exclude old games / replays
-      var key = g.collection ? ('c:' + g.collection) : ('b:' + baseTitle(g.title));
       var disp = g.collection || baseTitle(g.title);
+      var key = slug(disp);
       var e = seen[key];
-      if (!e) { e = seen[key] = { title: disp, icon: g.icon || '' }; GAMES.push(e); }
+      if (!e) { e = seen[key] = { title: disp, icon: g.icon || '', short: SHORT_BASE + key }; GAMES.push(e); }
       else if (!e.icon && g.icon) e.icon = g.icon; // fill from a later part if needed
     });
     GAMES = GAMES.filter(function(e){ return e.icon; }).sort(function(a,b){ return a.title < b.title ? -1 : 1; });
@@ -112,8 +114,8 @@
   document.getElementById('copyAll').addEventListener('click', function(){
     var f = document.getElementById('q').value.toLowerCase();
     var lines = GAMES.filter(function(g){ return !f || g.title.toLowerCase().indexOf(f) >= 0; })
-      .map(function(g){ return g.title + '\t' + g.icon; }).join('\n');
-    copy(lines, null); toast('Copied all links');
+      .map(function(g){ return g.title + '\t' + g.short; }).join('\n');
+    copy(lines, null); toast('Copied all short links');
   });
 </script>
 </body>

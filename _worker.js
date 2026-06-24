@@ -162,6 +162,30 @@ export default {
       return json({ error: 'not found' }, 404);
     }
 
+    // Short cover-art links: /c/<slug> -> 302 to the game's square cover CDN url.
+    // Slug = slugified collection or base title (parts consolidated), matching covers.html.
+    if (pathname.startsWith('/c/')) {
+      const slug = decodeURIComponent(pathname.slice(3)).replace(/\/+$/, '');
+      try {
+        const res = await env.ASSETS.fetch(new URL('/games.json', request.url));
+        const data = await res.json();
+        const arr = Array.isArray(data) ? data : (data && data.games) || [];
+        const sl = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+        const base = (t) => String(t || '').replace(/\s*—\s*pt\.?\s*\d+.*$/i, '').trim();
+        const map = {};
+        for (const g of arr) {
+          if (!g.icon) continue;
+          const key = sl(g.collection || base(g.title));
+          if (!map[key]) map[key] = g.icon; // first part with art wins (consolidated)
+        }
+        const icon = map[slug];
+        if (icon) return Response.redirect(icon, 302);
+        return new Response('Cover not found', { status: 404 });
+      } catch (e) {
+        return new Response('Error: ' + String(e.message || e), { status: 500 });
+      }
+    }
+
     // Everything else -> static assets
     return env.ASSETS.fetch(request);
   },
