@@ -45,7 +45,7 @@
 <body>
   <div class="wrap">
     <h1>Cover art <span style="color:var(--faint);font-weight:600;font-size:.6em">· square 1:1</span></h1>
-    <div class="sub">Every game's cover from the slate, as a direct CDN link. <b>dekudeals = 500×500</b>, <b>SteamGridDB = 400×400</b> — all true 1:1. Click a cover or <b>Copy</b> to grab its link. · <a class="home" href="/">← back to Stream Slate</a></div>
+    <div class="sub">New-release covers from the slate, as direct CDN links (old games &amp; events excluded, parts consolidated). <b>dekudeals = 500×500</b>, <b>SteamGridDB = 400×400</b> — all true 1:1. Click a cover or <b>Copy</b> to grab its link. · <a class="home" href="/">← back to Stream Slate</a></div>
     <div class="bar">
       <div class="search"><span style="color:var(--faint)">⌕</span><input id="q" placeholder="Search games…" /></div>
       <button class="btn acc" id="copyAll">⧉ Copy all links</button>
@@ -96,6 +96,9 @@
     var arr = Array.isArray(data) ? data : (data && data.games) || [];
     var seen = {}; GAMES = [];
     arr.forEach(function(g){
+      var k = g.kind || 'game';
+      if (k !== 'game' && k !== 'dlc') return;   // exclude events
+      if (g.newRelease === false) return;         // exclude old games / replays
       var key = g.collection ? ('c:' + g.collection) : ('b:' + baseTitle(g.title));
       var disp = g.collection || baseTitle(g.title);
       var e = seen[key];
