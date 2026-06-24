@@ -90,12 +90,19 @@
       grid.appendChild(card);
     });
   }
-  function titleSlug(t){ return t; }
+  // Collapse "— Pt. N" parts and named collections into one entry per full game.
+  function baseTitle(t){ return String(t || '').replace(/\s*—\s*pt\.?\s*\d+.*$/i, '').trim(); }
   fetch('games.json').then(function(r){ return r.json(); }).then(function(data){
     var arr = Array.isArray(data) ? data : (data && data.games) || [];
-    GAMES = arr.filter(function(g){ return g.icon; })
-      .map(function(g){ return { title: g.title, icon: g.icon }; })
-      .sort(function(a,b){ return a.title < b.title ? -1 : 1; });
+    var seen = {}; GAMES = [];
+    arr.forEach(function(g){
+      var key = g.collection ? ('c:' + g.collection) : ('b:' + baseTitle(g.title));
+      var disp = g.collection || baseTitle(g.title);
+      var e = seen[key];
+      if (!e) { e = seen[key] = { title: disp, icon: g.icon || '' }; GAMES.push(e); }
+      else if (!e.icon && g.icon) e.icon = g.icon; // fill from a later part if needed
+    });
+    GAMES = GAMES.filter(function(e){ return e.icon; }).sort(function(a,b){ return a.title < b.title ? -1 : 1; });
     render('');
   }).catch(function(e){ document.getElementById('grid').innerHTML = '<div class="empty">Failed to load games.json: ' + e + '</div>'; });
   document.getElementById('q').addEventListener('input', function(e){ render(e.target.value); });
