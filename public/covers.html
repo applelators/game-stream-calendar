@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Stream Slate · Cover Art (square 1:1)</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>%F0%9F%96%BC</text></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root { --bg:#0a0d14; --s1:#10141d; --s2:#141a26; --border:#283245; --hair:#1b2433;
+    --text:#e8edf5; --muted:#8b97ab; --faint:#5c6678; --acc:#a970ff; --acc-ink:#160a2b; --good:#34d399; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:'DM Sans',system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:1320px; margin:0 auto; padding:clamp(16px,2.4vw,30px) clamp(12px,2.2vw,28px) 80px; }
+  h1 { font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(1.4rem,3vw,2rem); letter-spacing:-.01em; }
+  .sub { color:var(--muted); font-size:.84rem; margin-top:6px; line-height:1.5; }
+  .sub b { color:var(--text); }
+  .bar { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:18px 0 16px; }
+  .search { flex:1; min-width:200px; display:flex; align-items:center; gap:9px; background:var(--s1); border:1px solid var(--border); border-radius:11px; padding:10px 13px; }
+  .search input { flex:1; background:transparent; border:0; color:var(--text); font-size:.9rem; outline:none; }
+  .search input::placeholder { color:var(--faint); }
+  .btn { border:1px solid var(--border); background:var(--s1); color:var(--text); padding:9px 14px; border-radius:10px; font-size:.82rem; font-weight:600; cursor:pointer; transition:.12s; }
+  .btn:hover { border-color:#34415a; background:var(--s2); }
+  .btn.acc { background:var(--acc); border-color:var(--acc); color:var(--acc-ink); }
+  .cnt { color:var(--faint); font-family:'JetBrains Mono',monospace; font-size:.74rem; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:16px; }
+  .card { background:var(--s1); border:1px solid var(--border); border-radius:14px; overflow:hidden; display:flex; flex-direction:column; }
+  .art { aspect-ratio:1/1; width:100%; background:#0e1320 center/cover no-repeat; cursor:pointer; display:block; border:0; }
+  .meta { padding:10px 11px 11px; display:flex; flex-direction:column; gap:8px; }
+  .nm { font-size:.84rem; font-weight:600; line-height:1.2; }
+  .dim { font-family:'JetBrains Mono',monospace; font-size:.64rem; color:var(--faint); }
+  .row { display:flex; gap:7px; }
+  .url { flex:1; min-width:0; background:#0c111b; border:1px solid var(--hair); border-radius:8px; padding:6px 8px; font-family:'JetBrains Mono',monospace; font-size:.62rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .copy { flex:none; border:1px solid var(--border); background:var(--s2); color:var(--text); border-radius:8px; padding:0 11px; font-size:.7rem; font-weight:700; cursor:pointer; transition:.12s; }
+  .copy:hover { border-color:var(--acc); }
+  .copy.done { background:var(--good); border-color:var(--good); color:#06160e; }
+  .toast { position:fixed; left:50%; bottom:26px; transform:translateX(-50%); background:var(--good); color:#06160e; font-weight:700; font-size:.82rem; padding:9px 16px; border-radius:99px; box-shadow:0 8px 24px #0008; opacity:0; transition:opacity .2s; pointer-events:none; }
+  .toast.show { opacity:1; }
+  .empty { color:var(--faint); padding:40px; text-align:center; }
+  a.home { color:var(--acc); text-decoration:none; font-size:.8rem; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Cover art <span style="color:var(--faint);font-weight:600;font-size:.6em">· square 1:1</span></h1>
+    <div class="sub">Every game's cover from the slate, as a direct CDN link. <b>dekudeals = 500×500</b>, <b>SteamGridDB = 400×400</b> — all true 1:1. Click a cover or <b>Copy</b> to grab its link. · <a class="home" href="/">← back to Stream Slate</a></div>
+    <div class="bar">
+      <div class="search"><span style="color:var(--faint)">⌕</span><input id="q" placeholder="Search games…" /></div>
+      <button class="btn acc" id="copyAll">⧉ Copy all links</button>
+      <span class="cnt" id="cnt"></span>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="empty" id="empty" style="display:none">No covers match.</div>
+  </div>
+  <div class="toast" id="toast"></div>
+<script>
+  var GAMES = [];
+  var toastT;
+  function toast(msg) {
+    var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastT); toastT = setTimeout(function(){ t.classList.remove('show'); }, 1400);
+  }
+  function copy(text, btn) {
+    navigator.clipboard.writeText(text).then(function(){
+      toast('Copied link');
+      if (btn) { btn.classList.add('done'); var o = btn.textContent; btn.textContent = '✓'; setTimeout(function(){ btn.classList.remove('done'); btn.textContent = o; }, 1100); }
+    }).catch(function(){ toast('Copy failed — select & copy manually'); });
+  }
+  function dimFor(url) { return url.indexOf('dekudeals') >= 0 ? '500×500' : url.indexOf('steamgriddb') >= 0 ? '400×400' : '1:1'; }
+  function render(filter) {
+    var grid = document.getElementById('grid');
+    var f = (filter || '').toLowerCase();
+    var list = GAMES.filter(function(g){ return g.icon && (!f || g.title.toLowerCase().indexOf(f) >= 0); });
+    grid.innerHTML = '';
+    document.getElementById('empty').style.display = list.length ? 'none' : 'block';
+    document.getElementById('cnt').textContent = list.length + ' cover' + (list.length === 1 ? '' : 's');
+    list.forEach(function(g){
+      var card = document.createElement('div'); card.className = 'card';
+      card.innerHTML =
+        '<button class="art" style="background-image:url(' + g.icon + ')" title="Copy link"></button>' +
+        '<div class="meta"><div class="nm">' + g.title.replace(/</g,'&lt;') + '</div>' +
+        '<div class="dim">' + dimFor(g.icon) + '</div>' +
+        '<div class="row"><div class="url" title="' + g.icon + '">' + g.icon + '</div>' +
+        '<button class="copy">Copy</button></div></div>';
+      var url = g.icon;
+      card.querySelector('.art').onclick = function(){ copy(url, null); };
+      card.querySelector('.copy').onclick = function(){ copy(url, this); };
+      grid.appendChild(card);
+    });
+  }
+  function titleSlug(t){ return t; }
+  fetch('games.json').then(function(r){ return r.json(); }).then(function(data){
+    var arr = Array.isArray(data) ? data : (data && data.games) || [];
+    GAMES = arr.filter(function(g){ return g.icon; })
+      .map(function(g){ return { title: g.title, icon: g.icon }; })
+      .sort(function(a,b){ return a.title < b.title ? -1 : 1; });
+    render('');
+  }).catch(function(e){ document.getElementById('grid').innerHTML = '<div class="empty">Failed to load games.json: ' + e + '</div>'; });
+  document.getElementById('q').addEventListener('input', function(e){ render(e.target.value); });
+  document.getElementById('copyAll').addEventListener('click', function(){
+    var f = document.getElementById('q').value.toLowerCase();
+    var lines = GAMES.filter(function(g){ return !f || g.title.toLowerCase().indexOf(f) >= 0; })
+      .map(function(g){ return g.title + '\t' + g.icon; }).join('\n');
+    copy(lines, null); toast('Copied all links');
+  });
+</script>
+</body>
+</html>
