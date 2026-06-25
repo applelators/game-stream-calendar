@@ -566,7 +566,7 @@ function savePNG(id, name) {
 }
 function ShareView({ games, today, pace }) {
   const upcoming = games
-    .filter((g) => g.kind !== 'event' && isPlaceable(g.release) && anchorDate(g.release) && anchorDate(g.release).getTime() >= today.getTime())
+    .filter((g) => g.kind !== 'event' && isPlaceable(g.release) && anchorDate(g.release) && anchorDate(g.release).getTime() > today.getTime())
     .sort((a, b) => anchorDate(a.release) - anchorDate(b.release));
   if (!upcoming.length) return <div className="anim"><div className="w-head"><h1>Share your schedule</h1><span>no upcoming dated releases to feature</span></div></div>;
   const hero = upcoming.find((g) => g.release.precision === 'day') || upcoming[0];
@@ -721,7 +721,7 @@ function NowNextHero({ games, pace, doneHours, doneCounts, today, onPick }) {
       return { g, total, done, remaining, pct: Math.min(100, Math.round((done / total) * 100)) };
     }).slice(0, 2);
   const upcoming = games
-    .filter((g) => g.kind !== 'event' && isPlaceable(g.release) && anchorDate(g.release) && anchorDate(g.release).getTime() >= today.getTime())
+    .filter((g) => g.kind !== 'event' && isPlaceable(g.release) && anchorDate(g.release) && anchorDate(g.release).getTime() > today.getTime())
     .sort((a, b) => anchorDate(a.release) - anchorDate(b.release));
   const launchG = upcoming.find((g) => g.release.precision === 'day') || null;
   const launchMs = launchG ? new Date(launchG.release.year, (launchG.release.month || 1) - 1, launchG.release.day || 1).getTime() : null;
@@ -939,7 +939,7 @@ function App() {
     for (const g of effGames) {
       if (g.kind === 'event' || !g.release || g.release.precision !== 'day') continue;
       const a = new Date(g.release.year, (g.release.month || 1) - 1, g.release.day || 1).getTime();
-      if (a < todayLocalMs) continue;
+      if (a <= todayLocalMs) continue; // today's midnight launch already happened — roll to the next
       if (!best || a < best.ms) best = { ms: a, title: g.title };
     }
     return best;
