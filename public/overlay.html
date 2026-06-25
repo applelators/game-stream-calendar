@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Stream Slate · Launch Countdown Overlay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+<style>
+  /* Transparent page so it composites over your scene in OBS (browser source). */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: transparent; height: 100%; overflow: hidden;
+    font-family: 'Space Grotesk', system-ui, sans-serif; color: #fff; -webkit-font-smoothing: antialiased; }
+  body { display: flex; align-items: center; justify-content: center; padding: 18px; }
+  :root { --acc: #a970ff; }
+
+  .ov { position: relative; width: 420px; max-width: 100%; border-radius: 20px; overflow: hidden;
+    background: rgba(10, 13, 20, 0.82); border: 1px solid color-mix(in srgb, var(--acc) 55%, #283245);
+    box-shadow: 0 18px 50px #000a, 0 0 0 1px #0006, 0 0 38px color-mix(in srgb, var(--acc) 30%, transparent);
+    transition: opacity 1.4s ease, transform 1.4s ease; }
+  .ov.gone { opacity: 0; transform: scale(0.96); pointer-events: none; }
+  .ov-blur { position: absolute; inset: -40px; background-size: cover; background-position: center;
+    filter: blur(40px) saturate(1.4); opacity: 0.4; }
+  .ov-veil { position: absolute; inset: 0; background: linear-gradient(180deg, #0a0d14b0, #0a0d14e8); }
+  .ov-body { position: relative; padding: 20px 22px 22px; }
+
+  .ov-top { display: flex; align-items: center; gap: 14px; }
+  .ov-art { width: 70px; height: 70px; border-radius: 14px; flex: none; background: #0e1320 center/cover;
+    box-shadow: 0 6px 20px #000a, 0 0 0 1px #fff2; }
+  .ov-eyebrow { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 0.62rem;
+    letter-spacing: 0.18em; color: color-mix(in srgb, var(--acc) 60%, #fff); display: inline-flex; align-items: center; gap: 7px; }
+  .ov-eyebrow .moon { font-size: 0.9rem; }
+  .ov-title { font-weight: 700; font-size: 1.35rem; line-height: 1.1; margin-top: 6px; text-shadow: 0 2px 10px #000; }
+
+  .ov-clock { display: flex; gap: 8px; margin-top: 16px; }
+  .ov-cell { flex: 1; text-align: center; background: rgba(255,255,255,0.05); border: 1px solid #ffffff1c;
+    border-radius: 12px; padding: 11px 4px 9px; }
+  .ov-num { font-weight: 700; font-size: clamp(1.7rem, 7vw, 2.3rem); line-height: 1; font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 14px color-mix(in srgb, var(--acc) 55%, transparent); }
+  .ov-lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.56rem; letter-spacing: 0.12em; color: #9fb0c8; margin-top: 7px; }
+
+  /* celebration */
+  .ov.celebrate { animation: pop 0.6s ease both; }
+  @keyframes pop { 0% { transform: scale(0.9); } 55% { transform: scale(1.05); } 100% { transform: scale(1); } }
+  .ov.celebrate .ov-veil { animation: glowpulse 1.2s ease-in-out infinite; }
+  @keyframes glowpulse { 0%,100% { box-shadow: inset 0 0 0 2000px color-mix(in srgb, var(--acc) 0%, transparent); }
+    50% { box-shadow: inset 0 0 120px color-mix(in srgb, var(--acc) 35%, transparent); } }
+  .ov-celebrate-msg { display: none; position: relative; margin-top: 16px; text-align: center; }
+  .ov.celebrate .ov-clock { display: none; }
+  .ov.celebrate .ov-celebrate-msg { display: block; animation: rise 0.6s ease both; }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  .ov-bang { font-size: 2.6rem; }
+  .ov-out { font-weight: 700; font-size: 1.5rem; margin-top: 4px;
+    background: linear-gradient(90deg, var(--acc), #5ed3de); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .ov-out-sub { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: #cdd8ea; margin-top: 6px; letter-spacing: 0.04em; }
+
+  .confetti { position: absolute; top: -24px; width: 9px; height: 15px; border-radius: 2px; opacity: 0; will-change: transform; }
+  @keyframes fall { 0% { transform: translateY(-24px) rotate(0deg); opacity: 1; } 100% { transform: translateY(440px) rotate(900deg); opacity: 0; } }
+
+  .ov-empty { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #8b97ab; opacity: 0.6; }
+</style>
+</head>
+<body>
+  <div class="ov" id="ov" style="display:none">
+    <div class="ov-blur" id="blur"></div>
+    <div class="ov-veil"></div>
+    <div class="ov-body">
+      <div class="ov-top">
+        <div class="ov-art" id="art"></div>
+        <div style="min-width:0">
+          <div class="ov-eyebrow"><span class="moon">🌙</span><span id="eyebrow">NEXT MIDNIGHT LAUNCH</span></div>
+          <div class="ov-title" id="title">—</div>
+        </div>
+      </div>
+      <div class="ov-clock" id="clock">
+        <div class="ov-cell"><div class="ov-num" id="dd">0</div><div class="ov-lbl">DAYS</div></div>
+        <div class="ov-cell"><div class="ov-num" id="hh">0</div><div class="ov-lbl">HOURS</div></div>
+        <div class="ov-cell"><div class="ov-num" id="mm">0</div><div class="ov-lbl">MIN</div></div>
+        <div class="ov-cell"><div class="ov-num" id="ss">0</div><div class="ov-lbl">SEC</div></div>
+      </div>
+      <div class="ov-celebrate-msg">
+        <div class="ov-bang">🎉</div>
+        <div class="ov-out" id="outName">It's here!</div>
+        <div class="ov-out-sub">OUT NOW · go play it</div>
+      </div>
+    </div>
+  </div>
+  <div class="ov-empty" id="empty" style="display:none">No upcoming launch</div>
+
+<script>
+  var Q = new URLSearchParams(location.search);
+  if (Q.get('accent')) document.documentElement.style.setProperty('--acc', Q.get('accent'));
+  var ov = document.getElementById('ov'), empty = document.getElementById('empty');
+  var pad = function (n) { return String(n).padStart(2, '0'); };
+  function slug(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
+  function baseTitle(t){ return String(t || '').replace(/\s*—\s*pt\.?\s*\d+.*$/i, '').trim(); }
+
+  var target = null, game = null, celebrated = false, fired = false;
+
+  function celebrate() {
+    celebrated = true;
+    document.getElementById('outName').textContent = (game ? game.title : 'It') + ' is OUT NOW';
+    ov.classList.add('celebrate');
+    spawnConfetti();
+    // After the celebration plays, fade the whole overlay to zero opacity and leave it gone.
+    setTimeout(function () { ov.classList.add('gone'); }, 6500);
+  }
+  function spawnConfetti() {
+    var colors = [getComputedStyle(document.documentElement).getPropertyValue('--acc').trim() || '#a970ff',
+      '#5ed3de', '#34d399', '#f5b14c', '#eb51b8', '#ffffff'];
+    var body = ov.querySelector('.ov-body');
+    for (var i = 0; i < 36; i++) {
+      var c = document.createElement('div');
+      c.className = 'confetti';
+      c.style.left = Math.random() * 100 + '%';
+      c.style.background = colors[i % colors.length];
+      c.style.animation = 'fall ' + (1.6 + Math.random() * 1.8) + 's linear ' + (Math.random() * 1.2) + 's forwards';
+      c.style.height = (10 + Math.random() * 10) + 'px';
+      body.appendChild(c);
+    }
+  }
+  function renderCountdown(diff) {
+    var s = Math.floor(diff / 1000);
+    var d = Math.floor(s / 86400); s -= d * 86400;
+    var h = Math.floor(s / 3600); s -= h * 3600;
+    var m = Math.floor(s / 60); s -= m * 60;
+    document.getElementById('dd').textContent = d;
+    document.getElementById('hh').textContent = pad(h);
+    document.getElementById('mm').textContent = pad(m);
+    document.getElementById('ss').textContent = pad(s);
+  }
+  function tick() {
+    if (!target) return;
+    if (celebrated) return;
+    var diff = target - Date.now();
+    if (diff <= 0) { if (!fired) { fired = true; celebrate(); } return; }
+    renderCountdown(diff);
+  }
+
+  // Pick the next midnight launch: the soonest day-precision NEW release whose local
+  // midnight is still in the future. ?game=<slug> pins a specific game instead.
+  function pickLaunch(games) {
+    var now = Date.now();
+    var pin = Q.get('game');
+    var best = null;
+    games.forEach(function (g) {
+      if (!g.icon && false) return;
+      var k = g.kind || 'game';
+      if (k !== 'game' && k !== 'dlc') return;
+      if (g.newRelease === false) return;
+      var mm = /^(\d{4})-(\d{2})-(\d{2})$/.exec(g.date || '');
+      if (!mm) return;
+      var ms = new Date(+mm[1], +mm[2] - 1, +mm[3]).getTime(); // local midnight of release day
+      var disp = g.collection || baseTitle(g.title);
+      if (pin) { if (slug(disp) === pin) { if (!best || ms < best.ms) best = { ms: ms, title: disp, icon: g.icon || '' }; } return; }
+      if (ms <= now) return;                       // already launched (today's midnight passed)
+      if (!best || ms < best.ms) best = { ms: ms, title: disp, icon: g.icon || '' };
+    });
+    return best;
+  }
+
+  fetch('games.json').then(function (r) { return r.json(); }).then(function (data) {
+    var arr = Array.isArray(data) ? data : (data && data.games) || [];
+    game = pickLaunch(arr);
+    if (!game) { empty.style.display = 'block'; return; }
+    target = game.ms;
+    document.getElementById('title').textContent = game.title;
+    if (game.icon) { document.getElementById('art').style.backgroundImage = 'url(' + game.icon + ')'; document.getElementById('blur').style.backgroundImage = 'url(' + game.icon + ')'; }
+    ov.style.display = 'block';
+    tick();
+    setInterval(tick, 250);
+  }).catch(function () { empty.style.display = 'block'; });
+</script>
+</body>
+</html>
