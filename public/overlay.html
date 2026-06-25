@@ -120,6 +120,7 @@
       body.appendChild(c);
     }
   }
+  function cell(id, on) { document.getElementById(id).parentElement.style.display = on ? '' : 'none'; }
   function renderCountdown(diff) {
     var s = Math.floor(diff / 1000);
     var d = Math.floor(s / 86400); s -= d * 86400;
@@ -129,6 +130,9 @@
     document.getElementById('hh').textContent = pad(h);
     document.getElementById('mm').textContent = pad(m);
     document.getElementById('ss').textContent = pad(s);
+    // Drop leading zero units: hide DAYS when 0, hide HOURS when days+hours are both 0.
+    cell('dd', d > 0);
+    cell('hh', d > 0 || h > 0);
   }
   function tick() {
     if (!target) return;
