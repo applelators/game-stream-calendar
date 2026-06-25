@@ -1333,6 +1333,7 @@ function TodayPicker({ options, gameById, onChoose }) {
   const dateLabel = `${dows[today.getDay()]} · ${MONTHS[today.getMonth()]} ${today.getDate()}`;
   const meta = (o) => {
     if (o.def) return { tag: 'Plan default', tone: 'var(--muted)' };
+    if (o.midnight) return { tag: '🌙 Midnight launch', tone: '#cdb6ff' };
     if (o.rest) return o.recommended ? { tag: 'Rest day', tone: 'var(--good)' }
       : o.restCost > 0 ? { tag: `Costs ${o.restCost}d`, tone: 'var(--warn)' } : { tag: 'Rest day', tone: 'var(--muted)' };
     if (o.recommended) return o.behind ? { tag: 'Catch-up', tone: 'var(--warn)' } : { tag: 'On pace', tone: 'var(--good)' };
@@ -1343,6 +1344,7 @@ function TodayPicker({ options, gameById, onChoose }) {
   };
   const noteFor = (o) => {
     if (o.def) return "clears your pick and uses the plan's choice.";
+    if (o.midnight) return 'midnight launch tonight — go live at 12 AM for the new release (short ~4h binge).';
     if (o.rest) return o.recommended ? 'a clean rest — your plan still finishes on time.'
       : o.restCost > 0 ? `resting pushes deadlines ~${o.restCost}d further.` : 'a rest day.';
     if (o.recommended) return o.behind ? 'already behind — playing it limits the slip.' : 'keeps you on track this month.';
@@ -1654,13 +1656,16 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap,
       const chosen = (dayOpts && dayOpts.dayPins && dayOpts.dayPins[tkey])
         || (dayOpts && dayOpts.restDays && dayOpts.restDays.has(tkey) ? '__rest__' : null);
       const cand = []; const soon = addDays(today, 10);
+      // A midnight-launch game's scheduled position STARTS on its eve (its 12am session),
+      // so gate on the plan's position start, not the release anchor — otherwise the
+      // launch game is wrongly hidden from the picker on the very night you binge it.
       for (const g of placeable) {
         if (g.kind === 'event' || g.bonus) continue;      // committed only — no bonus
-        const p = pos[g.id]; const a = anchorDate(g.release);
-        if (!a || a > today) continue;
-        if (p && today >= p.end) continue;
-        const current = p && p.start <= soon;
-        if (current || g.id === recId) cand.push(g.id);
+        const p = pos[g.id];
+        if (!p || today >= p.end) continue;               // unscheduled or already finished by today
+        const started = p.start <= today;                 // includes a launch game on its eve
+        const soonish = p.start <= soon;                  // starts within ~10 days
+        if (started || soonish || g.id === recId) cand.push(g.id);
       }
       const committed = []; const seen = {};
       for (const id of cand) { if (!seen[id]) { seen[id] = 1; committed.push(id); } }
@@ -1688,10 +1693,12 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap,
           : committed.find(isBehind) || committed[0] || null;
       }
 
+      const midnightId = (sbd[tkey] && sbd[tkey].midnight) ? recId : null; // today is a launch eve
       const opts = [];
       for (const id of committed) {
         opts.push({ id, title: gbi[id].title, recommended: id === recommendedId,
-          chosen: chosen === id, behind: isBehind(id), danger: inDanger(id), getAhead: restFree });
+          chosen: chosen === id, behind: isBehind(id), danger: inDanger(id), getAhead: restFree,
+          midnight: id === midnightId });
       }
       opts.push({ rest: true, recommended: restFree, chosen: chosen === '__rest__', restCost });
       if (chosen) opts.push({ def: true }); // "use the plan's default" option
