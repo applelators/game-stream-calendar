@@ -1655,17 +1655,16 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap,
       const recId = sbd[tkey] ? sbd[tkey].id : null;
       const chosen = (dayOpts && dayOpts.dayPins && dayOpts.dayPins[tkey])
         || (dayOpts && dayOpts.restDays && dayOpts.restDays.has(tkey) ? '__rest__' : null);
-      const cand = []; const soon = addDays(today, 10);
-      // A midnight-launch game's scheduled position STARTS on its eve (its 12am session),
-      // so gate on the plan's position start, not the release anchor — otherwise the
-      // launch game is wrongly hidden from the picker on the very night you binge it.
+      const cand = [];
+      // Only games the plan has actually STARTED by today are streamable today. Gate on
+      // the position start (not the release anchor) so a midnight-launch game — whose
+      // position begins on its eve (the 12am session) — is offered on the night you
+      // binge it, while future releases (not yet started) stay out of the picker.
       for (const g of placeable) {
         if (g.kind === 'event' || g.bonus) continue;      // committed only — no bonus
         const p = pos[g.id];
         if (!p || today >= p.end) continue;               // unscheduled or already finished by today
-        const started = p.start <= today;                 // includes a launch game on its eve
-        const soonish = p.start <= soon;                  // starts within ~10 days
-        if (started || soonish || g.id === recId) cand.push(g.id);
+        if (p.start <= today || g.id === recId) cand.push(g.id); // started (incl. launch eve) or today's pick
       }
       const committed = []; const seen = {};
       for (const id of cand) { if (!seen[id]) { seen[id] = 1; committed.push(id); } }
