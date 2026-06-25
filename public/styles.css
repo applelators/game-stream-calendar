@@ -969,3 +969,15 @@ input, select, textarea { font-family: inherit; }
 .daytype-legend i.wd { border-color: var(--hair); background: #0d121c; }
 .daytype-legend i.we { border-color: color-mix(in srgb, var(--accent-2) 60%, var(--hair)); background: #0f1626; }
 .daytype-legend i.off { border-color: var(--warn); }
+
+/* ============================================================
+   Time-to-beat adjustment ("needs more time") + finished add-stream
+   ============================================================ */
+.adj { margin-top: 14px; background: var(--s3); border: 1px solid var(--hair); border-radius: 11px; padding: 12px 13px; }
+.adj-k { font-size: 0.82rem; font-weight: 600; color: var(--text); }
+.adj-sub { font-size: 0.72rem; color: var(--muted); font-family: var(--mono); margin-top: 4px; }
+.adj-sub b { color: var(--warn); }
+.adj-btns { display: flex; gap: 8px; margin-top: 11px; flex-wrap: wrap; }
+.fin-add { background: transparent; border: 1px solid #2c4a38; color: #a7e3c3; font-size: 0.72rem; font-weight: 700;
+  border-radius: 8px; padding: 5px 11px; cursor: pointer; transition: 0.12s; white-space: nowrap; }
+.fin-add:hover { background: #16241c; border-color: var(--good); color: #d6f5e6; }

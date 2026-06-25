@@ -28,6 +28,7 @@ const DEFAULT_SETTINGS = {
   queue: [],       // what-if queue play order (game ids); empty = default release order
   theme: 'purple', // accent preset (sets --acc / --acc-ink); persists in settings
   finDismiss: '',  // id of the last dismissed "recently wrapped" celebration
+  hoursAdjust: {}, // { gameId: deltaHours } — manual time-to-beat bumps when a game runs over/under
 };
 
 // Accent presets — swap --acc / --acc-ink on the app wrapper. Per-game colours
@@ -682,13 +683,14 @@ function LiveHero({ state, manualStart, games }) {
 
 // Recently-wrapped celebration. A game counts as wrapped if it's flagged finished in
 // games.json OR its real streamed hours have met/exceeded its HLTB estimate.
-function FinishedBanner({ game, doneHours, doneCounts, onClose, onPick }) {
+function FinishedBanner({ game, doneHours, doneCounts, onAddStream, onClose, onPick }) {
   const streams = doneCounts[game.id] || 0;
   const hrs = Math.round(doneHours[game.id] || game.hltbHours || 0);
   return (
     <div className="fin-banner">
       <span className="fin-emoji">🎉</span>
-      <div className="fin-txt"><b style={{ cursor: 'pointer' }} onClick={() => onPick(game.id)}>Wrapped {game.title}</b>{game.wrapNote ? ` — ${game.wrapNote}` : ` — ${streams ? streams + ' stream' + (streams === 1 ? '' : 's') + ' · ' : ''}${hrs}h · finished ✓`}</div>
+      <div className="fin-txt"><b style={{ cursor: 'pointer' }} onClick={() => onPick(game.id)}>Wrapped {game.title}</b>{game.wrapNote ? ` — ${game.wrapNote}` : ` — ${streams ? streams + ' stream' + (streams === 1 ? '' : 's') + ' · ' : ''}${hrs}h · hit its estimate`}</div>
+      {onAddStream && <button className="fin-add" onClick={onAddStream} title="Not actually done — add another stream and keep it scheduled">↺ Not done · +1 stream</button>}
       <button className="fin-x" onClick={onClose}>×</button>
     </div>
   );
@@ -861,13 +863,19 @@ function App() {
 
   const ep = useMemo(() => effectivePace(settings, pace), [settings, pace]);
   const normVacs = useMemo(() => normalizeVacations(settings.vacations), [settings.vacations]);
+  // Per-game time-to-beat adjustments (when a game runs longer/shorter than estimated):
+  // bump hltbHours so streams-to-finish, the schedule, and deadline gauges all recalc.
+  const adjGames = useMemo(() => {
+    const adj = settings.hoursAdjust || {};
+    return games.map((g) => { const d = adj[g.id]; return d ? { ...g, hltbHours: Math.max(0.5, (Number(g.hltbHours) || 0) + d) } : g; });
+  }, [games, settings.hoursAdjust]);
   // Auto-pick a concrete start day for each month/quarter game the user pinned,
   // then anchor those games to it so the rest of the app treats them as dated.
-  const autoMap = useMemo(() => autoPlaceDays(games, settings.autoPlace, normVacs), [games, settings.autoPlace, normVacs]);
+  const autoMap = useMemo(() => autoPlaceDays(adjGames, settings.autoPlace, normVacs), [adjGames, settings.autoPlace, normVacs]);
   // "finish before X" groups are packed automatically (file-driven) and win over
   // the user's loose auto-placements.
-  const beforeMap = useMemo(() => finishBeforeDays(games, ep, normVacs), [games, ep, normVacs]);
-  const effGames = useMemo(() => withAutoPlacement(games, { ...autoMap, ...beforeMap }), [games, autoMap, beforeMap]);
+  const beforeMap = useMemo(() => finishBeforeDays(adjGames, ep, normVacs), [adjGames, ep, normVacs]);
+  const effGames = useMemo(() => withAutoPlacement(adjGames, { ...autoMap, ...beforeMap }), [adjGames, autoMap, beforeMap]);
   // Register cover-derived band colours before any child renders/uses gameColor.
   effGames.forEach((g) => { if (g.iconColor) ICON_COLORS[g.id] = g.iconColor; });
   // Per-day overrides (settings store ISO dates; convert to engine day-keys):
@@ -875,7 +883,7 @@ function App() {
   const isoToKey = (iso) => { const [y, m, d] = String(iso).split('-').map(Number); return `${y}-${m - 1}-${d}`; };
   // Real streamed history mapped onto games: hours (so the plan continues in-progress
   // games) + per-part completed-stream counts (for per-session goal numbering).
-  const doneInfo = useMemo(() => computeDoneInfo(games, streams), [games, streams]);
+  const doneInfo = useMemo(() => computeDoneInfo(adjGames, streams), [adjGames, streams]);
   const dayOpts = useMemo(() => ({
     longDays: new Set((settings.longDays || []).map(isoToKey)),
     dayPins: Object.fromEntries(Object.entries(settings.dayPins || {}).map(([iso, id]) => [isoToKey(iso), id])),
@@ -914,6 +922,17 @@ function App() {
     setSettings((s) => {
       const cur = s.restDays || [];
       return { ...s, restDays: cur.includes(iso) ? cur.filter((x) => x !== iso) : [...cur, iso] };
+    });
+  }, []);
+  // Adjust a game's time-to-beat by deltaHours (e.g., +1 stream when it runs longer).
+  // null delta clears the adjustment. Persists; the whole schedule recalculates.
+  const adjustHours = useCallback((id, delta) => {
+    setSettings((s) => {
+      const cur = { ...(s.hoursAdjust || {}) };
+      if (delta == null) { delete cur[id]; return { ...s, hoursAdjust: cur }; }
+      const v = Math.round(((cur[id] || 0) + delta) * 10) / 10;
+      if (Math.abs(v) < 0.05) delete cur[id]; else cur[id] = v;
+      return { ...s, hoursAdjust: cur };
     });
   }, []);
   // Realistic release-priority finish per game (for the detail card).
@@ -1023,7 +1042,8 @@ function App() {
 
       {wrapped && settings.finDismiss !== wrapped.id && (
         <FinishedBanner game={wrapped} doneHours={doneInfo.hours} doneCounts={doneInfo.counts}
-          onPick={setDetail} onClose={() => setSettings((s) => ({ ...s, finDismiss: wrapped.id }))} />
+          onPick={setDetail} onAddStream={() => adjustHours(wrapped.id, Math.max(2, Math.round(ep.hoursPerStream || 5)))}
+          onClose={() => setSettings((s) => ({ ...s, finDismiss: wrapped.id }))} />
       )}
       {((liveState && liveState.live) || manualLive) && <LiveHero state={liveState && liveState.live ? liveState : null} manualStart={manualStart} games={effGames} />}
       <InstrumentPanel pace={ep} source={paceSource} inFlight={inFlight} atRisk={atRisk} launch={launch} />
@@ -1048,7 +1068,8 @@ function App() {
 
       {detailGame && (
         <DetailCard game={detailGame} pace={ep} vacations={normVacs} queuedPos={seqPositions[detailGame.id]}
-          games={effGames} onClose={() => setDetail(null)} />
+          games={effGames} adjust={(settings.hoursAdjust || {})[detailGame.id] || 0} onAdjust={adjustHours}
+          doneHours={doneInfo.hours} onClose={() => setDetail(null)} />
       )}
       {showSettings && (
         <SettingsPanel settings={settings} pace={pace} setSettings={setSettings} setPace={setPace}
@@ -2265,7 +2286,7 @@ function ReleasesView({ games, pace, onPick }) {
 // ============================================================================
 // Detail card
 // ============================================================================
-function DetailCard({ game: g, pace, vacations, queuedPos, games, onClose }) {
+function DetailCard({ game: g, pace, vacations, queuedPos, games, adjust, onAdjust, doneHours, onClose }) {
   const strk = streamsToFinish(g.hltbHours, pace);
   const wks = weeksToFinish(g.hltbHours, pace);
   const start = anchorDate(g.release);
@@ -2318,6 +2339,27 @@ function DetailCard({ game: g, pace, vacations, queuedPos, games, onClose }) {
               <b>{paceNote.ok ? 'On pace ✓' : 'Behind ⚠'}</b> — needs <b className="hl">{paceNote.need.toFixed(1)} h/wk</b> to finish {paceNote.dlText}; you average {Number(pace.hoursPerWeek || 0).toFixed(1)}h/wk.
             </div>
           )}
+
+          {g.kind !== 'event' && g.hltbHours > 0 && onAdjust && (() => {
+            const step = Math.max(2, Math.round(pace.hoursPerStream || 5));
+            const done = (doneHours && doneHours[g.id]) || 0;
+            const remaining = Math.max(0, g.hltbHours - done);
+            const remStreams = streamsToFinish(remaining, pace);
+            return (
+              <div className="adj">
+                <div className="adj-k">Running longer (or shorter) than expected?</div>
+                <div className="adj-sub">
+                  {adjust ? <b>{adjust > 0 ? '+' : ''}{adjust}h vs HLTB estimate · </b> : null}
+                  {remStreams} stream{remStreams === 1 ? '' : 's'} left{done > 0 ? ` · ~${Math.round(remaining)}h to go` : ''}
+                </div>
+                <div className="adj-btns">
+                  <button className="btn btn-sm" onClick={() => onAdjust(g.id, -step)}>− a stream</button>
+                  <button className="btn btn-sm btn-accent" onClick={() => onAdjust(g.id, step)}>＋ a stream</button>
+                  {adjust ? <button className="btn btn-sm" onClick={() => onAdjust(g.id, null)}>reset</button> : null}
+                </div>
+              </div>
+            );
+          })()}
 
           {g.platforms && g.platforms.length > 0 && (
             <div className="modal-line"><span className="k">Platforms</span>
