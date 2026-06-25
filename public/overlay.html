@@ -20,6 +20,7 @@
     box-shadow: 0 18px 50px #000a, 0 0 0 1px #0006, 0 0 38px color-mix(in srgb, var(--acc) 30%, transparent);
     transition: opacity 1.4s ease, transform 1.4s ease; }
   .ov.gone { opacity: 0; transform: scale(0.96); pointer-events: none; }
+  .ov.compact { width: 300px; }   /* narrower when only minutes & seconds remain */
   .ov-blur { position: absolute; inset: -40px; background-size: cover; background-position: center;
     filter: blur(40px) saturate(1.4); opacity: 0.4; }
   .ov-veil { position: absolute; inset: 0; background: linear-gradient(180deg, #0a0d14b0, #0a0d14e8); }
@@ -69,7 +70,6 @@
       <div class="ov-top">
         <div class="ov-art" id="art"></div>
         <div style="min-width:0">
-          <div class="ov-eyebrow"><span class="moon">🌙</span><span id="eyebrow">NEXT MIDNIGHT LAUNCH</span></div>
           <div class="ov-title" id="title">—</div>
         </div>
       </div>
@@ -101,6 +101,7 @@
   function celebrate() {
     celebrated = true;
     document.getElementById('outName').textContent = (game ? game.title : 'It') + ' is OUT NOW';
+    ov.classList.remove('compact'); // give the celebration full width
     ov.classList.add('celebrate');
     spawnConfetti();
     // After the celebration plays, fade the whole overlay to zero opacity and leave it gone.
@@ -133,6 +134,7 @@
     // Drop leading zero units: hide DAYS when 0, hide HOURS when days+hours are both 0.
     cell('dd', d > 0);
     cell('hh', d > 0 || h > 0);
+    ov.classList.toggle('compact', d === 0 && h === 0); // only min & sec → narrower panel
   }
   function tick() {
     if (!target) return;
