@@ -136,8 +136,8 @@ function cellPopData(info, day) {
     const dow = day.getUTCDay();
     return {
       kind: 'planned', title: info.play.title, art: info.play.icon,
-      ord: info.streamOrd, total: info.streamTotal,
-      length: info.session.hours ? `~${info.session.hours}h planned (${dow === 0 || dow === 6 ? 'weekend' : 'weekday'})` : null,
+      ord: info.streamOrd, total: info.streamTotal, midnight: info.midnight,
+      length: info.session.hours ? `~${info.session.hours}h ${info.midnight ? 'midnight launch' : 'planned (' + (dow === 0 || dow === 6 ? 'weekend' : 'weekday') + ')'}` : null,
       goal: info.goal,
     };
   }
@@ -1250,10 +1250,9 @@ function dayInfo(day, ctx) {
   }
   // A day the user chose to rest (no committed stream).
   if (ctx.restDays && ctx.restDays.has(k)) return { rest: true, releases };
-  const eve = ctx.eveByDay && ctx.eveByDay[k];
-  if (eve && !(ctx.releaseDays && ctx.releaseDays[k])) return { launch: eve, releases };
   // Show one cell per actual stream session (a game appears on exactly its
   // "streams to finish" days, at your real cadence), not every in-progress day.
+  // A midnight-launch game's eve carries its short ~4h midnight session here.
   const session = ctx.sessionByDay[k];
   if (session) {
     // Per-session goal, numbered by ABSOLUTE stream ordinal (completed streams of this
@@ -1262,7 +1261,7 @@ function dayInfo(day, ctx) {
     const ord = doneN + session.idx;                 // absolute stream number
     const ordTotal = doneN + session.total;          // total streams incl. completed
     const goal = ctx.sessionGoals[`${session.id}#${ord}`] || null;
-    return { releases, play: ctx.gameById[session.id], session, goal, streamOrd: ord, streamTotal: ordTotal };
+    return { releases, play: ctx.gameById[session.id], session, goal, midnight: !!session.midnight, streamOrd: ord, streamTotal: ordTotal };
   }
   // bonus game filling a spare slot (faded).
   const bonusId = ctx.bonusPlayByDay && ctx.bonusPlayByDay[k];
@@ -1462,7 +1461,7 @@ function WeekStrip({ days, onOpenDay }) {
                   {art && <div className="wstream-art" style={{ backgroundImage: `url(${art})` }} />}
                   {art && <div className="wstream-grad" />}
                   {info.streamOrd != null && <span className="wstream-no" style={{ background: gameColor(play.id).solid }}>{info.streamOrd}/{info.streamTotal}</span>}
-                  <div className="wstream-title">{play.title}</div>
+                  <div className="wstream-title">{info.midnight ? '🌙 ' : ''}{play.title}</div>
                   {info.session && info.session.hours ? <div className="wstream-hrs">~{info.session.hours}h</div> : null}
                 </div>
               ) : (
@@ -1489,6 +1488,7 @@ function DayModal({ day, isLong, isRest, onToggleLongDay, onToggleRest, onClose,
   else if (info.launch) tag = { t: 'Launch eve', c: '#9fb4d8' };
   else if (info.vac) tag = { t: 'Time off', c: 'var(--warn)' };
   else if (info.rest) tag = { t: 'Rest day', c: 'var(--muted)' };
+  else if (play && info.midnight) tag = { t: '🌙 Midnight launch', c: '#cdb6ff' };
   else if (play) tag = { t: day.isToday ? 'Today · streaming' : 'Stream day', c: 'var(--good)' };
   return (
     <div className="scrim" onClick={onClose}>
@@ -1500,7 +1500,7 @@ function DayModal({ day, isLong, isRest, onToggleLongDay, onToggleRest, onClose,
             <div className="ros-game" onClick={() => onPick(play.id)} style={{ cursor: 'pointer' }}>
               <div className="ros-art" style={isImgIcon(play.icon) ? { backgroundImage: `url(${play.icon})` } : { background: gameColor(play.id).solid }} />
               <div><div className="ros-title">{play.title}</div>
-                <div className="ros-sub">Stream {info.streamOrd} of {info.streamTotal}{info.session.hours ? ` · ~${info.session.hours}h${isLong ? ' (day off)' : ''} planned` : ''}</div></div>
+                <div className="ros-sub">Stream {info.streamOrd} of {info.streamTotal}{info.session.hours ? ` · ~${info.session.hours}h${info.midnight ? ' midnight' : isLong ? ' (day off)' : ''} planned` : ''}</div></div>
             </div>
           ) : info.launch ? (
             <div className="ros-note">🌙 <b>Midnight launch</b> — {info.launch.title} drops. Be ready to go live at 12:00 AM.</div>
@@ -1745,7 +1745,8 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap,
               const info = dayInfo(day, ctx);
               monthCount += info.releases.length;
               const isToday = y === tY && mon === tM && d === tD;
-              const cls = 'mg-cell' + (info.vac ? ' vac' : info.streamed ? ' streamed' : '') + (isToday ? ' today' : '');
+              const isWknd = day.getUTCDay() === 0 || day.getUTCDay() === 6;
+              const cls = 'mg-cell' + (info.vac ? ' vac' : info.streamed ? ' streamed' : '') + (isWknd ? ' weekend' : '') + (isToday ? ' today' : '');
               let cellStyle;
               if (!info.vac && !info.streamed) {
                 if (info.launch) cellStyle = { backgroundColor: gameColor(info.launch.id).solid + '12' };
@@ -1786,7 +1787,7 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap,
                       onClick={() => onPick(info.play.id)}
                       title={`${info.play.title}${info.session ? ` — stream ${info.session.idx}/${info.session.total}` : ''}${info.goal ? `\n🎯 Goal: ${info.goal}` : ''}`}>
                       {isImgIcon(info.play.icon) && <img className="mg-cellart" src={info.play.icon} alt="" loading="lazy" />}
-                      <span className="mg-gt">{info.play.title}</span>
+                      <span className="mg-gt">{info.midnight ? '🌙 ' : ''}{info.play.title}</span>
                     </span>
                   )}
                   {info.bonusPlay && (
@@ -1867,7 +1868,7 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap,
       const dowI = (day.getUTCDay() + 6) % 7;
       const dayObj = { num: d, iso: `${y}-${pad2(mon + 1)}-${pad2(d)}`, isToday, dateLabel: `${dows[dowI]} · ${MONTHS[mon]} ${d}`, info };
       cells.push(
-        <div className={'cal-cell' + (isToday ? ' today' : '') + (info.vac ? ' vac' : '')} key={d}>
+        <div className={'cal-cell' + ((day.getUTCDay() === 0 || day.getUTCDay() === 6) ? ' weekend' : '') + ((longDayISOs || []).includes(dayObj.iso) ? ' dayoff' : '') + (isToday ? ' today' : '') + (info.vac ? ' vac' : '')} key={d}>
           <span className="cal-dnum gc-dnum-btn" title="Open this day's run-of-show" onClick={() => setDayShow(dayObj)}>{d}</span>
           {info.launch && <span className="cal-moon">🌙</span>}
           {info.releases.map((r, j) => (
@@ -1880,7 +1881,7 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap,
             <div className="cal-play" onClick={() => onPick(info.play.id)}>
               <div className="cal-playart" style={isImgIcon(info.play.icon) ? { backgroundImage: `url(${info.play.icon})` } : { background: gameColor(info.play.id).solid }} />
               <div className="cal-playgrad" />
-              <span className="cal-playtitle">{info.play.title}</span>
+              <span className="cal-playtitle">{info.midnight ? '🌙 ' : ''}{info.play.title}</span>
               {info.streamOrd != null && <span className="cal-playno" style={{ background: gameColor(info.play.id).solid }}>{info.streamOrd}/{info.streamTotal}</span>}
             </div>
           )}
@@ -1958,6 +1959,12 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap,
       </div>
       <div className="cal-legend">Each game has its own colour, so a run of one colour is one game; numbers mark each stream (e.g. <b>3/6</b> = 3rd of 6) · <span className="lg-done">✓ + box art</span> = already streamed (real Twitch history) · 🌙 = midnight launch (eve reserved) · <span className="lg-vac">hatched</span> = vacation · ★ = release day · <span className="lg-planned">dashed chip</span> = planned for the month — click to auto-pick a start day · ✓ chip = placed</div>
       {/* weekday header stays pinned while you scroll through every month */}
+      <div className="daytype-legend">
+        <span><i className="wd" />weekday (~{Math.round(pace.weekdayHps || 4)}h)</span>
+        <span><i className="we" />weekend (~{Math.round(pace.weekendHps || 8)}h)</span>
+        <span><i className="off" />day off (weekend-length)</span>
+        <span>🌙 midnight launch</span>
+      </div>
       <div className="gc-weekbar">{DOW_FULL.map((d) => <span key={d}>{d}</span>)}</div>
       <div className="gc-stack">
         {months.map((mo, idx) => {
@@ -1976,7 +1983,8 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap,
             const pad2 = (n) => String(n).padStart(2, '0');
             const iso = `${y}-${pad2(mon + 1)}-${pad2(d)}`;
             const isOff = (longDayISOs || []).includes(iso);
-            const cls = 'gc-cell' + (info.vac ? ' vac' : info.streamed ? ' streamed' : '') + (hasArt ? ' hasart' : '') + (isToday ? ' today' : '') + (isOff ? ' dayoff' : '');
+            const isWknd = day.getUTCDay() === 0 || day.getUTCDay() === 6;
+            const cls = 'gc-cell' + (info.vac ? ' vac' : info.streamed ? ' streamed' : '') + (hasArt ? ' hasart' : '') + (isWknd ? ' weekend' : '') + (isToday ? ' today' : '') + (isOff ? ' dayoff' : '');
             const relTitles = info.releases.map((r) => r.title).join(', ');
             let cellStyle;
             if (!info.vac && !info.streamed) {
@@ -1995,7 +2003,7 @@ function MonthGridView({ games, pace, vacations, dayOpts, doneCounts, streamMap,
                 onMouseEnter={popData ? (e) => setPop({ rect: e.currentTarget.getBoundingClientRect(), data: popData }) : undefined}
                 onMouseLeave={popData ? () => setPop(null) : undefined}>
                 <span className="gc-dnum gc-dnum-btn" title="Open day options"
-                  onClick={(e) => { e.stopPropagation(); setPop(null); setDayShow(dayObj); }}>{d}{info.releases.length ? <span className="gc-relstar">★</span> : null}{dl ? <span className="gc-deadflag">⚑</span> : null}{!info.vac && !info.launch && info.session && info.goal ? <span className="gc-goal-inline">🎯</span> : null}</span>
+                  onClick={(e) => { e.stopPropagation(); setPop(null); setDayShow(dayObj); }}>{d}{info.releases.length ? <span className="gc-relstar">★</span> : null}{info.midnight ? <span className="gc-goal-inline" title="Midnight launch">🌙</span> : null}{dl ? <span className="gc-deadflag">⚑</span> : null}{!info.vac && !info.launch && info.session && info.goal ? <span className="gc-goal-inline">🎯</span> : null}</span>
                 {!info.vac && (
                   <button className="gc-offbtn" title={isOff ? 'Day off — click to remove (normal length)' : 'Mark a day off → longer weekend-length stream'}
                     onClick={(e) => { e.stopPropagation(); setPop(null); onToggleLongDay(iso); }}>☀ {isOff ? 'Day off ✓' : 'Day off'}</button>
@@ -2113,7 +2121,7 @@ function CellPopup({ pop }) {
         <div className="cell-pop-row">
           {isImgIcon(d.art) ? <img className="cell-pop-art" src={d.art} alt="" /> : null}
           <div className="cell-pop-txt">
-            <div className="cell-pop-title">{d.title}</div>
+            <div className="cell-pop-title">{d.midnight ? '🌙 ' : ''}{d.title}</div>
             <div className="cell-pop-sub">Stream {d.ord} of {d.total}{d.length ? ` · ${d.length}` : ''}</div>
             {d.goal && <div className="cell-pop-goal">🎯 {d.goal}</div>}
           </div>

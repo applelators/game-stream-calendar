@@ -947,3 +947,25 @@ input, select, textarea { font-family: inherit; }
 .ros-act.on .ros-act-sw { background: var(--warn); color: #241402; border-color: var(--warn); }
 .ros-act.rest.on { border-color: var(--muted); background: color-mix(in srgb, var(--muted) 12%, var(--s3)); }
 .ros-act.rest.on .ros-act-sw { background: var(--muted); color: #0c0c12; border-color: var(--muted); }
+
+/* ============================================================
+   Weekday / weekend / day-off color coding on the month grids
+   ============================================================ */
+/* Weekend = cool blue edge + faint tint; day off = warm amber edge (longer streams). */
+.gc-cell.weekend { border-color: color-mix(in srgb, var(--accent-2) 48%, var(--hair)); background: #0f1626; }
+.gc-cell.weekend.hasart { background: #0d121c; }
+.cal-cell.weekend { background: #0e1525; }
+.mg-cell.weekend { background: #0e1525; }
+/* day-off amber ring should win visually over the weekend edge */
+.gc-cell.dayoff { border-color: color-mix(in srgb, var(--warn) 70%, transparent); }
+.cal-cell.dayoff { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--warn) 60%, transparent); }
+.mg-cell.dayoff { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--warn) 55%, transparent); }
+/* today still wins */
+.gc-cell.today { border-color: var(--acc); }
+/* small legend swatches */
+.daytype-legend { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin: 0 0 12px; font-size: 0.7rem; color: var(--muted); font-family: var(--mono); }
+.daytype-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.daytype-legend i { width: 11px; height: 11px; border-radius: 3px; border: 1.5px solid var(--hair); display: inline-block; }
+.daytype-legend i.wd { border-color: var(--hair); background: #0d121c; }
+.daytype-legend i.we { border-color: color-mix(in srgb, var(--accent-2) 60%, var(--hair)); background: #0f1626; }
+.daytype-legend i.off { border-color: var(--warn); }

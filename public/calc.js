@@ -357,7 +357,9 @@ function streamPlan(games, pace, normVacs, today, opts) {
   const perDay = Math.max(0.01, spw / 7);
   const { eveByDay, releaseDays } = launchEves((games || []).filter((g) => !g.bonus));
   const restSet = (opts && opts.restDays) || null; // user-chosen rest days (no committed stream)
-  const blockedEve = (d) => { const k = dkey(d); return (!!eveByDay[k] && !releaseDays[k]) || (restSet && restSet.has(k)); };
+  // The eve is no longer "reserved/empty" — it now holds the launching game's midnight
+  // session (a forced slot). Only user-chosen rest days block a day from streaming.
+  const blockedEve = (d) => { const k = dkey(d); return !!(restSet && restSet.has(k)); };
   const nowD = today || new Date();
   const t0 = utc(nowD.getUTCFullYear(), nowD.getUTCMonth() + 1, nowD.getUTCDate());
 
@@ -375,20 +377,35 @@ function streamPlan(games, pace, normVacs, today, opts) {
     const baseStreams = streamsToFinish(remaining, pace);
     if (!baseStreams) continue;
     const dl = g.finishBefore ? finishBeforeDeadline(g, byId) : null;
-    (g.bonus ? bSpec : cSpec).push({ id: g.id, start, baseStreams, binge: !!g.binge,
+    // Midnight launch: a genuine new release (reserved an eve) with no one-go override
+    // streams a SHORT midnight session on its EVE, then a normal session on release day.
+    const ev = eveByDay[dkey(addDays(start, -1))];
+    const isMidnight = !g.bonus && !!ev && ev.id === g.id && g.launchHours == null;
+    const specStart = isMidnight ? addDays(start, -1) : start;
+    (g.bonus ? bSpec : cSpec).push({ id: g.id, start: specStart, baseStreams, binge: !!g.binge,
       cadence: g.cadence || null, weeklyDow: (g.weeklyDow != null ? g.weeklyDow : null),
       launchHours: (g.launchHours != null ? g.launchHours : null), pinStart: !!g.pinStart, priority: Number(g.priority) || 0,
+      midnight: isMidnight, midnightKey: isMidnight ? dkey(specStart) : null, releaseKey: dkey(start),
       inProgress: done > 0, hltb: remaining, key: g.finishBefore || null, deadlineMs: dl ? dl.getTime() : Infinity });
   }
   if (cSpec.length === 0 && bSpec.length === 0) return { positions: out, sessionByDay: {}, bonusByDay: {}, boosts: {} };
-  const launchOnDay = {};
-  for (const s of cSpec) { const ev = eveByDay[dkey(addDays(s.start, -1))]; if (ev && ev.id === s.id) launchOnDay[dkey(s.start)] = s.id; }
-  // Force-start = a game pinned to begin on its exact day. Genuine launches (above)
-  // qualify; `pinStart` games also do (e.g. Splatoon Raiders starting post-vacation,
-  // not a midnight launch). Force-start drives the start day only — the midnight eve
-  // and binge-launch ~6h stay tied to launchOnDay (real launches).
-  const forceStartDay = { ...launchOnDay };
-  for (const s of cSpec) { if (s.pinStart) forceStartDay[dkey(s.start)] = s.id; }
+  // Force-start = a game pinned to a specific day. Midnight launches force BOTH their
+  // eve (short midnight session) and release day (normal session); a one-go finish
+  // (launchHours) forces just the release day; pinStart games force their start day.
+  const midnightDays = {};   // eveKey -> id (short ~4h midnight session)
+  const launchHoursDay = {}; // releaseKey -> hours (one-go finish override)
+  const forceStartDay = {};
+  for (const s of cSpec) {
+    if (s.midnight) {
+      forceStartDay[s.midnightKey] = s.id;  // midnight session on the eve
+      forceStartDay[s.releaseKey] = s.id;   // normal session on release day
+      midnightDays[s.midnightKey] = s.id;
+    } else if (s.launchHours != null) {
+      forceStartDay[s.releaseKey] = s.id;
+      launchHoursDay[s.releaseKey] = s.launchHours;
+    }
+    if (s.pinStart) forceStartDay[dkey(s.start)] = s.id;
+  }
 
   // finish-before groups (committed) + per-group window + boosted stream counts.
   const groups = {};
@@ -419,7 +436,7 @@ function streamPlan(games, pace, normVacs, today, opts) {
       // whose deadline is after our window opens, or any game that starts within it.
       const overlaps = (hasDl && s.deadlineMs > gr.winStart.getTime()) || (s.start >= gr.winStart);
       if (!overlaps) continue;
-      const launches = launchOnDay[dkey(s.start)] === s.id && s.start >= gr.winStart && s.start < gr.deadline;
+      const launches = (s.midnight || s.launchHours != null) && s.start >= gr.winStart && s.start < gr.deadline;
       const priority = s.binge || launches || (hasDl && s.deadlineMs <= gr.deadline.getTime());
       if (priority) contentionH += s.hltb;
     }
@@ -431,8 +448,8 @@ function streamPlan(games, pace, normVacs, today, opts) {
   // One scheduling pass. boostKeys = groups that stream every available day (and use
   // their boosted, possibly-lengthened stream counts) to make their deadline.
   function simulate(boostKeys) {
-    const work = cSpec.map((s) => ({ ...s, target: s.hltb, hoursDone: 0, lastSlot: -Infinity, slots: [], slotHours: [], lengthen: boostKeys.has(s.key) && groups[s.key] ? groups[s.key].lengthen : 1 }));
-    const bwork = bSpec.map((s) => ({ ...s, target: s.hltb, hoursDone: 0, lastSlot: -Infinity, slots: [], slotHours: [], lengthen: 1 }));
+    const work = cSpec.map((s) => ({ ...s, target: s.hltb, hoursDone: 0, lastSlot: -Infinity, slots: [], slotHours: [], slotMid: [], lengthen: boostKeys.has(s.key) && groups[s.key] ? groups[s.key].lengthen : 1 }));
+    const bwork = bSpec.map((s) => ({ ...s, target: s.hltb, hoursDone: 0, lastSlot: -Infinity, slots: [], slotHours: [], slotMid: [], lengthen: 1 }));
     const boostW = [...boostKeys].filter((k) => groups[k]).map((k) => ({ start: groups[k].winStart, deadline: groups[k].deadline, ids: groups[k].ids }));
     let earliest = null; for (const p of work.concat(bwork)) if (!earliest || p.start < earliest) earliest = p.start;
     let day = new Date(Math.max(earliest.getTime(), t0.getTime())), acc = 0, guard = 0;
@@ -440,10 +457,10 @@ function streamPlan(games, pace, normVacs, today, opts) {
     let remaining = work.concat(bwork).filter(undone).length;
     // Each stream day delivers hoursOnDay (weekends longer); a game finishes when its
     // accumulated hours reach its HLTB target. Boosted groups lengthen each session.
-    // Binge-launch: on a binge game's release day the user does a midnight stream
-    // + another session after work (~6h total), so the launch day credits more than
-    // a normal weekday. A per-game `launchHours` overrides this (e.g. a one-go finish).
-    const LAUNCH_HOURS = 6;
+    // Midnight launch: the launching game streams a SHORT ~4h session on its eve (the
+    // stream that starts at 12:00 AM and, by late-night attribution, lands on the eve),
+    // then a NORMAL session on the actual release day — no longer one combined block.
+    const MIDNIGHT_HOURS = 4;
     // Weekday cap: weekday sessions realistically max ~6h even under deadline pressure
     // (the user goes ~4h on a normal weekday, ~6h if pushing). Weekends and explicit
     // days-off (longDays) can run their full length. So a deadline boost can stretch a
@@ -452,14 +469,16 @@ function streamPlan(games, pace, normVacs, today, opts) {
     const isLongDay = (d) => { const w = d.getUTCDay(); return w === 0 || w === 6 || (longDays && longDays.has(dkey(d))); };
     const take = (p) => {
       const was = undone(p);
-      let dayH = hoursOnDay(day, pace, longDays);
-      if (launchOnDay[dkey(day)] === p.id) {
-        if (p.launchHours != null) dayH = Math.max(dayH, p.launchHours);
-        else if (p.binge) dayH = Math.max(dayH, LAUNCH_HOURS);
+      const k = dkey(day);
+      let h, mid = false;
+      if (midnightDays[k] === p.id) {
+        h = MIDNIGHT_HOURS; mid = true;            // short midnight session on the eve
+      } else {
+        h = hoursOnDay(day, pace, longDays) * (p.lengthen || 1);
+        if (launchHoursDay[k] != null && forceStartDay[k] === p.id) h = Math.max(h, launchHoursDay[k]); // one-go finish (uncapped)
+        else if (!isLongDay(day)) h = Math.min(h, WEEKDAY_MAX); // cap weekday sessions at ~6h
       }
-      let h = dayH * (p.lengthen || 1);
-      if (!isLongDay(day)) h = Math.min(h, WEEKDAY_MAX); // cap weekday sessions at ~6h
-      p.hoursDone += h; p.lastSlot = day.getTime(); p.slots.push(new Date(day)); p.slotHours.push(h);
+      p.hoursDone += h; p.lastSlot = day.getTime(); p.slots.push(new Date(day)); p.slotHours.push(h); p.slotMid.push(mid);
       if (was && !undone(p)) remaining--;
     };
     while (remaining > 0 && guard++ < 500000) {
@@ -537,7 +556,7 @@ function streamPlan(games, pace, normVacs, today, opts) {
     const first = p.slots[0], last = addDays(p.slots[p.slots.length - 1], 1);
     out[p.id] = { start: first, end: last, segments: [{ start: first, end: last }] };
     const total = p.slots.length;
-    p.slots.forEach((d, i) => { sessionByDay[dkey(d)] = { id: p.id, idx: i + 1, total, hours: Math.round((p.slotHours[i] || 0) * 10) / 10 }; });
+    p.slots.forEach((d, i) => { sessionByDay[dkey(d)] = { id: p.id, idx: i + 1, total, hours: Math.round((p.slotHours[i] || 0) * 10) / 10, midnight: !!p.slotMid[i] }; });
   }
   for (const p of fin.bwork) {
     if (p.slots.length) { const first = p.slots[0], last = addDays(p.slots[p.slots.length - 1], 1); out[p.id] = { start: first, end: last, segments: [{ start: first, end: last }] }; }
