@@ -169,7 +169,13 @@ function computeDoneInfo(games, streams) {
     const base = stripGameName(g.title); if (!base) continue;
     (groups[base] = groups[base] || []).push({ id: g.id, hltb: Number(g.hltbHours) || 0 });
     const a = anchorDate(g.release);
-    if (a) { const ms = a.getTime(); if (startMs[base] == null || ms < startMs[base]) startMs[base] = ms; }
+    if (a) {
+      // A midnight-launch game streams its first (midnight) session on the EVE — by
+      // late-night attribution that lands the day BEFORE release — so credit from the eve.
+      const isLaunch = g.release && g.release.precision === 'day' && g.newRelease !== false && !g.backlog && (g.kind === 'game' || g.kind === 'dlc');
+      const ms = a.getTime() - (isLaunch ? 86400000 : 0);
+      if (startMs[base] == null || ms < startMs[base]) startMs[base] = ms;
+    }
   }
   const baseFor = (k) => Object.keys(groups).find((b) => k === b || ((k.includes(b) || b.includes(k)) && Math.min(k.length, b.length) >= 8));
   const dateMs = (s) => { const [y, m, d] = String(s || '').split('-').map(Number); return (y && m && d) ? Date.UTC(y, m - 1, d) : null; };
