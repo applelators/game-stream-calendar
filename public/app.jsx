@@ -230,6 +230,24 @@ function effectivePace(settings, pace) {
 // Strip a "— Pt. N" multi-part suffix to the shared base title.
 function baseTitle(t) { return String(t || '').replace(/\s*—\s*pt\.?\s*\d+.*$/i, '').trim(); }
 
+// Consolidate genuine new releases (game/dlc, newRelease!==false) into ONE entry per
+// game / collection, anchored to the EARLIEST part (the initial release) — matches the
+// Releases tab. Returns [{ id, title, release, icon, hours, rep }] (hours summed).
+function consolidateReleases(games) {
+  const m = {};
+  for (const g of (games || [])) {
+    if (!((g.kind === 'game' || g.kind === 'dlc') && g.newRelease !== false)) continue;
+    const key = g.collection ? 'c:' + g.collection : 'b:' + baseTitle(g.title);
+    const title = g.collection || baseTitle(g.title);
+    const d = anchorDate(g.release);
+    let e = m[key];
+    if (!e) { e = m[key] = { id: g.id, title, rep: g, release: g.release, icon: g.icon, d, hours: 0 }; }
+    e.hours += Number(g.hltbHours) || 0;
+    if (d && (!e.d || d < e.d)) { e.d = d; e.rep = g; e.id = g.id; e.release = g.release; e.icon = g.icon; }
+  }
+  return Object.values(m);
+}
+
 // ============================================================================
 // Health instruments + deadline / catch-up gauges (redesign step 1)
 // The gauges are a presentational layer over calc's feasibility math:
@@ -572,8 +590,8 @@ function savePNG(id, name) {
     .catch(() => alert('Cover art is served from an external CDN, which can block PNG export in some browsers. The .ics export always works; or screenshot the card directly.'));
 }
 function ShareView({ games, today, pace }) {
-  const upcoming = games
-    .filter((g) => (g.kind === 'game' || g.kind === 'dlc') && g.newRelease !== false && isPlaceable(g.release) && anchorDate(g.release) && anchorDate(g.release).getTime() > today.getTime())
+  const upcoming = consolidateReleases(games)
+    .filter((e) => isPlaceable(e.release) && anchorDate(e.release) && anchorDate(e.release).getTime() > today.getTime())
     .sort((a, b) => anchorDate(a.release) - anchorDate(b.release));
   if (!upcoming.length) return <div className="anim"><div className="w-head"><h1>Share your schedule</h1><span>no upcoming dated releases to feature</span></div></div>;
   const hero = upcoming.find((g) => g.release.precision === 'day') || upcoming[0];
@@ -582,7 +600,7 @@ function ShareView({ games, today, pace }) {
   const heroArt = isImgIcon(hero.icon) ? hero.icon : null;
   const row = (g) => ({ id: g.id, title: g.title, art: isImgIcon(g.icon) ? g.icon : null, color: gameColor(g.id).solid,
     date: g.release.precision === 'day' ? shortDate(anchorDate(g.release)) : releaseLabel(g.release),
-    streams: g.hltbHours ? streamsToFinish(g.hltbHours, pace) : 0 });
+    streams: g.hours ? streamsToFinish(g.hours, pace) : 0 });
   return (
     <div className="anim">
       <div className="w-head"><h1>Share your schedule</h1><span>auto-built from your next streams — screenshot or export to post</span>
@@ -728,12 +746,12 @@ function NowNextHero({ games, pace, doneHours, doneCounts, today, onPick }) {
       const remaining = Math.max(0, Math.round((Number(g.hltbHours) || 0) - (doneHours[g.id] || 0)));
       return { g, total, done, remaining, pct: Math.min(100, Math.round((done / total) * 100)) };
     }).slice(0, 2);
-  const upcoming = games
-    .filter((g) => (g.kind === 'game' || g.kind === 'dlc') && g.newRelease !== false && isPlaceable(g.release) && anchorDate(g.release) && anchorDate(g.release).getTime() > today.getTime())
+  const upcoming = consolidateReleases(games)
+    .filter((e) => isPlaceable(e.release) && anchorDate(e.release) && anchorDate(e.release).getTime() > today.getTime())
     .sort((a, b) => anchorDate(a.release) - anchorDate(b.release));
-  const launchG = upcoming.find((g) => g.release.precision === 'day') || null;
+  const launchG = upcoming.find((e) => e.release.precision === 'day') || null;
   const launchMs = launchG ? new Date(launchG.release.year, (launchG.release.month || 1) - 1, launchG.release.day || 1).getTime() : null;
-  const upNext = upcoming.filter((g) => !launchG || g.id !== launchG.id).slice(0, 4);
+  const upNext = upcoming.filter((e) => !launchG || e.id !== launchG.id).slice(0, 4);
   const launchArt = launchG && isImgIcon(launchG.icon) ? launchG.icon : null;
   return (
     <div className="hero-grid">
@@ -782,7 +800,7 @@ function NowNextHero({ games, pace, doneHours, doneCounts, today, onPick }) {
           <div className="un-row" key={g.id} onClick={() => onPick(g.id)} style={{ cursor: 'pointer' }}>
             <div className="un-art" style={isImgIcon(g.icon) ? { backgroundImage: `url(${g.icon})` } : { background: gameColor(g.id).solid }} />
             <div style={{ minWidth: 0, flex: 1 }}><div className="un-title">{g.title}</div>
-              <div className="un-meta">{releaseLabel(g.release)}{g.hltbHours ? ` · ${streamsToFinish(g.hltbHours, pace)} streams` : ''}</div></div>
+              <div className="un-meta">{releaseLabel(g.release)}{g.hours ? ` · ${streamsToFinish(g.hours, pace)} streams` : ''}</div></div>
             <span className="un-dot" style={{ background: gameColor(g.id).solid }} />
           </div>
         ))}
@@ -961,12 +979,12 @@ function App() {
   const launch = useMemo(() => {
     const n = new Date(); const todayLocalMs = new Date(n.getFullYear(), n.getMonth(), n.getDate()).getTime();
     let best = null;
-    for (const g of effGames) {
-      if (!((g.kind === 'game' || g.kind === 'dlc') && g.newRelease !== false)) continue; // genuine new releases only (matches Releases tab)
-      if (!g.release || g.release.precision !== 'day') continue;
-      const a = new Date(g.release.year, (g.release.month || 1) - 1, g.release.day || 1).getTime();
+    // Consolidated to one entry per game on its initial release day (no separate parts).
+    for (const e of consolidateReleases(effGames)) {
+      if (!e.release || e.release.precision !== 'day') continue;
+      const a = new Date(e.release.year, (e.release.month || 1) - 1, e.release.day || 1).getTime();
       if (a <= todayLocalMs) continue; // today's midnight launch already happened — roll to the next
-      if (!best || a < best.ms) best = { ms: a, title: g.title };
+      if (!best || a < best.ms) best = { ms: a, title: e.title };
     }
     return best;
   }, [effGames]);

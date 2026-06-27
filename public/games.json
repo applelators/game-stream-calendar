@@ -16,7 +16,7 @@
       "notes": "Self-set challenge (Jun 9 6PM PT – Sep 1 12:59AM PT)."
     },
     {
-      "title": "Xenoblade Chronicles: Definitive Edition (NS2) — Pt. 1",
+      "title": "Xenoblade Chronicles: Definitive Edition – Nintendo Switch 2 Edition — Pt. 1",
       "date": "2026-06-09",
       "kind": "game",
       "backlog": false,
@@ -33,10 +33,11 @@
       "icon": "https://cdn.dekudeals.com/images/14a9585aef502398de4d06d44d8709f1de6f26b4/w500.jpg",
       "iconColor": "#5ed3de",
       "partGoal": "About the first third of the story — ||through Prison Island (1st visit): Colony 9 → Eryth Sea/Alcamoth, reaching Valak Mountain||.",
-      "priority": -1
+      "priority": -1,
+      "id": "xenoblade-chronicles-definitive-edition-ns2-pt-1"
     },
     {
-      "title": "Xenoblade Chronicles: Definitive Edition (NS2) — Pt. 2",
+      "title": "Xenoblade Chronicles: Definitive Edition – Nintendo Switch 2 Edition — Pt. 2",
       "date": "2026-07",
       "kind": "game",
       "backlog": true,
@@ -53,10 +54,11 @@
       "iconColor": "#5ed3de",
       "finishBefore": "2026-07",
       "partGoal": "The middle third — ||Valak Mountain through the Mechonis landing: Sword Valley, Galahad Fortress, the Fallen Arm, up to Agniratha||.",
-      "priority": -1
+      "priority": -1,
+      "id": "xenoblade-chronicles-definitive-edition-ns2-pt-2"
     },
     {
-      "title": "Xenoblade Chronicles: Definitive Edition (NS2) — Pt. 3",
+      "title": "Xenoblade Chronicles: Definitive Edition – Nintendo Switch 2 Edition — Pt. 3",
       "date": "2026-08",
       "kind": "game",
       "backlog": true,
@@ -73,7 +75,8 @@
       "iconColor": "#5ed3de",
       "finishBefore": "2026-08",
       "partGoal": "The final third — ||Agniratha & the Mechonis Core through the Bionis interior to the ending||.",
-      "priority": -1
+      "priority": -1,
+      "id": "xenoblade-chronicles-definitive-edition-ns2-pt-3"
     },
     {
       "title": "Pokémon HeartGold",
@@ -353,7 +356,7 @@
       "weeklyDay": "Fri"
     },
     {
-      "title": "Xenoblade Chronicles 2 (NS2) — Pt. 1",
+      "title": "Xenoblade Chronicles 2 – Nintendo Switch 2 Edition — Pt. 1",
       "date": "2026-09",
       "kind": "game",
       "backlog": true,
@@ -370,10 +373,11 @@
       "iconColor": "#5bb1e1",
       "finishBefore": "2026-09",
       "partGoal": "Chapters 1–4 ||(Gormott → Uraya → reach Mor Ardain)||.",
-      "priority": -1
+      "priority": -1,
+      "id": "xenoblade-chronicles-2-ns2-pt-1"
     },
     {
-      "title": "Xenoblade Chronicles 2 (NS2) — Pt. 2",
+      "title": "Xenoblade Chronicles 2 – Nintendo Switch 2 Edition — Pt. 2",
       "date": "2026-10",
       "kind": "game",
       "backlog": true,
@@ -390,10 +394,11 @@
       "iconColor": "#5bb1e1",
       "finishBefore": "2026-10",
       "partGoal": "Chapters 5–7 ||(Tantal, Leftheria, Indol / Spirit Crucible setup)||.",
-      "priority": -1
+      "priority": -1,
+      "id": "xenoblade-chronicles-2-ns2-pt-2"
     },
     {
-      "title": "Xenoblade Chronicles 2 (NS2) — Pt. 3",
+      "title": "Xenoblade Chronicles 2 – Nintendo Switch 2 Edition — Pt. 3",
       "date": "2026-11",
       "kind": "game",
       "backlog": true,
@@ -410,7 +415,8 @@
       "iconColor": "#5bb1e1",
       "finishBefore": "2026-11",
       "partGoal": "Chapters 8–10 ||(Spirit Crucible to the finale)||.",
-      "priority": -1
+      "priority": -1,
+      "id": "xenoblade-chronicles-2-ns2-pt-3"
     },
     {
       "title": "Fire Emblem Engage — Pt. 1",
@@ -1027,7 +1033,7 @@
       "newRelease": false
     },
     {
-      "title": "Switch Sports Resort",
+      "title": "Nintendo Switch Sports Resort",
       "date": "2026-10-22",
       "kind": "game",
       "hltbHours": 8,
@@ -1044,7 +1050,8 @@
       ],
       "earlyAccess": "",
       "notes": "Wuhu Island; sequel to Nintendo Switch Sports.",
-      "binge": true
+      "binge": true,
+      "id": "switch-sports-resort"
     },
     {
       "title": "Grand Theft Auto VI",
@@ -1075,7 +1082,7 @@
       "binge": true
     },
     {
-      "title": "Xenoblade Chronicles 3 — Nintendo Switch 2 Edition — Pt. 1",
+      "title": "Xenoblade Chronicles 3 – Nintendo Switch 2 Edition — Pt. 1",
       "date": "2026-12-03",
       "kind": "game",
       "hltbHours": 29,
@@ -1091,10 +1098,11 @@
       "iconColor": "#60bcdc",
       "finishBefore": "2026-12",
       "partGoal": "Chapters 1–2 ||(through entering Swordmarch / Origin setup)||.",
-      "priority": -1
+      "priority": -1,
+      "id": "xenoblade-chronicles-3-nintendo-switch-2-edition-pt-1"
     },
     {
-      "title": "Xenoblade Chronicles 3 — Nintendo Switch 2 Edition — Pt. 2",
+      "title": "Xenoblade Chronicles 3 – Nintendo Switch 2 Edition — Pt. 2",
       "date": "2027-01",
       "kind": "game",
       "backlog": true,
@@ -1111,10 +1119,11 @@
       "iconColor": "#60bcdc",
       "finishBefore": "2027-01",
       "partGoal": "Chapters 3–5 ||(the Captain Jin / Moebius mid-game arc)||.",
-      "priority": -1
+      "priority": -1,
+      "id": "xenoblade-chronicles-3-nintendo-switch-2-edition-pt-2"
     },
     {
-      "title": "Xenoblade Chronicles 3 — Nintendo Switch 2 Edition — Pt. 3",
+      "title": "Xenoblade Chronicles 3 – Nintendo Switch 2 Edition — Pt. 3",
       "date": "2027-02",
       "kind": "game",
       "backlog": true,
@@ -1131,7 +1140,8 @@
       "iconColor": "#60bcdc",
       "finishBefore": "persona-4-revival",
       "partGoal": "Chapters 6–7 ||(the march on Origin to the ending)||.",
-      "priority": -1
+      "priority": -1,
+      "id": "xenoblade-chronicles-3-nintendo-switch-2-edition-pt-3"
     },
     {
       "title": "The Legend of Zelda: Ocarina of Time — Nintendo Switch 2",
