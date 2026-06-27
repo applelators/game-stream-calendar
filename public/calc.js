@@ -461,11 +461,13 @@ function streamPlan(games, pace, normVacs, today, opts) {
     // stream that starts at 12:00 AM and, by late-night attribution, lands on the eve),
     // then a NORMAL session on the actual release day — no longer one combined block.
     const MIDNIGHT_HOURS = 4;
-    // Weekday cap: weekday sessions realistically max ~6h even under deadline pressure
-    // (the user goes ~4h on a normal weekday, ~6h if pushing). Weekends and explicit
-    // days-off (longDays) can run their full length. So a deadline boost can stretch a
-    // weekday up to 6h but no further — if that's not enough the deadline slips honestly.
+    // Realistic per-session caps even under deadline pressure: a weekday tops out ~6h
+    // (normal ~4h, ~6h if pushing); a weekend or explicit day-off tops out ~12h (a long
+    // marathon, not endless). A deadline boost can stretch a session UP TO these caps but
+    // no further — if even that isn't enough, the deadline slips honestly rather than the
+    // plan drawing an impossible 19h+ day.
     const WEEKDAY_MAX = 6;
+    const LONGDAY_MAX = 12;
     const isLongDay = (d) => { const w = d.getUTCDay(); return w === 0 || w === 6 || (longDays && longDays.has(dkey(d))); };
     const take = (p) => {
       const was = undone(p);
@@ -475,8 +477,8 @@ function streamPlan(games, pace, normVacs, today, opts) {
         h = MIDNIGHT_HOURS; mid = true;            // short midnight session on the eve
       } else {
         h = hoursOnDay(day, pace, longDays) * (p.lengthen || 1);
-        if (launchHoursDay[k] != null && forceStartDay[k] === p.id) h = Math.max(h, launchHoursDay[k]); // one-go finish (uncapped)
-        else if (!isLongDay(day)) h = Math.min(h, WEEKDAY_MAX); // cap weekday sessions at ~6h
+        if (launchHoursDay[k] != null && forceStartDay[k] === p.id) h = Math.max(h, launchHoursDay[k]); // one-go finish (explicit override, uncapped)
+        else h = Math.min(h, isLongDay(day) ? LONGDAY_MAX : WEEKDAY_MAX); // cap weekday ~6h / weekend & day-off ~12h
       }
       p.hoursDone += h; p.lastSlot = day.getTime(); p.slots.push(new Date(day)); p.slotHours.push(h); p.slotMid.push(mid);
       if (was && !undone(p)) remaining--;
