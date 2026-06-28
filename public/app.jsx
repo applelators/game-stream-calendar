@@ -267,6 +267,9 @@ function buildDeadlines(games, pace, doneHours, today) {
     (groups[g.finishBefore] = groups[g.finishBefore] || []).push(g);
   }
   const hpw = (pace && pace.hoursPerWeek) || 11.52;
+  // How many parts each split game has (so a deadline row led by part N can show N/total).
+  const partCounts = {};
+  for (const g of games) { if (/—\s*pt\.?\s*\d+/i.test(g.title)) { const b = baseTitle(g.title); partCounts[b] = (partCounts[b] || 0) + 1; } }
   const out = [];
   for (const fb in groups) {
     const items = groups[fb];
@@ -279,9 +282,13 @@ function buildDeadlines(games, pace, doneHours, today) {
     const needed = hours / weeksLeft;
     const onTrack = needed <= hpw;
     const tone = needed <= hpw ? 'var(--good)' : needed <= hpw * 1.4 ? 'var(--warn)' : 'var(--danger)';
+    // If the row's lead game is one part of a split game, surface which part (e.g. 2/3).
+    const pm = /—\s*pt\.?\s*(\d+)/i.exec(items[0].title);
+    const part = pm ? Number(pm[1]) : null;
+    const partTotal = part ? (partCounts[baseTitle(items[0].title)] || null) : null;
     out.push({
       id: items[0].id, label: baseTitle(items[0].title), count: items.length,
-      hours: Math.round(hours), needed, onTrack, tone,
+      hours: Math.round(hours), needed, onTrack, tone, part, partTotal,
       fill: Math.min(100, (needed / hpw) * 60), dlText: dlLabelFor(fb, dl, byId),
     });
   }
@@ -337,7 +344,7 @@ function DeadlinePanel({ deadlines, onPick }) {
       {deadlines.slice(0, 6).map((d, i) => (
         <div className="dl-row" key={i} onClick={() => onPick(d.id)}>
           <div style={{ minWidth: 0 }}>
-            <div className="dl-name">{d.label}</div>
+            <div className="dl-name">{d.label}{d.part && d.partTotal ? <span className="dl-part">{d.part}/{d.partTotal}</span> : null}</div>
             <div className="dl-when">{d.dlText} · {d.count > 1 ? d.count + ' games · ' : ''}{d.hours}h to play</div>
           </div>
           <div className="dl-gauge"><div className="dl-bar"><span className="cap" /><i style={{ width: d.fill + '%', background: d.tone }} /></div></div>
