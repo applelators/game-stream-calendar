@@ -256,7 +256,9 @@ function consolidateReleases(games) {
 function dlLabelFor(fb, dl, byId) {
   const g = byId[fb];
   if (g && g.title) return 'before ' + baseTitle(String(g.title).split(':')[0]);
-  if (/^\d{4}-\d{2}$/.test(fb)) return 'by end of ' + MONTHS[dl.getUTCMonth()];
+  // "2026-06" = finish by end of June (the period's own month) — not the exclusive
+  // deadline's month (July 1), which was rendering one month too late.
+  if (/^\d{4}-\d{2}$/.test(fb)) return 'by end of ' + MONTHS[Number(fb.slice(5, 7)) - 1];
   return 'by ' + MONTHS[dl.getUTCMonth()] + ' ' + dl.getUTCDate();
 }
 function buildDeadlines(games, pace, doneHours, today) {
